@@ -1,0 +1,19 @@
+[规范说明]
+-[feat]- (Feature) 新增功能或逻辑模块
+-[refactor]- (Refactor) 代码重构
+-[perf]- (Performance) 性能优化、手感调试、细节打磨
+-[fix]- (Bug Fix) 修复已知缺陷
+-[chore]- (Chore) 杂项、版本控制配置、资源管理等
+-[docs]- (Documentation) 文档更新
+-[style]- (Style) UI 表现、动画效果、代码格式美化
+———————————————————————————————————————————————————————
+2026/3/28-K
+-[chore]-
+-新建文件夹：Perfabs，SOData（存放手动创建的ScriptableObject文件），Tilemap（策划案中提到像素格的概念，认为使用Tilemap可控性更高，目前仅作为测试资源，可删改）Scripts（内存在若干分类脚本文件夹）；
+-在PackageManager中加入了CinemachineCamera，InputSystem等包体，现在相机由Cinemachine和主相机包裹在一个空对象内组成
+-新建了一个InputAction目前是模拟轴输入，当前仅存在AD键操控相机位置的功能
+-[feat]-
+-新建一个InputManager管理输入，全局静态单例
+-新建CameraMove组件用于控制相机左右平滑移动
+-新建CameraDataSO存放相机移动参数
+
