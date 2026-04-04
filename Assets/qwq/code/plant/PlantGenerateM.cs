@@ -7,23 +7,16 @@ public class PlantGenerateM : MonoBehaviour
 {
     [SerializeField] Button plant1;
     [SerializeField] Button plant2;
-
-    public static PlantGenerateM instance;
     [SerializeField] GameObject PlantGenerateUI;
     private void Awake()
     {
-        if (instance)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            instance = this;
-        }
+        plant1.onClick.AddListener(ButtonUI);
+        plant2.onClick.AddListener(ButtonUI);
+        PlantGenerateUI.SetActive(false);
     }
     private void Start()
     {
-        plant1.onClick.AddListener(ButtonUI);
+        
     }
     public void enterUI(Vector2 position)
     {

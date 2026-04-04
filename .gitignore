@@ -1,2 +1,18 @@
+# Unity
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/Assets/AssetStoreTools*
 
-Library
+# Visual Studio
+.vs/
+*.sln
+*.csproj
+*.user
+*.userprefs
+
+# Logs
+[Ll]ogs/
+*.log

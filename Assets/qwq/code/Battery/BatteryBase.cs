@@ -5,7 +5,8 @@ using UnityEngine.EventSystems;
 
 public class BatteryBase : MonoBehaviour
 {
-    [SerializeField] GameObject parentObject;
+    public GameObject parentObject;
+    public GameObject battery;
     private void OnMouseDown()
     {
         if (EventSystem.current.IsPointerOverGameObject())
@@ -13,7 +14,7 @@ public class BatteryBase : MonoBehaviour
         Debug.Log($"点击了: {gameObject.name}");
         // 处理点击逻辑
 
-        PlantGenerateC.instance.enterUI(parentObject);
+        PlantGenerateC.instance.enterUI(this);
     }
 
     private void OnMouseEnter()
@@ -34,5 +35,10 @@ public class BatteryBase : MonoBehaviour
     {
         // 鼠标抬起
         Debug.Log("鼠标抬起");
+    }
+    public bool IsGenerated()
+    {
+        if (!parentObject && battery) return false;
+        else return true;
     }
 }

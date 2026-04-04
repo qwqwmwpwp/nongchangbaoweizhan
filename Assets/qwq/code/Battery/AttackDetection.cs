@@ -16,7 +16,6 @@ public class AttackDetection : MonoBehaviour
     {
         IDamageable enemy = collision.GetComponent<IDamageable>();
         if (enemy == null) return;
-        Debug.Log("wow");
         battery.enemys.Remove(enemy);
     }
 }

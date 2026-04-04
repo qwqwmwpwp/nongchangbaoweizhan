@@ -16,6 +16,7 @@ public class Base : MonoBehaviour, IDamageable
         if (hp <= 0)
         {
             isGameOver = true;
+            GameOverC.instance.GameOver();
         }
     }
 }
