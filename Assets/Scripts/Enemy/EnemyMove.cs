@@ -1,25 +1,39 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static RoadNode;
 
 public class EnemyMove : MonoBehaviour
 {
     public int speed = 5;
-    private Transform targetTransform;
-    private int wayPointIndex = 0;
-    private Vector3 dic;
-    private void Start()
+    private RoadNode targetNode;
+    Vector3 moveDirection;
+    public void StartMove(RoadNode startNode)
     {
-        targetTransform = WayPointManager.Instance.points[wayPointIndex].transform;
+        targetNode = startNode;
     }
     private void Update()
     {
-        dic = (targetTransform.position - gameObject.transform.position).normalized;
-        transform.Translate(dic * speed * Time.deltaTime);
-        if(Vector3.Distance(transform.position,targetTransform.position)<=0.1&&wayPointIndex!=WayPointManager.Instance.points.Count-1)
+        if (targetNode == null) return;
+
+        moveDirection = (targetNode.transform.position - transform.position).normalized;
+        transform.Translate(moveDirection * speed * Time.deltaTime);
+
+        if (Vector3.Distance(transform.position, targetNode.transform.position) <= 0.3f)
         {
-            wayPointIndex++;
-            targetTransform = WayPointManager.Instance.points[wayPointIndex].transform;
+            ChooseNextNode();
         }
+    }
+    private void ChooseNextNode()
+    {
+        if (targetNode.nextNodes == null || targetNode.nextNodes.Count == 0)
+        {
+            targetNode = null;
+            Destroy(gameObject);
+            return;
+        }
+
+        int randomIndex = Random.Range(0, targetNode.nextNodes.Count);
+        targetNode = targetNode.nextNodes[randomIndex];
     }
 }

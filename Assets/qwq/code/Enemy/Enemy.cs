@@ -1,49 +1,47 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+
 namespace qwq
 {
+    // 这个脚本只负责：属性、受击、死亡、UI，移动相关逻辑解耦出去了
     public class Enemy : MonoBehaviour, IDamageable
     {
         public GameObject Object => gameObject;
+
         [Header("属性")]
         public int attack = 1;
-        public int speed = 2;
-        [SerializeField] int hp_max = 100;
-        int hp = 10;
-        Rigidbody2D rb;
-        public Vector3 targetPosition;
-        private int wayPointIndex = 0;
+        [SerializeField] private int hp_max = 100;
+        private int hp = 10;
+
         [Header("UI")]
         public EnemyHealthUI enemyHealthUI;
+
         private void Start()
         {
-            rb = GetComponent<Rigidbody2D>();
             hp = hp_max;
-            enemyHealthUI.PlayerHealthChange(hp, hp_max);
-            targetPosition = WayPointManager.Instance.points[wayPointIndex].transform.position;
-        }
-        public void Update()
-        {
-            Vector3 dic = (targetPosition - gameObject.transform.position).normalized;
-            rb.velocity = dic * speed;
-            if (Vector3.Distance(transform.position, targetPosition) <= 0.5 && wayPointIndex != WayPointManager.Instance.points.Count - 1)
+            if (enemyHealthUI != null)
             {
-                wayPointIndex++;
-                targetPosition = WayPointManager.Instance.points[wayPointIndex].transform.position;
+                enemyHealthUI.PlayerHealthChange(hp, hp_max);
             }
         }
+
         public void TakeDamage(int amount)
         {
             hp -= amount;
-            enemyHealthUI.PlayerHealthChange(hp, hp_max);
-            if (hp <= 0) Death();
+            if (enemyHealthUI != null)
+            {
+                enemyHealthUI.PlayerHealthChange(hp, hp_max);
+            }
+
+            if (hp <= 0)
+            {
+                Death();
+            }
         }
 
         public int Attack()
         {
-            Death();
+            Death(); 
             return attack;
         }
 
@@ -51,6 +49,5 @@ namespace qwq
         {
             Destroy(gameObject);
         }
-
     }
 }
