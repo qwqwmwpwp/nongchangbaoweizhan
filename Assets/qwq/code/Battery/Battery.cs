@@ -5,12 +5,21 @@ using UnityEngine;
 public class Battery : MonoBehaviour, IWeapon
 {
     public List<IDamageable> enemys = new();
-    public float t_max = 1;
+
+    [SerializeField] private BatteryDataSO batteryData;
+    private float fireInterval = 1f;
     float t;
     public GameObject bullet;
+
+    private void Awake()
+    {
+        if (batteryData != null)
+            fireInterval = batteryData.FireInterval;
+    }
+
     private void Update()
     {
-        if (t > t_max)
+        if (t > fireInterval)
         {
             if (enemys.Count < 1) return;
             foreach (var enemy in enemys)
@@ -22,6 +31,12 @@ public class Battery : MonoBehaviour, IWeapon
         {
             t += Time.deltaTime;
         }
+    }
+
+    private void OnValidate()
+    {
+        if (batteryData != null)
+            fireInterval = batteryData.FireInterval;
     }
     public void Fire(IDamageable target)
     {

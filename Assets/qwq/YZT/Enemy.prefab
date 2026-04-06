@@ -354,7 +354,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5637174795474583087}
   - component: {fileID: 257832048899088135}
-  - component: {fileID: 8276763946724445639}
   - component: {fileID: 3852219144510769704}
   - component: {fileID: 8937495428411100558}
   - component: {fileID: 6617533393936098711}
@@ -435,21 +434,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &8276763946724445639
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4636694202861294061}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f3a93ef757836244b6e625b4a4444a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currentHealth: 10
-  maxHealth: 10
-  enemyHealthUI: {fileID: 3189594755568167378}
 --- !u!114 &3852219144510769704
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -462,8 +446,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80cdab27f084d1745ba033e0f3bef00e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attack: 1
-  hp_max: 100
+  enemyData: {fileID: 11400000, guid: 05be28c4c31767c46a4ff1a5f53e36e0, type: 2}
   enemyHealthUI: {fileID: 3189594755568167378}
 --- !u!58 &8937495428411100558
 CircleCollider2D:

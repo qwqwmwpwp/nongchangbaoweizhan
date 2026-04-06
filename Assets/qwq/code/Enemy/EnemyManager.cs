@@ -7,8 +7,17 @@ public class EnemyManager : MonoBehaviour
     [SerializeField] GameObject GeneratePoint;
     public GameObject Enemy;
     public RoadNode startNode;
-    public float t_max = 2;
+
+    [SerializeField] private EnemySpawnDataSO spawnData;
+    private float spawnInterval = 2f;
     float t = 0;
+
+    private void Awake()
+    {
+        if (spawnData != null)
+            spawnInterval = spawnData.SpawnInterval;
+    }
+
     private void Update()
     {
         Generate();
@@ -16,7 +25,7 @@ public class EnemyManager : MonoBehaviour
 
     private void Generate()
     {
-        if (t < t_max)
+        if (t < spawnInterval)
         {
             t += Time.deltaTime;
             return;

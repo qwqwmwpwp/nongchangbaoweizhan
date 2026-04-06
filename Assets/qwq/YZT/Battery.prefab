@@ -215,5 +215,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb5aa094366338a4cad9420aabcc6dd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  t_max: 0.5
+  batteryData: {fileID: 11400000, guid: dd6bc0647c61bcd4684d2b7d905ac6b6, type: 2}
   bullet: {fileID: 3019595320723696993, guid: b9925f9f08d85e847ab99a1be62eef0f, type: 3}

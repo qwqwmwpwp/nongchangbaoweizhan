@@ -8,29 +8,46 @@ namespace qwq
     {
         public GameObject Object => gameObject;
 
-        [Header("属性")]
-        public int attack = 1;
-        [SerializeField] private int hp_max = 100;
-        private int hp = 10;
+        [Header("数据")]
+        [SerializeField] private EnemyDataSO enemyData;
+
+        private int hp;
+        private int hpMax;
+        private int attack;
 
         [Header("UI")]
         public EnemyHealthUI enemyHealthUI;
 
         private void Start()
         {
-            hp = hp_max;
+            if (enemyData == null)
+            {
+                Debug.LogError($"Enemy: 未指定 EnemyDataSO（{gameObject.name}）", this);
+                return;
+            }
+
+            hpMax = enemyData.MaxHealth;
+            attack = enemyData.Attack;
+            hp = hpMax;
+
+            var mover = GetComponent<EnemyMove>();
+            if (mover != null)
+                mover.speed = enemyData.MoveSpeed;
+
             if (enemyHealthUI != null)
             {
-                enemyHealthUI.PlayerHealthChange(hp, hp_max);
+                enemyHealthUI.PlayerHealthChange(hp, hpMax);
             }
         }
 
         public void TakeDamage(int amount)
         {
+            if (enemyData == null) return;
+
             hp -= amount;
             if (enemyHealthUI != null)
             {
-                enemyHealthUI.PlayerHealthChange(hp, hp_max);
+                enemyHealthUI.PlayerHealthChange(hp, hpMax);
             }
 
             if (hp <= 0)
@@ -41,7 +58,7 @@ namespace qwq
 
         public int Attack()
         {
-            Death(); 
+            Death();
             return attack;
         }
 
