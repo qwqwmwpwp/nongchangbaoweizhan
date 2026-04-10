@@ -27,13 +27,23 @@ public class Base : MonoBehaviour, IDamageable
     {
         if (isGameOver)
             return;
+
+        // 与 GameFlowManager 共用同一套基地血量与失败判定（避免两套 HP 不一致）
+        if (GameFlowManager.Instance != null)
+        {
+            GameFlowManager.Instance.TakeBaseDamage(amount);
+            isGameOver = GameFlowManager.Instance.IsDefeat;
+            return;
+        }
+
         if (baseData == null)
             return;
         hp -= amount;
         if (hp <= 0)
         {
             isGameOver = true;
-            GameOverC.instance.GameOver();
+            if (GameOverC.instance != null)
+                GameOverC.instance.ShowDefeat();
         }
     }
 }

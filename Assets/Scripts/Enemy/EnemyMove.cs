@@ -28,12 +28,26 @@ public class EnemyMove : MonoBehaviour
     {
         if (targetNode.nextNodes == null || targetNode.nextNodes.Count == 0)
         {
+            // 路径终点 = 抵达基地：先扣基地血再销毁，DummyEnemy 仍会 OnDestroy 通知波次计数
             targetNode = null;
+            ApplyDamageToBaseOnReach();
             Destroy(gameObject);
             return;
         }
 
         int randomIndex = Random.Range(0, targetNode.nextNodes.Count);
         targetNode = targetNode.nextNodes[randomIndex];
+    }
+
+    /// <summary>走到终点（无下一节点）时对基地造成一次伤害；若未挂 GameFlowManager 则仅销毁怪物。</summary>
+    private void ApplyDamageToBaseOnReach()
+    {
+        int dmg = 1;
+        var enemy = GetComponent<qwq.Enemy>();
+        if (enemy != null)
+            dmg = enemy.GetLeakDamage();
+
+        if (GameFlowManager.Instance != null)
+            GameFlowManager.Instance.TakeBaseDamage(dmg);
     }
 }

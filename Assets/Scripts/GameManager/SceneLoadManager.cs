@@ -4,12 +4,12 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// 单场景异步切换：DOTween 控制 CanvasGroup 渐隐 → 加载 → 渐显。
-/// 挂在带 CanvasGroup 的全屏遮罩上，置于首场景并随 DontDestroyOnLoad 常驻。
+/// 异步切换
 /// </summary>
 public class SceneLoadManager : MonoBehaviour
 {
     public static SceneLoadManager Instance { get; private set; }
+
     [SerializeField] private CanvasGroup fadeCanvasGroup;
     [SerializeField] private SceneLoadSettingsSO loadSettings;
 
@@ -23,7 +23,7 @@ public class SceneLoadManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        //初始化关闭所有动画，透明，且不可交互
+
         if (fadeCanvasGroup != null)
         {
             fadeCanvasGroup.DOKill();
@@ -41,9 +41,8 @@ public class SceneLoadManager : MonoBehaviour
         if (fadeCanvasGroup != null)
             fadeCanvasGroup.DOKill();
     }
-
-    private float FadeOutSec => loadSettings.FadeInDuration;
-    private float FadeInSec => loadSettings.FadeInDuration;
+    private float FadeOutSec => loadSettings != null ? loadSettings.FadeOutDuration : 0.5f;
+    private float FadeInSec => loadSettings != null ? loadSettings.FadeInDuration : 0.5f;
 
     /// <summary>按场景名替换当前场景（Build Settings 中需已加入）。</summary>
     public void LoadScene(string sceneName)
