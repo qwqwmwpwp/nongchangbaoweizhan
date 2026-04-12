@@ -52,7 +52,7 @@ namespace qwq
 
             if (hp <= 0)
             {
-                Death();
+                DieFromCombat();
             }
         }
 
@@ -72,6 +72,15 @@ namespace qwq
 
         public void Death()
         {
+            Destroy(gameObject);
+        }
+
+        /// <summary>被伤害击杀：发资源事件后销毁；与撞基地 <see cref="Attack"/> 的单纯销毁区分。</summary>
+        private void DieFromCombat()
+        {
+            if (enemyData != null && enemyData.KillResourceReward > 0)
+                GameEvent.TriggerEnemyDefeatedReward(enemyData.KillResourceReward);
+
             Destroy(gameObject);
         }
     }
