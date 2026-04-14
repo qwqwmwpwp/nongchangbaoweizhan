@@ -142,6 +142,10 @@ public class WaveManager : MonoBehaviour
         // 保证每个敌人都能在销毁时回调 WaveManager，避免波次卡死
         if (enemy.GetComponent<DummyEnemy>() == null)
             enemy.AddComponent<DummyEnemy>();
+
+        // 敌人时间回溯：每只敌人都具备固定容量位置记录器
+        if (enemy.GetComponent<EnemyRewindRecorder>() == null)
+            enemy.AddComponent<EnemyRewindRecorder>();
     }
 }
 
