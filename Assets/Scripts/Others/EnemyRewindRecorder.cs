@@ -17,6 +17,8 @@ public class EnemyRewindRecorder : MonoBehaviour
     //写入固定大小数组
     private Vector3[] _positions;
     //通过指针操作，head为下一次要写入的位置
+    //一个闭环，到头就从第一位继续写
+    //每次回溯会清空原数组从最后一次回溯点开始记录
     private int _head;
     private int _count;
     private float _recordTimer;
@@ -70,6 +72,11 @@ public class EnemyRewindRecorder : MonoBehaviour
     {
         float rewindSeconds = Mathf.Max(recordInterval, (_count - 1) * recordInterval);
         StartRewindBySeconds(rewindSeconds, duration);
+    }
+
+    public void StartRewindBySkill(float rewindSeconds, float playbackDuration)
+    {
+        StartRewindBySeconds(rewindSeconds, playbackDuration);
     }
 
     public void ClearHistory()
