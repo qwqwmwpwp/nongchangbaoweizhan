@@ -1,25 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
 {
-    [SerializeField] GameObject GeneratePoint;
-    public GameObject Enemy;
-    public float t_max = 2;
-    float t = 0;
-    private void Update()
+    private void Awake()
     {
-        Generate();
-    }
-    private void Generate()
-    {
-        if (t < t_max)
-        {
-            t += Time.deltaTime;
-            return;
-        }
-        t = 0;
-        Instantiate(Enemy, GeneratePoint.transform.position, GeneratePoint.transform.rotation);
+        Debug.Log("EnemyManager 已停用：请使用 WaveManager 统一出怪。", this);
+        enabled = false;
     }
 }

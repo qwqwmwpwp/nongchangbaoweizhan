@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface IDamageable 
 {
- public   GameObject Object { get; }
+    public GameObject Object { get; }
     void TakeDamage(int amount);
 }
 public interface IWeapon

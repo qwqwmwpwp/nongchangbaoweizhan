@@ -1,31 +1,54 @@
-using qwq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 子弹接口实现
+/// </summary>
 public class Bullet : MonoBehaviour, IWeapon
 {
     IDamageable enemy;
     Vector2 direction;
- [SerializeField] private float lifeTime = 5f; // 自动销毁时间
+
+    [SerializeField] private BulletDataSO bulletData;
+    private float moveSpeed;
+    private int damage;
+    private float hitDistance;
+
+    private void Awake()
+    {
+        if (bulletData == null)
+        {
+            Debug.LogError($"Bullet: 未指定 BulletDataSO（{gameObject.name}）", this);
+            enabled = false;
+            return;
+        }
+
+        moveSpeed = bulletData.MoveSpeed;
+        damage = bulletData.Damage;
+        hitDistance = bulletData.HitDistance;
+    }
+
     private void Start()
     {
-        
-        Destroy(gameObject, lifeTime);
+        if (bulletData == null) return;
+        Destroy(gameObject, bulletData.LifeTime);
     }
+
     private void Update()
     {
         Attack();
     }
+
     public void Attack()
     {
-        transform.position += (Vector3)direction.normalized * 8 * Time.deltaTime;
+        transform.position += (Vector3)direction.normalized * moveSpeed * Time.deltaTime;
         if (!IsTargetValid())
             return;
         direction = enemy.Object.transform.position - transform.position;
-        if (direction.magnitude < 1)
+        if (direction.magnitude < hitDistance)
         {
-            enemy.TakeDamage(10);
+            enemy.TakeDamage(damage);
             Destroy(this.gameObject);
         }
     }
@@ -35,19 +58,19 @@ public class Bullet : MonoBehaviour, IWeapon
     }
     private bool IsTargetValid()
     {
-        // 1. 检查接口引用是否为空
+        // 1. ???????????????
         if (enemy == null)
             return false;
-        // 3. 使用 try-catch 安全地检查 GameObject
+        // 3. ??? try-catch ??????? GameObject
         try
         {
-            // 尝试访问 transform 来验证 GameObject 是否仍然存在
+            // ??????? transform ????? GameObject ??????????
             var temp = enemy.Object.transform.position;
             return true;
         }
         catch
         {
-            // 如果抛出异常，说明对象已被销毁
+            // ????????????????????????
             return false;
         }
     }
