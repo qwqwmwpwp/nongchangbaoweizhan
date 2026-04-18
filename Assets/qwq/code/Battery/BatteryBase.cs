@@ -7,6 +7,14 @@ public class BatteryBase : MonoBehaviour
 {
     public GameObject parentObject;
     public GameObject battery;
+    SpriteRenderer sprite;
+
+
+    private void Awake()
+    {
+        sprite = GetComponent<SpriteRenderer>();
+    }
+
     private void OnMouseDown()
     {
         if (EventSystem.current.IsPointerOverGameObject())
@@ -22,13 +30,13 @@ public class BatteryBase : MonoBehaviour
         // 鼠标进入时高亮显示
         if (EventSystem.current.IsPointerOverGameObject())
             return;
-        GetComponent<Renderer>().material.color = Color.yellow; GetComponent<Renderer>().material.color = Color.yellow;
+        sprite.color = Color.yellow; 
     }
 
     private void OnMouseExit()
     {
         // 鼠标离开时恢复颜色
-        GetComponent<Renderer>().material.color = Color.white;
+       sprite.color = Color.white;
     }
 
     private void OnMouseUp()
