@@ -336,6 +336,8 @@ MonoBehaviour:
   ctx:
     bullet: {fileID: 3019595320723696993, guid: b9925f9f08d85e847ab99a1be62eef0f, type: 3}
     transform: {fileID: 0}
+    <fertilizer>k__BackingField: 100
+    <diamond>k__BackingField: 0
     obj1: {fileID: 1090416456357501851}
     attackCooling1: 1
     grow1: 5

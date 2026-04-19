@@ -9,7 +9,6 @@ public class BatteryBase : MonoBehaviour
     public GameObject battery;
     SpriteRenderer sprite;
 
-
     private void Awake()
     {
         sprite = GetComponent<SpriteRenderer>();
@@ -19,9 +18,8 @@ public class BatteryBase : MonoBehaviour
     {
         if (EventSystem.current.IsPointerOverGameObject())
             return;
-        Debug.Log($"点击了: {gameObject.name}");
-        // 处理点击逻辑
 
+        // 处理点击逻辑
         PlantGenerateC.instance.enterUI(this);
     }
 
@@ -30,23 +28,18 @@ public class BatteryBase : MonoBehaviour
         // 鼠标进入时高亮显示
         if (EventSystem.current.IsPointerOverGameObject())
             return;
-        sprite.color = Color.yellow; 
+        sprite.color = Color.yellow;
     }
 
     private void OnMouseExit()
     {
         // 鼠标离开时恢复颜色
-       sprite.color = Color.white;
+        sprite.color = Color.white;
     }
 
-    private void OnMouseUp()
-    {
-        // 鼠标抬起
-        Debug.Log("鼠标抬起");
-    }
     public bool IsGenerated()
     {
-        if (!parentObject && battery) return false;
-        else return true;
+        if (parentObject && !battery) return true;
+        return false;
     }
 }

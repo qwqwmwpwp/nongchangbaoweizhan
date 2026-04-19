@@ -8,13 +8,13 @@ public class EnergyPoolRuntime : MonoBehaviour
 {
     public static EnergyPoolRuntime Instance { get; private set; }
 
-    [SerializeField] private int maxEnergy = 100;
-    [SerializeField] private int initialEnergy;
+    [SerializeField]private int maxEnergy  = 100;  // 最大能量值
+    [SerializeField] private int initialEnergy;     // 初始能量值
 
-    private int _current;
+    [SerializeField] private int _current;  // 当前能量值
 
-    public int Current => _current;
-    public int Max => maxEnergy;
+    public int current => _current;
+    public int max => maxEnergy;
 
     private void Awake()
     {

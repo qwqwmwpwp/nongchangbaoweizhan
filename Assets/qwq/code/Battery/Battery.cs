@@ -59,6 +59,9 @@ namespace qwq
         public List<IDamageable> enemys = new();
         public Transform transform;
 
+        [field: SerializeField] public int fertilizer { get; private set; }
+        [field: SerializeField] public int diamond { get; private set; }
+
         [Header("Éú³¤ÆÚ")]
         public GameObject obj1;
         public float attackCooling1 = 1f;
@@ -84,6 +87,7 @@ namespace qwq
             GameObject newBullet = GameObject.Instantiate(bullet, transform.position, transform.localRotation);
             newBullet!.GetComponent<IWeapon>().Fire(target);
         }
+
     }
 }
 public interface IBatteryBackward

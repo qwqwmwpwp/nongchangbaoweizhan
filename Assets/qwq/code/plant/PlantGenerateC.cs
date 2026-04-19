@@ -1,3 +1,4 @@
+using qwq;
 using UnityEngine;
 
 public class PlantGenerateC : MonoBehaviour
@@ -20,7 +21,14 @@ public class PlantGenerateC : MonoBehaviour
     }
     public void PlantGenerated()
     {
-        if (!bass && !bass.IsGenerated()) return;
+        BatteryCtx ctx;
+        if (plant1.GetComponent<Battery>().ctx is BatteryCtx newCtx) ctx = newCtx;
+        else return;
+
+        bool isfertilizer = AttributeManager.Instance.SpendMoney(ctx.fertilizer,ctx.diamond);
+
+        if (isfertilizer && bass &&bass.IsGenerated()) 
         Instantiate(plant1, bass.parentObject.transform);
+
     }
 }
