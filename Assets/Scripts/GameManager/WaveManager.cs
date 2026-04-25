@@ -13,6 +13,23 @@ public class WaveDetail
     public float spawnInterval = 0.5f;
 }
 
+[System.Serializable]
+public class SpawnLaneConfig
+{
+    [Header("基础信息")]
+    public string laneId = "Lane_01";
+    public bool isEnabled = true;
+
+    [Header("生成与路径")]
+    public Transform spawnPoint;
+    public RoadNode startNode;
+
+    [Header("该出怪口波次")]
+    public List<WaveDetail> waves = new List<WaveDetail>();
+
+    public bool IsEnabled => isEnabled;
+}
+
 /// <summary>
 /// 零依赖波次管理器：
 /// 1) 负责按配置刷怪
@@ -23,21 +40,19 @@ public class WaveManager : MonoBehaviour
 {
     public static WaveManager Instance { get; private set; }
 
-    [Header("波次配置")]
-    public List<WaveDetail> waves = new List<WaveDetail>();
-    [Header("生成与路径")]
-    // 敌人出生点（位置+旋转）
-    public Transform spawnPoint;
-    // 敌人路径起点（用于 EnemyMove.StartMove）
-    public RoadNode startNode;
+    [Header("多出怪口配置")]
+    public List<SpawnLaneConfig> spawnLanes = new List<SpawnLaneConfig>();
     [Header("节奏")]
-    // 两波之间等待时间
+    // 同一出怪口两波之间等待时间
     public float timeBetweenWaves = 3f;
 
     // 当前场上存活敌人数量
     private int aliveEnemyCount = 0;
     // 关卡层面的剩余敌人数（含未出生 + 已出生存活）
     private int remainingEnemyTotal = 0;
+    private bool[] laneCompleted;
+    private bool hasAnyValidWave;
+    private bool victoryNotified;
 
     public int AliveEnemyCount => aliveEnemyCount;
     public int RemainingEnemyTotal => remainingEnemyTotal;
@@ -56,36 +71,66 @@ public class WaveManager : MonoBehaviour
     {
         // 开局先计算“本关总敌人数”，用于 UI 直接显示剩余总量
         remainingEnemyTotal = CalculateTotalEnemyCount();
-        StartCoroutine(SpawnWaveRoutine());
+        hasAnyValidWave = remainingEnemyTotal > 0;
+
+        int laneCount = spawnLanes != null ? spawnLanes.Count : 0;
+        laneCompleted = new bool[laneCount];
+
+        for (int i = 0; i < laneCount; i++)
+            StartCoroutine(SpawnLaneRoutine(i));
+
+        StartCoroutine(VictoryWatcherRoutine());
     }
 
-    private IEnumerator SpawnWaveRoutine()
+    private IEnumerator SpawnLaneRoutine(int laneIndex)
     {
-        if (spawnPoint == null)
+        SpawnLaneConfig lane = GetLane(laneIndex);
+        if (lane == null)
         {
-            Debug.LogError("WaveManager: spawnPoint 未设置。", this);
+            MarkLaneCompleted(laneIndex);
             yield break;
         }
 
-        for (int waveIndex = 0; waveIndex < waves.Count; waveIndex++)
+        if (lane.spawnPoint == null)
         {
-            // 基地已失败则不再刷怪
-            if (GameFlowManager.Instance != null && GameFlowManager.Instance.IsDefeat)
-                yield break;
+            Debug.LogError($"WaveManager: lane[{laneIndex}] spawnPoint 未设置。", this);
+            MarkLaneCompleted(laneIndex);
+            yield break;
+        }
 
-            WaveDetail wave = waves[waveIndex];
+        for (int waveIndex = 0; waveIndex < lane.waves.Count; waveIndex++)
+        {
+            if (IsDefeat())
+            {
+                MarkLaneCompleted(laneIndex);
+                yield break;
+            }
+
+            WaveDetail wave = lane.waves[waveIndex];
             if (wave == null || wave.enemyPrefab == null || wave.spawnCount <= 0)
                 continue;
 
             for (int i = 0; i < wave.spawnCount; i++)
             {
-                if (GameFlowManager.Instance != null && GameFlowManager.Instance.IsDefeat)
-                    yield break;
+                while (!lane.IsEnabled)
+                {
+                    if (IsDefeat())
+                    {
+                        MarkLaneCompleted(laneIndex);
+                        yield break;
+                    }
+                    yield return null;
+                }
 
-                // 原生 Instantiate（不使用对象池）
-                GameObject enemy = Instantiate(wave.enemyPrefab, spawnPoint.position, spawnPoint.rotation);
+                if (IsDefeat())
+                {
+                    MarkLaneCompleted(laneIndex);
+                    yield break;
+                }
+
+                GameObject enemy = Instantiate(wave.enemyPrefab, lane.spawnPoint.position, lane.spawnPoint.rotation);
                 aliveEnemyCount++;
-                InitEnemy(enemy);
+                InitEnemy(enemy, lane.startNode);
 
                 if (wave.spawnInterval > 0f)
                     yield return new WaitForSeconds(wave.spawnInterval);
@@ -93,15 +138,11 @@ public class WaveManager : MonoBehaviour
                     yield return null;
             }
 
-            yield return new WaitUntil(() => aliveEnemyCount <= 0);
-
-            if (waveIndex < waves.Count - 1 && timeBetweenWaves > 0f)
+            if (waveIndex < lane.waves.Count - 1 && timeBetweenWaves > 0f)
                 yield return new WaitForSeconds(timeBetweenWaves);
         }
 
-        // 至少配置过一波且场上已清空、未失败 → 胜利（空列表视为未开始波次，不自动胜利）
-        if (waves.Count > 0 && GameFlowManager.Instance != null && !GameFlowManager.Instance.IsDefeat)
-            GameFlowManager.Instance.NotifyVictory();
+        MarkLaneCompleted(laneIndex);
     }
 
     public void OnEnemyDied()
@@ -118,26 +159,36 @@ public class WaveManager : MonoBehaviour
 
     private int CalculateTotalEnemyCount()
     {
-        // 只统计“有效波次”：有预制体且数量 > 0
         int total = 0;
-        for (int i = 0; i < waves.Count; i++)
+        if (spawnLanes == null)
+            return total;
+
+        for (int laneIndex = 0; laneIndex < spawnLanes.Count; laneIndex++)
         {
-            WaveDetail wave = waves[i];
-            if (wave == null || wave.enemyPrefab == null || wave.spawnCount <= 0)
+            SpawnLaneConfig lane = spawnLanes[laneIndex];
+            if (lane == null || lane.waves == null)
                 continue;
-            total += wave.spawnCount;
+
+            for (int i = 0; i < lane.waves.Count; i++)
+            {
+                WaveDetail wave = lane.waves[i];
+                if (wave == null || wave.enemyPrefab == null || wave.spawnCount <= 0)
+                    continue;
+                total += wave.spawnCount;
+            }
         }
+
         return total;
     }
 
-    private void InitEnemy(GameObject enemy)
+    private void InitEnemy(GameObject enemy, RoadNode laneStartNode)
     {
         if (enemy == null) return;
 
         // 兼容当前项目的移动脚本，让新敌人出生后立即获得路径起点
         EnemyMove move = enemy.GetComponent<EnemyMove>();
-        if (move != null && startNode != null)
-            move.StartMove(startNode);
+        if (move != null && laneStartNode != null)
+            move.StartMove(laneStartNode);
 
         // 保证每个敌人都能在销毁时回调 WaveManager，避免波次卡死
         if (enemy.GetComponent<DummyEnemy>() == null)
@@ -146,6 +197,98 @@ public class WaveManager : MonoBehaviour
         // 敌人时间回溯：每只敌人都具备固定容量位置记录器
         if (enemy.GetComponent<EnemyRewindRecorder>() == null)
             enemy.AddComponent<EnemyRewindRecorder>();
+    }
+
+    public void SetSpawnLaneEnabled(int laneIndex, bool enabled)
+    {
+        SpawnLaneConfig lane = GetLane(laneIndex);
+        if (lane == null)
+            return;
+        lane.isEnabled = enabled;
+    }
+
+    public bool IsSpawnLaneEnabled(int laneIndex)
+    {
+        SpawnLaneConfig lane = GetLane(laneIndex);
+        return lane != null && lane.IsEnabled;
+    }
+
+    public void SetSpawnLaneEnabled(string laneId, bool enabled)
+    {
+        int index = FindLaneIndexById(laneId);
+        if (index >= 0)
+            SetSpawnLaneEnabled(index, enabled);
+    }
+
+    public bool IsSpawnLaneEnabled(string laneId)
+    {
+        int index = FindLaneIndexById(laneId);
+        return index >= 0 && IsSpawnLaneEnabled(index);
+    }
+
+    private IEnumerator VictoryWatcherRoutine()
+    {
+        while (!victoryNotified)
+        {
+            if (IsDefeat())
+                yield break;
+
+            if (hasAnyValidWave && AreAllLanesCompleted() && aliveEnemyCount <= 0)
+            {
+                victoryNotified = true;
+                if (GameFlowManager.Instance != null)
+                    GameFlowManager.Instance.NotifyVictory();
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
+
+    private SpawnLaneConfig GetLane(int laneIndex)
+    {
+        if (spawnLanes == null || laneIndex < 0 || laneIndex >= spawnLanes.Count)
+            return null;
+        return spawnLanes[laneIndex];
+    }
+
+    private int FindLaneIndexById(string laneId)
+    {
+        if (string.IsNullOrWhiteSpace(laneId) || spawnLanes == null)
+            return -1;
+
+        for (int i = 0; i < spawnLanes.Count; i++)
+        {
+            SpawnLaneConfig lane = spawnLanes[i];
+            if (lane != null && lane.laneId == laneId)
+                return i;
+        }
+        return -1;
+    }
+
+    private void MarkLaneCompleted(int laneIndex)
+    {
+        if (laneCompleted == null || laneIndex < 0 || laneIndex >= laneCompleted.Length)
+            return;
+        laneCompleted[laneIndex] = true;
+    }
+
+    private bool AreAllLanesCompleted()
+    {
+        if (laneCompleted == null)
+            return true;
+
+        for (int i = 0; i < laneCompleted.Length; i++)
+        {
+            if (!laneCompleted[i])
+                return false;
+        }
+        return true;
+    }
+
+    private bool IsDefeat()
+    {
+        return GameFlowManager.Instance != null && GameFlowManager.Instance.IsDefeat;
     }
 }
 
