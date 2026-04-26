@@ -1,4 +1,5 @@
 using UnityEngine;
+using qwq;
 
 /// <summary>
 /// 固定容量记录敌人历史位置，并在触发时平滑倒放到最早快照点。
@@ -33,12 +34,14 @@ public class EnemyRewindRecorder : MonoBehaviour
     private Vector3 _segmentEnd;
 
     private EnemyMove _enemyMove;
+    private Enemy _enemy;
 
     public bool IsRewinding => _isRewinding;
 
     private void Awake()
     {
         _enemyMove = GetComponent<EnemyMove>();
+        _enemy = GetComponent<Enemy>();
         EnsureBuffer();
     }
 
@@ -129,6 +132,9 @@ public class EnemyRewindRecorder : MonoBehaviour
     private void StartRewindBySeconds(float rewindSeconds, float playbackDuration)
     {
         if (_isRewinding)
+            return;
+
+        if (_enemy != null && _enemy.HasRewindResistance)
             return;
 
         if (_count <= 1)

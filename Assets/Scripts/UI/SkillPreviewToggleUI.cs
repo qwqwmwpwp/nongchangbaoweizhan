@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
+using qwq;
 
 /// <summary>
 /// 最小技能预览交互：
@@ -29,6 +31,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
     [SerializeField] private float groundHeight = 0f;
     [SerializeField] private bool use2DWorldPoint = true;
     [SerializeField] private float worldZ = 0f;
+    [SerializeField] private BuffSetSO buffSetOnCast;
 
     [Header("自动占位")]
     [SerializeField] private bool autoCreatePlaceholder = true;
@@ -38,6 +41,8 @@ public class SkillPreviewToggleUI : MonoBehaviour
     private RectTransform _canvasRect;
     private bool _isPreviewing;
     private Collider2D[] _overlapResults;
+    private readonly HashSet<Enemy> _buffAppliedEnemies = new HashSet<Enemy>();
+    private readonly HashSet<EnemyRewindRecorder> _rewindAppliedRecorders = new HashSet<EnemyRewindRecorder>();
 
     private void Awake()
     {
@@ -149,13 +154,29 @@ public class SkillPreviewToggleUI : MonoBehaviour
         if (hitCount <= 0)
             return false;
 
+        _buffAppliedEnemies.Clear();
+        _rewindAppliedRecorders.Clear();
+
         for (int i = 0; i < hitCount; i++)
         {
             Collider2D collider2D = _overlapResults[i];
             if (collider2D == null) continue;
+
+            Enemy enemy = collider2D.GetComponentInParent<Enemy>();
+            if (enemy != null && !_buffAppliedEnemies.Contains(enemy))
+            {
+                _buffAppliedEnemies.Add(enemy);
+                if (buffSetOnCast != null)
+                    enemy.ApplyBuffSet(buffSetOnCast);
+            }
+
             EnemyRewindRecorder recorder = collider2D.GetComponentInParent<EnemyRewindRecorder>();
-            if (recorder == null) continue;
-            recorder.StartRewindBySkill(finalRewindSeconds, finalPlaybackDuration);
+            if (recorder != null && !_rewindAppliedRecorders.Contains(recorder))
+            {
+                _rewindAppliedRecorders.Add(recorder);
+                recorder.StartRewindBySkill(finalRewindSeconds, finalPlaybackDuration);
+            }
+
             _overlapResults[i] = null;
 
 
