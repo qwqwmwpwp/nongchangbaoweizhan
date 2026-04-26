@@ -15,7 +15,7 @@ E:/github/unity/nongchangbaoweizhan
 -logFile
 Logs/AssetImportWorker0.log
 -srvPort
-56307
+51119
 Successfully changed project path to: E:/github/unity/nongchangbaoweizhan
 E:/github/unity/nongchangbaoweizhan
 [UnityMemory] Configuration Parameters - Can be set up in boot.config
@@ -49,15 +49,15 @@ E:/github/unity/nongchangbaoweizhan
     "memorysetup-temp-allocator-size-cloud-worker=32768"
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gfx=262144"
-Player connection [10180]  Target information:
+Player connection [6736]  Target information:
 
-Player connection [10180]  * "[IP] 172.22.224.88 [Port] 0 [Flags] 2 [Guid] 1593454971 [EditorId] 1593454971 [Version] 1048832 [Id] WindowsEditor(7,qwq) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [6736]  * "[IP] 172.22.224.88 [Port] 0 [Flags] 2 [Guid] 2973218153 [EditorId] 2973218153 [Version] 1048832 [Id] WindowsEditor(7,qwq) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [10180] Host joined multi-casting on [225.0.0.222:54997]...
-Player connection [10180] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Player connection [6736] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [6736] Host joined alternative multi-casting on [225.0.0.222:34997]...
 Input System module state changed to: Initialized.
 [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
-Refreshing native plugins compatible for Editor in 38.77 ms, found 5 plugins.
+Refreshing native plugins compatible for Editor in 45.96 ms, found 5 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Initialize engine version: 2022.3.62f3c1 (1623fc0bbb97)
 [Subsystems] Discovering subsystems at path E:/ue/2022/2022.3.62f3c1/Editor/Data/Resources/UnitySubsystems
@@ -73,49 +73,49 @@ Initialize mono
 Mono path[0] = 'E:/ue/2022/2022.3.62f3c1/Editor/Data/Managed'
 Mono path[1] = 'E:/ue/2022/2022.3.62f3c1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
 Mono config path = 'E:/ue/2022/2022.3.62f3c1/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56112
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56324
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
 Register platform support module: E:/ue/2022/2022.3.62f3c1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
 Register platform support module: E:/ue/2022/2022.3.62f3c1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
 Register platform support module: E:/ue/2022/2022.3.62f3c1/Editor/Data/PlaybackEngines/LinuxStandaloneSupport/UnityEditor.LinuxStandalone.Extensions.dll
-Registered in 0.013028 seconds.
-- Loaded All Assemblies, in  0.422 seconds
+Registered in 0.014486 seconds.
+- Loaded All Assemblies, in  0.462 seconds
 Native extension for LinuxStandalone target not found
 Native extension for WindowsStandalone target not found
 Native extension for Android target not found
-Android Extension - Scanning For ADB Devices 462 ms
+Android Extension - Scanning For ADB Devices 455 ms
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.830 seconds
-Domain Reload Profiling: 1251ms
-	BeginReloadAssembly (126ms)
+- Finished resetting the current domain, in  0.862 seconds
+Domain Reload Profiling: 1322ms
+	BeginReloadAssembly (138ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
 		CreateAndSetChildDomain (1ms)
-	RebuildCommonClasses (43ms)
-	RebuildNativeTypeToScriptingClass (11ms)
-	initialDomainReloadingComplete (69ms)
-	LoadAllAssembliesAndSetupDomain (171ms)
-		LoadAssemblies (124ms)
+	RebuildCommonClasses (45ms)
+	RebuildNativeTypeToScriptingClass (12ms)
+	initialDomainReloadingComplete (78ms)
+	LoadAllAssembliesAndSetupDomain (186ms)
+		LoadAssemblies (136ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (168ms)
-			TypeCache.Refresh (167ms)
-				TypeCache.ScanAssembly (153ms)
-			ScanForSourceGeneratedMonoScriptInfo (1ms)
+		AnalyzeDomain (182ms)
+			TypeCache.Refresh (180ms)
+				TypeCache.ScanAssembly (164ms)
+			ScanForSourceGeneratedMonoScriptInfo (0ms)
 			ResolveRequiredComponents (1ms)
-	FinalizeReload (831ms)
+	FinalizeReload (862ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (779ms)
+		SetupLoadedEditorAssemblies (804ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (562ms)
-			SetLoadedEditorAssemblies (6ms)
+			InitializePlatformSupportModulesInManaged (568ms)
+			SetLoadedEditorAssemblies (5ms)
 			RefreshPlugins (0ms)
 			BeforeProcessingInitializeOnLoad (3ms)
-			ProcessInitializeOnLoadAttributes (150ms)
-			ProcessInitializeOnLoadMethodAttributes (59ms)
+			ProcessInitializeOnLoadAttributes (166ms)
+			ProcessInitializeOnLoadMethodAttributes (62ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -124,52 +124,52 @@ Domain Reload Profiling: 1251ms
 Worker process is ready to serve import requests
 Caller must complete domain reload
 Begin MonoManager ReloadAssembly
-- Loaded All Assemblies, in  0.959 seconds
+- Loaded All Assemblies, in  1.348 seconds
 Native extension for LinuxStandalone target not found
 Native extension for WindowsStandalone target not found
 Native extension for Android target not found
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  1.030 seconds
-Domain Reload Profiling: 1985ms
-	BeginReloadAssembly (155ms)
+- Finished resetting the current domain, in  1.216 seconds
+Domain Reload Profiling: 2557ms
+	BeginReloadAssembly (257ms)
 		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (6ms)
+		DisableScriptedObjects (10ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (25ms)
-	RebuildCommonClasses (35ms)
-	RebuildNativeTypeToScriptingClass (11ms)
-	initialDomainReloadingComplete (48ms)
-	LoadAllAssembliesAndSetupDomain (706ms)
-		LoadAssemblies (435ms)
+		CreateAndSetChildDomain (47ms)
+	RebuildCommonClasses (64ms)
+	RebuildNativeTypeToScriptingClass (14ms)
+	initialDomainReloadingComplete (74ms)
+	LoadAllAssembliesAndSetupDomain (931ms)
+		LoadAssemblies (613ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (358ms)
-			TypeCache.Refresh (296ms)
-				TypeCache.ScanAssembly (273ms)
-			ScanForSourceGeneratedMonoScriptInfo (46ms)
-			ResolveRequiredComponents (14ms)
-	FinalizeReload (1030ms)
+		AnalyzeDomain (456ms)
+			TypeCache.Refresh (378ms)
+				TypeCache.ScanAssembly (350ms)
+			ScanForSourceGeneratedMonoScriptInfo (56ms)
+			ResolveRequiredComponents (19ms)
+	FinalizeReload (1217ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (794ms)
+		SetupLoadedEditorAssemblies (933ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (35ms)
-			SetLoadedEditorAssemblies (5ms)
+			InitializePlatformSupportModulesInManaged (42ms)
+			SetLoadedEditorAssemblies (8ms)
 			RefreshPlugins (0ms)
-			BeforeProcessingInitializeOnLoad (124ms)
-			ProcessInitializeOnLoadAttributes (518ms)
-			ProcessInitializeOnLoadMethodAttributes (103ms)
-			AfterProcessingInitializeOnLoad (8ms)
+			BeforeProcessingInitializeOnLoad (149ms)
+			ProcessInitializeOnLoadAttributes (609ms)
+			ProcessInitializeOnLoadMethodAttributes (116ms)
+			AfterProcessingInitializeOnLoad (9ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
-		AwakeInstancesAfterBackupRestoration (8ms)
-Launched and connected shader compiler UnityShaderCompiler.exe after 0.09 seconds
-Refreshing native plugins compatible for Editor in 15.55 ms, found 5 plugins.
+		AwakeInstancesAfterBackupRestoration (10ms)
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.08 seconds
+Refreshing native plugins compatible for Editor in 14.77 ms, found 5 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Unloading 6688 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 53 unused Assets / (419.8 KB). Loaded Objects now: 7161.
-Memory consumption went from 243.5 MB to 243.1 MB.
-Total: 12.448900 ms (FindLiveObjects: 1.419800 ms CreateObjectMapping: 0.845600 ms MarkObjects: 9.726600 ms  DeleteObjects: 0.454900 ms)
+Unloading 53 unused Assets / (420.3 KB). Loaded Objects now: 7161.
+Memory consumption went from 243.4 MB to 243.0 MB.
+Total: 11.846600 ms (FindLiveObjects: 1.221500 ms CreateObjectMapping: 0.774900 ms MarkObjects: 9.422600 ms  DeleteObjects: 0.425800 ms)
 
 AssetImportParameters requested are different than current active one (requested -> active):
   custom:container-demuxer-ogg: 62fdf1f143b41e24485cea50d1cbac27 -> 
@@ -185,66 +185,150 @@ AssetImportParameters requested are different than current active one (requested
   custom:container-demuxer-webm: 4f35f7cbe854078d1ac9338744f61a02 -> 
   custom:video-encoder-webm-vp8: eb34c28f22e8b96e1ab97ce403110664 -> 
 ========================================================================
-Received Prepare
-Caller must complete domain reload
-Begin MonoManager ReloadAssembly
-- Loaded All Assemblies, in  1.454 seconds
-Native extension for LinuxStandalone target not found
-Native extension for WindowsStandalone target not found
-Native extension for Android target not found
-Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  1.069 seconds
-Domain Reload Profiling: 2522ms
-	BeginReloadAssembly (989ms)
-		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (798ms)
-		BackupInstance (0ms)
-		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (56ms)
-	RebuildCommonClasses (51ms)
-	RebuildNativeTypeToScriptingClass (17ms)
-	initialDomainReloadingComplete (39ms)
-	LoadAllAssembliesAndSetupDomain (357ms)
-		LoadAssemblies (423ms)
-		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (26ms)
-			TypeCache.Refresh (7ms)
-				TypeCache.ScanAssembly (0ms)
-			ScanForSourceGeneratedMonoScriptInfo (0ms)
-			ResolveRequiredComponents (16ms)
-	FinalizeReload (1070ms)
-		ReleaseScriptCaches (0ms)
-		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (784ms)
-			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (32ms)
-			SetLoadedEditorAssemblies (4ms)
-			RefreshPlugins (0ms)
-			BeforeProcessingInitializeOnLoad (120ms)
-			ProcessInitializeOnLoadAttributes (522ms)
-			ProcessInitializeOnLoadMethodAttributes (98ms)
-			AfterProcessingInitializeOnLoad (7ms)
-			EditorAssembliesLoaded (1ms)
-		ExecutionOrderSort2 (0ms)
-		AwakeInstancesAfterBackupRestoration (21ms)
-Refreshing native plugins compatible for Editor in 13.88 ms, found 5 plugins.
-Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 6521 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 26 unused Assets / (389.3 KB). Loaded Objects now: 7180.
-Memory consumption went from 214.4 MB to 214.0 MB.
-Total: 10.416000 ms (FindLiveObjects: 1.415400 ms CreateObjectMapping: 1.373900 ms MarkObjects: 7.380600 ms  DeleteObjects: 0.244600 ms)
-
-Prepare: number of updated asset objects reloaded= 0
-AssetImportParameters requested are different than current active one (requested -> active):
-  custom:container-demuxer-ogg: 62fdf1f143b41e24485cea50d1cbac27 -> 
-  custom:framework-win-MediaFoundation: 216162199b28c13a410421893ffa2e32 -> 
-  custom:container-muxer-webm: aa71ff27fc2769a1b78a27578f13a17b -> 
-  custom:video-decoder-webm-vp8: 9c59270c3fd7afecdb556c50c9e8de78 -> 
-  custom:SearchIndexIgnoredProperties: e643bd26f0fe6173181afceb89e7c659 -> 
-  custom:AudioImporter_EditorPlatform: d09bf68614088b80899f8185d706f6e7 -> 
-  custom:audio-decoder-ogg-vorbis: bf7c407c2cedff20999df2af8eb42d56 -> 
-  custom:audio-encoder-webm-vorbis: bf7c407c2cedff20999df2af8eb42d56 -> 
-  custom:video-decoder-ogg-theora: a1e56fd34408186e4bbccfd4996cb3dc -> 
-  custom:CustomObjectIndexerAttribute: 72b91833f83ae208fae7752999fa3104 -> 
-  custom:container-demuxer-webm: 4f35f7cbe854078d1ac9338744f61a02 -> 
-  custom:video-encoder-webm-vp8: eb34c28f22e8b96e1ab97ce403110664 -> 
+Received Import Request.
+  Time since last request: 70956.517314 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776691466266.png
+  artifactKey: Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776691466266.png using Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: 'bd7d129e8c5205e218047db2cc448970') in 0.176170 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 3
+========================================================================
+Received Import Request.
+  Time since last request: 0.000032 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）
+  artifactKey: Guid(0c8fa1cfbcb45704fa80d5387b5cbf00) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD） using Guid(0c8fa1cfbcb45704fa80d5387b5cbf00) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: '8cbd5a17f644e69f71d2232a1a012bfb') in 0.000674 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 0
+========================================================================
+Received Import Request.
+  Time since last request: 0.000038 seconds.
+  path: Assets/qwq/美术内容
+  artifactKey: Guid(81391d74642aba64bbf9aa0deb841b88) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容 using Guid(81391d74642aba64bbf9aa0deb841b88) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: '953030585468a6844141d88e95d172b1') in 0.000715 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 0
+========================================================================
+Received Import Request.
+  Time since last request: 0.000072 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776674650767.png
+  artifactKey: Guid(7f6904e450518544db998e8d4a63aaa0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776674650767.png using Guid(7f6904e450518544db998e8d4a63aaa0) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: 'b14f28c684b8ade3134a649f055f6336') in 0.010308 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 3
+========================================================================
+Received Import Request.
+  Time since last request: 16.736900 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776691466266.png
+  artifactKey: Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776691466266.png using Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: 'ad5ea38eddb95eaab5c9d6cb11df4a3e') in 0.011299 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 3
+========================================================================
+Received Import Request.
+  Time since last request: 113.985315 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776691466266.png
+  artifactKey: Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776691466266.png using Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: '430934972fe94becae0b1796439e28df') in 0.010895 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 3
+========================================================================
+Received Import Request.
+  Time since last request: 52.218760 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776691466266.png
+  artifactKey: Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776691466266.png using Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: 'e9f72c19ce5eff01d85b389564e846b8') in 0.010598 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 3
+========================================================================
+Received Import Request.
+  Time since last request: 11.255633 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776691466266.png
+  artifactKey: Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776691466266.png using Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: '5b3d9b6ba92481ce1ad3c240025075b2') in 0.009575 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 3
+========================================================================
+Received Import Request.
+  Time since last request: 219.880998 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776691466266.png
+  artifactKey: Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776691466266.png using Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: '72efd1861e110afdb87e5327c5f92685') in 0.029405 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 2
+========================================================================
+Received Import Request.
+  Time since last request: 35.534100 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776691466266.png
+  artifactKey: Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776691466266.png using Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: 'a1136c88e82ec7ef8772d1f705922167') in 0.022082 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 4
+========================================================================
+Received Import Request.
+  Time since last request: 22.748559 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776691466266.png
+  artifactKey: Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776691466266.png using Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: 'b1833d10d7dfa1ccef1468b29569674d') in 0.013382 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 3
+========================================================================
+Received Import Request.
+  Time since last request: 197.750327 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776691466266.png
+  artifactKey: Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776691466266.png using Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: '819d943e919b9506e824367f8b6737d4') in 0.016941 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 3
+========================================================================
+Received Import Request.
+  Time since last request: 19.213227 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776691466266.png
+  artifactKey: Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776691466266.png using Guid(4adce255430c07f48a1e44911a4f3830) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: '84b0d354bf8528bbe7c25703d1d2746a') in 0.195870 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 60
+========================================================================
+Received Import Request.
+  Time since last request: 46.584407 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776674650767.png
+  artifactKey: Guid(7f6904e450518544db998e8d4a63aaa0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776674650767.png using Guid(7f6904e450518544db998e8d4a63aaa0) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: '070fe47acaea302893018932e94397a8') in 0.009678 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 2
+========================================================================
+Received Import Request.
+  Time since last request: 18.772946 seconds.
+  path: Assets/qwq/美术内容/地砖（XD）/1776674650767.png
+  artifactKey: Guid(7f6904e450518544db998e8d4a63aaa0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/qwq/美术内容/地砖（XD）/1776674650767.png using Guid(7f6904e450518544db998e8d4a63aaa0) Importer(815301076,1909f56bfc062723c751e8b465ee728b) [PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 16 workers.
+ -> (artifact id: '8f7d5f140bc16a6689c9512536d977ad') in 0.009396 seconds
+Number of updated asset objects reloaded before import = 0
+Number of asset objects unloaded after import = 2
