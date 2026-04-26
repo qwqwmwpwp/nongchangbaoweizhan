@@ -37,6 +37,7 @@ public class PlantGenerateC : MonoBehaviour
         RaycastHit2D[] hits = Physics2D.RaycastAll(mousePos, direction, rayLength, targetLayer);
 
         // 检测到碰撞
+            Debug.Log("qwq");
         foreach (RaycastHit2D hit in hits)
         {
             if(hit.collider.GetComponent<BatteryBase>() is BatteryBase bass)
@@ -48,13 +49,6 @@ public class PlantGenerateC : MonoBehaviour
         }
     }
 
-    // 在Scene视图绘制射线（仅编辑模式下可见）
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = rayColor;  // 设置射线颜色
-        // 绘制射线：从物体位置向右方向绘制
-        Gizmos.DrawRay(transform.position, transform.right * rayLength);
-    }
 
     public void enterUI(BatteryBase bass)
     {
