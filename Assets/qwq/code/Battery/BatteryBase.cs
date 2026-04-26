@@ -14,20 +14,20 @@ public class BatteryBase : MonoBehaviour
         sprite = GetComponent<SpriteRenderer>();
     }
 
-    private void OnMouseDown()
-    {
-        if (EventSystem.current.IsPointerOverGameObject())
-            return;
+    //private void OnMouseDown()
+    //{
+    //    if (EventSystem.current.IsPointerOverGameObject())
+    //        return;
 
-        // 处理点击逻辑
-        PlantGenerateC.instance.enterUI(this);
-    }
+    //    // 处理点击逻辑
+    //    PlantGenerateC.instance.enterUI(this);
+    //}
 
     private void OnMouseEnter()
     {
         // 鼠标进入时高亮显示
-        if (EventSystem.current.IsPointerOverGameObject())
-            return;
+        //if (EventSystem.current.IsPointerOverGameObject())
+        //    return;
         sprite.color = Color.yellow;
     }
 

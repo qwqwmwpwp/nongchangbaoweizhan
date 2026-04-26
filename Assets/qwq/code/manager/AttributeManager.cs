@@ -21,6 +21,7 @@ public class AttributeManager : MonoBehaviour
         {
             Instance = this;
         }
+        Debug.Log("qwq");
     }
 
     private void Start()

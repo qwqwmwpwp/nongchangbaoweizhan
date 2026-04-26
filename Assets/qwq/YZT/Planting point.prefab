@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4669502214001592862}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Planting point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -44,7 +44,7 @@ GameObject:
   - component: {fileID: 774551294662137057}
   - component: {fileID: 8394452557192274197}
   - component: {fileID: 8577578906105506893}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: base
   m_TagString: Untagged
   m_Icon: {fileID: 0}
