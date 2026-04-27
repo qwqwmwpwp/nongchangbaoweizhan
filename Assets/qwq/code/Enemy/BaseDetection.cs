@@ -11,8 +11,8 @@ namespace Detection
         {
             IDamageable playerBase = collision.GetComponent<IDamageable>();
             if (playerBase == null) return;
-            Debug.Log("qwq");
-            playerBase.TakeDamage(enemy.Attack());
+
+            playerBase.TakeDamage(enemy.AttackBase());
         }
     }
 }

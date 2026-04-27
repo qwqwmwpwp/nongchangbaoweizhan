@@ -23,7 +23,7 @@ public class EnergyBarUI : MonoBehaviour
         GameEvent.EnergyChanged += OnEnergyChanged;
 
         if (EnergyPoolRuntime.Instance != null)
-            Apply(EnergyPoolRuntime.Instance.Current, EnergyPoolRuntime.Instance.Max);
+            Apply(EnergyPoolRuntime.Instance.current, EnergyPoolRuntime.Instance.max);
     }
 
     private void OnDisable()

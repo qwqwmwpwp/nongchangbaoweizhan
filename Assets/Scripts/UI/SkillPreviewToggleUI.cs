@@ -20,11 +20,13 @@ public class SkillPreviewToggleUI : MonoBehaviour
     [SerializeField] private int placeMouseButton = 0;
 
     [Header("倒放技能")]
-    [SerializeField] private int energyCost = 20;
-    [SerializeField] private float rewindRadius = 4f;
-    [SerializeField] private float rewindSeconds = 3f;
-    [SerializeField] private float playbackDuration = 0.4f;
-    [SerializeField] private LayerMask enemyLayer = ~0;
+    [SerializeField] private int energyCost = 20;  // 能量消耗
+    [SerializeField] private float rewindRadius = 4f;  // 技能作用半径
+    [SerializeField] private float rewindSeconds = 3f;  // 倒流的时间长度
+    [SerializeField] private float playbackDuration = 0.4f;  // 倒流动画时长
+    [SerializeField] private LayerMask enemyLayer = ~0;  // 检测的层级
+    [SerializeField] private LayerMask BatteryLayer = ~0;  // 检测的层级
+
     [SerializeField] private int maxOverlapResults = 64;
     [SerializeField] private float groundHeight = 0f;
     [SerializeField] private bool use2DWorldPoint = true;
@@ -176,6 +178,20 @@ public class SkillPreviewToggleUI : MonoBehaviour
             }
 
             _overlapResults[i] = null;
+
+
+
+
+        }
+
+        int batteryHitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, BatteryLayer);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            if (_overlapResults[i].GetComponent<IBatteryBackward>() is IBatteryBackward batteryBackward)
+            {
+                batteryBackward.Backward();
+            }
         }
 
         return true;

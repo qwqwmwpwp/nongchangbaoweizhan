@@ -58,6 +58,19 @@ public class Bullet : MonoBehaviour, IWeapon
     }
     private bool IsTargetValid()
     {
+        //if (enemy == null)
+        //    return false;
+
+        //// Unity 的特殊判空检查
+        //if (enemy.Object == null)
+        //    return false;
+
+        //// 或者使用 System.Object.ReferenceEquals
+        //if (System.Object.ReferenceEquals(enemy.Object, null))
+        //    return false;
+
+        //return enemy.Object.activeInHierarchy;  // 确保对象是激活的
+
         // 1. ???????????????
         if (enemy == null)
             return false;

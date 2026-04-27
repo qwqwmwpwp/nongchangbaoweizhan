@@ -20,7 +20,6 @@ public class PlantGenerateM : MonoBehaviour
     }
     public void enterUI(Vector2 position)
     {
-        Debug.Log(position);
         PlantGenerateUI.SetActive(true);
         RectTransform rectTransform = PlantGenerateUI.GetComponent<RectTransform>();
         Vector3 screenPosition = Camera.main.WorldToScreenPoint(position);

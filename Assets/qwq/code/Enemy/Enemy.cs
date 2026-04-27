@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace qwq
 {
-    // ����ű�ֻ�������ԡ��ܻ���������UI���ƶ�����߼������ȥ��
+    // 这个脚本只处理敌人属性、血量和死亡逻辑，不包含移动、UI控制等
     public class Enemy : MonoBehaviour, IDamageable
     {
         public GameObject Object => gameObject;
 
-        [Header("����")]
+        [Header("数据")]
         [SerializeField] private EnemyDataSO enemyData;
 
         private int hp;
@@ -42,7 +42,7 @@ namespace qwq
         {
             if (enemyData == null)
             {
-                Debug.LogError($"Enemy: δָ�� EnemyDataSO��{gameObject.name}��", this);
+                Debug.LogError($"Enemy: 未指定 EnemyDataSO（{gameObject.name}）", this);
                 return;
             }
 
@@ -87,13 +87,13 @@ namespace qwq
             }
         }
 
-        public int Attack()
+        public int AttackBase()
         {
             Death();
             return finalAttack;
         }
 
-        /// <summary>������·���ߵ��յ㣨����һ�ڵ㣩ʱ���Ի�����ɵ��˺�����������������</summary>
+        /// <summary>当敌人走到终点（最后一个节点）时对基地造成的伤害，返回攻击力</summary>
         public int GetLeakDamage()
         {
             if (enemyData == null)
@@ -180,7 +180,7 @@ namespace qwq
             Destroy(gameObject);
         }
 
-        /// <summary>被伤害击杀：发资源事件后销毁；与撞基地 <see cref="Attack"/> 的单纯销毁区分。</summary>
+        /// <summary>被伤害击杀：发资源事件后销毁；与撞基地 <see cref="AttackBase"/> 的单纯销毁区分。</summary>
         private void DieFromCombat()
         {
             if (enemyData != null)
