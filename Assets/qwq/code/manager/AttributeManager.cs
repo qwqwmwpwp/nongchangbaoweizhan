@@ -21,16 +21,15 @@ public class AttributeManager : MonoBehaviour
         {
             Instance = this;
         }
-        Debug.Log("qwq");
+
     }
 
     private void Start()
     {
         MoneyC.Instance.MoneyUI();
     }
-    public bool SpendMoney(int fertilizer,int diamond)
+    public bool SpendMoney(int fertilizer, int diamond)
     {
-
         if (attribute.fertilizer >= fertilizer && attribute.diamond >= diamond)
         {
             attribute.fertilizer -= fertilizer;

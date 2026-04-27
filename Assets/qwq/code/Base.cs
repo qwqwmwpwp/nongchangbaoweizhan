@@ -21,6 +21,7 @@ public class Base : MonoBehaviour, IDamageable
         }
 
         hp = baseData.MaxHealth;
+        hp = 20;
     }
 
     public void TakeDamage(int amount)

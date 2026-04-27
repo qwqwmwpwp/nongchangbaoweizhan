@@ -77,11 +77,11 @@ public class GameFlowManager : MonoBehaviour
 
     private void EnterDefeat()
     {
-        if (isDefeat)
-            return;
+        if (isDefeat)return;
 
-        isDefeat = true;
+        isDefeat = true; 
         Debug.Log("游戏失败：基地被摧毁。");
+
 
         if (GameOverC.instance != null)
             GameOverC.instance.ShowDefeat();
