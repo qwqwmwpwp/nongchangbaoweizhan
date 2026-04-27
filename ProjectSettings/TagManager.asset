@@ -42,3 +42,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Tilemap
+    uniqueID: 2242999397
+    locked: 0
+  - name: Unit
+    uniqueID: 1282934009
+    locked: 0
+  - name: Architecture
+    uniqueID: 858450979
+    locked: 0

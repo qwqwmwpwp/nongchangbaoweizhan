@@ -150,6 +150,19 @@ public class SkillPreviewToggleUI : MonoBehaviour
         float radius = Mathf.Max(0.1f, rewindRadius);
         float finalRewindSeconds = Mathf.Max(0.1f, rewindSeconds);
         float finalPlaybackDuration = Mathf.Max(0.05f, playbackDuration);
+
+        int batteryHitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, BatteryLayer);
+
+        for (int i = 0; i < batteryHitCount; i++)
+        {
+            if (_overlapResults[i].GetComponent<IBatteryBackward>() is IBatteryBackward batteryBackward)
+            {
+
+                batteryBackward.Backward(3f);
+            }
+        }
+
+
         int hitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, enemyLayer);
         if (hitCount <= 0)
             return false;
@@ -184,16 +197,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
 
         }
 
-        int batteryHitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, BatteryLayer);
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            if (_overlapResults[i].GetComponent<IBatteryBackward>() is IBatteryBackward batteryBackward)
-            {
-                batteryBackward.Backward();
-            }
-        }
-
+     
         return true;
     }
 
