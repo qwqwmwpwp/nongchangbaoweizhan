@@ -45,7 +45,7 @@ public class Bullet : MonoBehaviour, IWeapon
         transform.position += (Vector3)direction.normalized * moveSpeed * Time.deltaTime;
         if (!IsTargetValid())
             return;
-        direction = enemy.Object.transform.position - transform.position;
+        direction = enemy.obj.transform.position - transform.position;
         if (direction.magnitude < hitDistance)
         {
             enemy.TakeDamage(damage);
@@ -78,7 +78,7 @@ public class Bullet : MonoBehaviour, IWeapon
         try
         {
             // ??????? transform ????? GameObject ??????????
-            var temp = enemy.Object.transform.position;
+            var temp = enemy.obj.transform.position;
             return true;
         }
         catch

@@ -7,15 +7,13 @@ using UnityEngine;
 public class Bamboo : Plants
 {
     public BambooCtx ctx;
+    public override PlantsCtx plantsCtx => ctx;
+
     protected override void Awake()
     {
         ctx.transform = transform;
         root = new BambooRoot(null, ctx);
         base.Awake();
-    }
-    public override PlantsCtx GetCTX()
-    {
-        return ctx;
     }
 
 }
@@ -35,16 +33,20 @@ public class BambooCtx : PlantsCtx
 
     public bool isBackward;
     public float Backward_t = 0;
+
+    public List<GameObject> soldier;
+
 }
 
+namespace HSM{
 
 public class BambooRoot : State
 {
-public    BambooState1 state1;
-public    BambooState2 state2;
-public    BambooState3 state3;
+    public BambooState1 state1;
+    public BambooState2 state2;
+    public BambooState3 state3;
 
-    public BambooRoot(StateMachine m,BambooCtx ctx) : base(m, null)
+    public BambooRoot(StateMachine m, BambooCtx ctx) : base(m, null)
     {
         state1 = new BambooState1(m, this, ctx);
         state2 = new BambooState2(m, this, ctx);
@@ -53,7 +55,7 @@ public    BambooState3 state3;
     protected override State GetInitialState() => state1;
 
     protected override State GetTransition() => null;
-    
+
 }
 
 public class BambooState1 : State
@@ -107,22 +109,23 @@ public class BambooState2 : State
     }
 }
 
-public class BambooState3 : State
-{
-    BambooCtx Ctx;
+    public class BambooState3 : State
+    {
+        BambooCtx Ctx;
 
-    public BambooState3(StateMachine machine, State parent, BambooCtx ctx) : base(machine, parent)
-    {
-        Ctx = ctx;
-    }
-    protected override State GetTransition()
-    {
-        if (Ctx.isBackward)
+        public BambooState3(StateMachine machine, State parent, BambooCtx ctx) : base(machine, parent)
         {
-            Ctx.isBackward = false;
-            return ((BambooRoot)Parent).state2;
+            Ctx = ctx;
         }
+        protected override State GetTransition()
+        {
+            if (Ctx.isBackward)
+            {
+                Ctx.isBackward = false;
+                return ((BambooRoot)Parent).state2;
+            }
 
-        return null;
+            return null;
+        }
     }
 }

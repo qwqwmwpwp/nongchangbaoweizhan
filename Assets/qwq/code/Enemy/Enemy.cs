@@ -6,7 +6,7 @@ namespace qwq
     // 这个脚本只处理敌人属性、血量和死亡逻辑，不包含移动、UI控制等
     public class Enemy : MonoBehaviour, IDamageable
     {
-        public GameObject Object => gameObject;
+        public GameObject obj => gameObject;
 
         [Header("数据")]
         [SerializeField] private EnemyDataSO enemyData;
