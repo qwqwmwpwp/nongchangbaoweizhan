@@ -52,6 +52,9 @@ public class SceneLoadManager : MonoBehaviour
 
     private IEnumerator LoadSceneRoutine(string sceneName)
     {
+        // 结算等可能将 timeScale 置 0；加载前恢复，避免异步加载与协程等待异常
+        Time.timeScale = 1f;
+
         if (fadeCanvasGroup == null)
         {
             Debug.LogError("SceneLoadManager: 未指定 Fade Canvas Group。", this);

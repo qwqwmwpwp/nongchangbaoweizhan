@@ -26,10 +26,22 @@ namespace qwq
         private int killResource3;
         private EnemyBuffController buffController;
         private EnemyMove cachedMove;
+        private EnemyStateController stateController;
+        private EnemyFriendlyDetector friendlyDetector;
+
+        [Header("行为状态机")]
+        [Tooltip("友军进入此半径（与敌人身上第一个 Trigger 圆形碰撞体同步）时会被追击索敌。")]
+        [SerializeField] private float chaseDetectRadius = 2.5f;
+        [Tooltip("为 0：追击时不会自动切入「战斗」状态。大于 0：与当前追击友军距离 ≤ 该值时切入 Battle（战斗逻辑可后续在 EnemyBattleState 中实现）。")]
+        [SerializeField] private float battleEnterDistance = 0f;
+        [Tooltip("在 Scene 中绘制追击检测圆与战斗距离圆（与 Inspector 数值同步）。")]
+        [SerializeField] private bool drawBehaviorGizmos = true;
 
         public EnemyAttackType AttackType => attackType;
         public float AttackRange => attackRange;
         public float AttackSpeed => attackSpeed;
+        public int MoveSpeed => Mathf.Max(1, finalMoveSpeed > 0 ? finalMoveSpeed : baseMoveSpeed);
+        public float BattleEnterDistance => Mathf.Max(0f, battleEnterDistance);
         public int KillResource1 => killResource1;
         public int KillResource2 => killResource2;
         public int KillResource3 => killResource3;
@@ -68,6 +80,36 @@ namespace qwq
             if (enemyHealthUI != null)
             {
                 enemyHealthUI.PlayerHealthChange(hp, finalHpMax);
+            }
+
+            EnsureBehaviorComponents();
+            stateController?.StartStateMachine();
+        }
+
+        private void Update()
+        {
+            stateController?.Tick(Time.deltaTime);
+        }
+
+        private void OnValidate()
+        {
+            ApplyChaseDetectRadiusToCollider();
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (!drawBehaviorGizmos)
+                return;
+
+            float chaseR = Mathf.Max(0.05f, chaseDetectRadius);
+            Gizmos.color = new Color(1f, 0.35f, 0.35f, 0.55f);
+            Gizmos.DrawWireSphere(transform.position, chaseR);
+
+            float battleR = Mathf.Max(0f, battleEnterDistance);
+            if (battleR > 0.001f)
+            {
+                Gizmos.color = new Color(1f, 0.85f, 0.15f, 0.65f);
+                Gizmos.DrawWireSphere(transform.position, battleR);
             }
         }
 
@@ -167,6 +209,61 @@ namespace qwq
                 cachedMove = GetComponent<EnemyMove>();
             if (cachedMove != null)
                 cachedMove.speed = finalMoveSpeed;
+        }
+
+        private void EnsureBehaviorComponents()
+        {
+            if (cachedMove == null)
+                cachedMove = GetComponent<EnemyMove>();
+            if (cachedMove == null)
+                cachedMove = gameObject.AddComponent<EnemyMove>();
+
+            if (friendlyDetector == null)
+                friendlyDetector = GetComponent<EnemyFriendlyDetector>();
+            if (friendlyDetector == null)
+                friendlyDetector = gameObject.AddComponent<EnemyFriendlyDetector>();
+
+            EnsureFriendlyTriggerCollider();
+
+            if (stateController == null)
+                stateController = GetComponent<EnemyStateController>();
+            if (stateController == null)
+                stateController = gameObject.AddComponent<EnemyStateController>();
+
+            cachedMove.SetStateMachineDriven(true);
+            stateController.Bind(this, cachedMove, friendlyDetector);
+        }
+
+        /// <summary>将 Inspector 中的追击半径同步到已有 Trigger 圆碰撞体（允许缩小）；无则仅在 Ensure 时创建。</summary>
+        private void ApplyChaseDetectRadiusToCollider()
+        {
+            CircleCollider2D[] circles = GetComponents<CircleCollider2D>();
+            for (int i = 0; i < circles.Length; i++)
+            {
+                CircleCollider2D col = circles[i];
+                if (col != null && col.isTrigger)
+                {
+                    col.radius = Mathf.Max(0.1f, chaseDetectRadius);
+                    return;
+                }
+            }
+        }
+
+        private void EnsureFriendlyTriggerCollider()
+        {
+            ApplyChaseDetectRadiusToCollider();
+
+            CircleCollider2D[] circles = GetComponents<CircleCollider2D>();
+            for (int i = 0; i < circles.Length; i++)
+            {
+                CircleCollider2D col = circles[i];
+                if (col != null && col.isTrigger)
+                    return;
+            }
+
+            CircleCollider2D triggerCol = gameObject.AddComponent<CircleCollider2D>();
+            triggerCol.isTrigger = true;
+            triggerCol.radius = Mathf.Max(0.1f, chaseDetectRadius);
         }
 
         private void RefreshHpUI()

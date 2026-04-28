@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 [System.Serializable]
@@ -27,6 +28,9 @@ public class SpawnLaneConfig
     [Header("该出怪口波次")]
     public List<WaveDetail> waves = new List<WaveDetail>();
 
+    [Tooltip("隐藏/辅助出兵口：该道出怪不计入关卡总敌人数、场上存活数与死亡回调，不影响胜利判定；波次仍会按表生成。与 isEnabled 独立。")]
+    public bool excludeFromWaveTotals;
+
     public bool IsEnabled => isEnabled;
 }
 
@@ -51,11 +55,42 @@ public class WaveManager : MonoBehaviour
     // 关卡层面的剩余敌人数（含未出生 + 已出生存活）
     private int remainingEnemyTotal = 0;
     private bool[] laneCompleted;
-    private bool hasAnyValidWave;
     private bool victoryNotified;
+    private int debugLogThrottleFrame;
 
     public int AliveEnemyCount => aliveEnemyCount;
     public int RemainingEnemyTotal => remainingEnemyTotal;
+
+    [System.Serializable]
+    private class DebugLogPayload
+    {
+        public string sessionId;
+        public string runId;
+        public string hypothesisId;
+        public string location;
+        public string message;
+        public string data;
+        public long timestamp;
+    }
+
+    private void AgentLog(string runId, string hypothesisId, string location, string message, string data)
+    {
+        // #region agent log
+        var payload = new DebugLogPayload
+        {
+            sessionId = "46034e",
+            runId = runId,
+            hypothesisId = hypothesisId,
+            location = location,
+            message = message,
+            data = data,
+            timestamp = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        };
+        string line = JsonUtility.ToJson(payload) + "\n";
+        string logPath = Path.Combine(Directory.GetCurrentDirectory(), "debug-46034e.log");
+        File.AppendAllText(logPath, line);
+        // #endregion
+    }
 
     private void Awake()
     {
@@ -69,9 +104,8 @@ public class WaveManager : MonoBehaviour
 
     private void Start()
     {
-        // 开局先计算“本关总敌人数”，用于 UI 直接显示剩余总量
+        // 开局先计算“本关总敌人数”（不含 excludeFromWaveTotals 出兵口），用于 UI 直接显示剩余总量
         remainingEnemyTotal = CalculateTotalEnemyCount();
-        hasAnyValidWave = remainingEnemyTotal > 0;
 
         int laneCount = spawnLanes != null ? spawnLanes.Count : 0;
         laneCompleted = new bool[laneCount];
@@ -80,6 +114,12 @@ public class WaveManager : MonoBehaviour
             StartCoroutine(SpawnLaneRoutine(i));
 
         StartCoroutine(VictoryWatcherRoutine());
+        AgentLog(
+            "pre-fix",
+            "H1",
+            "WaveManager.cs:Start",
+            "wave manager initialized",
+            $"laneCount={laneCount}, remainingTotal={remainingEnemyTotal}, alive={aliveEnemyCount}");
     }
 
     private IEnumerator SpawnLaneRoutine(int laneIndex)
@@ -97,6 +137,8 @@ public class WaveManager : MonoBehaviour
             MarkLaneCompleted(laneIndex);
             yield break;
         }
+
+        bool excludeFromTotals = lane.excludeFromWaveTotals;
 
         for (int waveIndex = 0; waveIndex < lane.waves.Count; waveIndex++)
         {
@@ -129,8 +171,9 @@ public class WaveManager : MonoBehaviour
                 }
 
                 GameObject enemy = Instantiate(wave.enemyPrefab, lane.spawnPoint.position, lane.spawnPoint.rotation);
-                aliveEnemyCount++;
-                InitEnemy(enemy, lane.startNode);
+                if (!excludeFromTotals)
+                    aliveEnemyCount++;
+                InitEnemy(enemy, lane.startNode, excludeFromTotals);
 
                 if (wave.spawnInterval > 0f)
                     yield return new WaitForSeconds(wave.spawnInterval);
@@ -148,6 +191,8 @@ public class WaveManager : MonoBehaviour
     public void OnEnemyDied()
     {
         // 这个方法由 DummyEnemy.OnDestroy 触发：敌人死亡或到达终点被销毁都会进入这里
+        int beforeAlive = aliveEnemyCount;
+        int beforeRemain = remainingEnemyTotal;
         aliveEnemyCount--;
         if (aliveEnemyCount < 0)
             aliveEnemyCount = 0;
@@ -155,6 +200,12 @@ public class WaveManager : MonoBehaviour
         remainingEnemyTotal--;
         if (remainingEnemyTotal < 0)
             remainingEnemyTotal = 0;
+        AgentLog(
+            "pre-fix",
+            "H2",
+            "WaveManager.cs:OnEnemyDied",
+            "enemy destroyed callback",
+            $"beforeAlive={beforeAlive}, afterAlive={aliveEnemyCount}, beforeRemain={beforeRemain}, afterRemain={remainingEnemyTotal}");
     }
 
     private int CalculateTotalEnemyCount()
@@ -166,7 +217,7 @@ public class WaveManager : MonoBehaviour
         for (int laneIndex = 0; laneIndex < spawnLanes.Count; laneIndex++)
         {
             SpawnLaneConfig lane = spawnLanes[laneIndex];
-            if (lane == null || lane.waves == null)
+            if (lane == null || lane.waves == null || lane.excludeFromWaveTotals)
                 continue;
 
             for (int i = 0; i < lane.waves.Count; i++)
@@ -181,7 +232,7 @@ public class WaveManager : MonoBehaviour
         return total;
     }
 
-    private void InitEnemy(GameObject enemy, RoadNode laneStartNode)
+    private void InitEnemy(GameObject enemy, RoadNode laneStartNode, bool suppressWaveCount)
     {
         if (enemy == null) return;
 
@@ -190,9 +241,10 @@ public class WaveManager : MonoBehaviour
         if (move != null && laneStartNode != null)
             move.StartMove(laneStartNode);
 
-        // 保证每个敌人都能在销毁时回调 WaveManager，避免波次卡死
-        if (enemy.GetComponent<DummyEnemy>() == null)
-            enemy.AddComponent<DummyEnemy>();
+        DummyEnemy dummy = enemy.GetComponent<DummyEnemy>();
+        if (dummy == null)
+            dummy = enemy.AddComponent<DummyEnemy>();
+        dummy.SuppressWaveCountCallbacks = suppressWaveCount;
 
         // 敌人时间回溯：每只敌人都具备固定容量位置记录器
         if (enemy.GetComponent<EnemyRewindRecorder>() == null)
@@ -231,14 +283,40 @@ public class WaveManager : MonoBehaviour
         while (!victoryNotified)
         {
             if (IsDefeat())
+            {
+                AgentLog(
+                    "pre-fix",
+                    "H3",
+                    "WaveManager.cs:VictoryWatcherRoutine",
+                    "victory watcher stopped by defeat",
+                    $"alive={aliveEnemyCount}, remain={remainingEnemyTotal}, allLanesDone={AreAllLanesCompleted()}");
                 yield break;
+            }
 
-            if (hasAnyValidWave && AreAllLanesCompleted() && aliveEnemyCount <= 0)
+            // 全部出怪协程结束且场上无“计数”敌人；含仅隐藏出兵口（无计数）关卡也可胜利
+            if (AreAllLanesCompleted() && aliveEnemyCount <= 0)
             {
                 victoryNotified = true;
+                AgentLog(
+                    "pre-fix",
+                    "H4",
+                    "WaveManager.cs:VictoryWatcherRoutine",
+                    "victory conditions met",
+                    $"alive={aliveEnemyCount}, remain={remainingEnemyTotal}, allLanesDone={AreAllLanesCompleted()}");
                 if (GameFlowManager.Instance != null)
                     GameFlowManager.Instance.NotifyVictory();
                 yield break;
+            }
+
+            if (Time.frameCount - debugLogThrottleFrame > 300)
+            {
+                AgentLog(
+                    "pre-fix",
+                    "H5",
+                    "WaveManager.cs:VictoryWatcherRoutine",
+                    "waiting victory",
+                    $"alive={aliveEnemyCount}, remain={remainingEnemyTotal}, allLanesDone={AreAllLanesCompleted()}, defeat={IsDefeat()}");
+                debugLogThrottleFrame = Time.frameCount;
             }
 
             yield return null;
@@ -275,11 +353,15 @@ public class WaveManager : MonoBehaviour
 
     private bool AreAllLanesCompleted()
     {
-        if (laneCompleted == null)
+        if (laneCompleted == null || spawnLanes == null)
             return true;
 
         for (int i = 0; i < laneCompleted.Length; i++)
         {
+            SpawnLaneConfig lane = GetLane(i);
+            // 隐藏/辅助出兵口：不参与“全路波次协程已结束”判定，避免 isEnabled 长期为 false 时协程卡在等待而永远不 MarkLaneCompleted，从而卡死胜利。
+            if (lane != null && lane.excludeFromWaveTotals)
+                continue;
             if (!laneCompleted[i])
                 return false;
         }
@@ -298,8 +380,13 @@ public class WaveManager : MonoBehaviour
 /// </summary>
 public class DummyEnemy : MonoBehaviour
 {
+    /// <summary>为 true 时销毁不通知 WaveManager（用于 excludeFromWaveTotals 出兵口）。</summary>
+    public bool SuppressWaveCountCallbacks { get; set; }
+
     private void OnDestroy()
     {
+        if (SuppressWaveCountCallbacks)
+            return;
         if (WaveManager.Instance != null)
             WaveManager.Instance.OnEnemyDied();
     }
