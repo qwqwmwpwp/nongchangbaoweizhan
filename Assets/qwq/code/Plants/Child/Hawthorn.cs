@@ -43,18 +43,18 @@ namespace qwq
     public class HawthornCtx : PlantsCtx
     {
         public GameObject bullet;
-        [Header("Éú³¤ÆÚ")]
+        [Header("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")]
         public GameObject obj1;
         public float attackCooling1 = 1f;
         public float grow1 = 10f;
 
-        [Header("³ÉÊìÆÚ")]
+        [Header("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")]
         public GameObject obj2;
         public float attackCooling2 = 1f;
         public int bulletQuantity2 = 3;
         public float attackInterval2 = 0.3f;
         public float grow2 = 10f;
-        [Header("Ë¥ÀÏÆÚ")]
+        [Header("Ë¥ï¿½ï¿½ï¿½ï¿½")]
         public GameObject obj3;
         public float attackCooling3 = 1.5f;
         public int bulletQuantity3 = 2;

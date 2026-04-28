@@ -9,6 +9,7 @@ public class EnemyMove : MonoBehaviour
     private RoadNode targetNode;
     Vector3 moveDirection;
     private bool isMovementPaused;
+    private bool stateMachineDriven;
     [SerializeField] private float nodeArriveDistance = 0.3f;
     public void StartMove(RoadNode startNode)
     {
@@ -16,10 +17,22 @@ public class EnemyMove : MonoBehaviour
     }
     private void Update()
     {
+        if (stateMachineDriven)
+            return;
+        TickPathMove(Time.deltaTime);
+    }
+
+    public void SetStateMachineDriven(bool driven)
+    {
+        stateMachineDriven = driven;
+    }
+
+    public void TickPathMove(float deltaTime)
+    {
         if (isMovementPaused || targetNode == null) return;
 
         moveDirection = (targetNode.transform.position - transform.position).normalized;
-        transform.Translate(moveDirection * speed * Time.deltaTime);
+        transform.Translate(moveDirection * speed * deltaTime);
 
         if (Vector3.Distance(transform.position, targetNode.transform.position) <= nodeArriveDistance)
         {

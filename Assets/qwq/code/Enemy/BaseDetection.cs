@@ -7,12 +7,19 @@ namespace Detection
     public class BaseDetection : MonoBehaviour
     {
         [SerializeField] Enemy enemy;
+        private Enemy resolvedEnemy;
+
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            IDamageable playerBase = collision.GetComponent<IDamageable>();
-            if (playerBase == null) return;
+            resolvedEnemy = enemy != null ? enemy : (GetComponent<Enemy>() ?? GetComponentInParent<Enemy>());
+            if (resolvedEnemy == null)
+                return;
 
-            playerBase.TakeDamage(enemy.AttackBase());
+            Base baseTarget = collision.GetComponent<Base>() ?? collision.GetComponentInParent<Base>();
+            if (baseTarget == null)
+                return;
+
+            baseTarget.TakeDamage(resolvedEnemy.AttackBase());
         }
     }
 }
