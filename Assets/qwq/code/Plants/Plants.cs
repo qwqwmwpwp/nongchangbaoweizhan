@@ -5,17 +5,12 @@ using UnityEngine;
 
 namespace qwq
 {
-    public class Plants : MonoBehaviour, IBatteryBackward
+    public abstract class Plants : MonoBehaviour, IBatteryBackward
     {
         protected StateMachine machine;
         protected State root;
 
-        public PlantsCtx plantsCtx => GetCTX();
-
-        public virtual PlantsCtx GetCTX()
-        {
-            return new PlantsCtx();
-        }
+        public abstract PlantsCtx plantsCtx { get; }
 
         protected virtual void Awake()
         {

@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public class Base : MonoBehaviour, IDamageable
 {
-    public GameObject Object => gameObject;
+    public GameObject obj => gameObject;
 
     [SerializeField] private BaseDataSO baseData;
     private int hp;

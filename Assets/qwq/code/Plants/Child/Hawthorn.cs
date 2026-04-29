@@ -12,6 +12,8 @@ namespace qwq
         public HawthornCtx ctx;
         [SerializeField] private BatteryDataSO batteryData;
 
+        public override PlantsCtx plantsCtx => ctx;
+
         protected override void Awake()
         {
             ctx.transform = transform;
@@ -19,10 +21,6 @@ namespace qwq
             base.Awake();
         }
 
-        public override PlantsCtx GetCTX()
-        {
-            return ctx;
-        }
 
         protected override void Update()
         {

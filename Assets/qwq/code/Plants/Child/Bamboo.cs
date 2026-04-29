@@ -9,16 +9,15 @@ public class Bamboo : Plants
 {
     public BambooCtx ctx;
 
+    public override PlantsCtx plantsCtx => ctx;
+
     protected override void Awake()
     {
         ctx.BindOwner(this);
         root = new BambooRoot(null, ctx);
         base.Awake();
     }
-    public override PlantsCtx GetCTX()
-    {
-        return ctx;
-    }
+
 
     public override void Backward(float t)
     {
@@ -31,6 +30,7 @@ public class Bamboo : Plants
 
     [Tooltip("在 Scene 中未选中竹子时也绘制驻守区域（调 ctx 数值时不必保持选中 Hierarchy）。")]
     [SerializeField] private bool drawGuardGizmosInSceneWhenNotSelected = true;
+
 
     private void OnDrawGizmos()
     {
