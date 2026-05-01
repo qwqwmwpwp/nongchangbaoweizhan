@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using qwq;
+using System.IO;
 
 /// <summary>
 /// 最小技能预览交互：
@@ -11,6 +12,9 @@ using qwq;
 /// </summary>
 public class SkillPreviewToggleUI : MonoBehaviour
 {
+    private const string DebugLogPath = "D:/Unity Project/nongchangbaoweizhan/debug-b67a13.log";
+    private const string DebugSessionId = "b67a13";
+
     [Header("引用")]
     [SerializeField] private Canvas targetCanvas;
     [SerializeField] private RectTransform previewRoot;
@@ -77,6 +81,9 @@ public class SkillPreviewToggleUI : MonoBehaviour
     public void EnterPreview()
     {
         _isPreviewing = true;
+        // #region agent log
+        WriteDebugLog("H1", "EnterPreview called", "{}");
+        // #endregion
         SetPreviewVisible(true);
         UpdatePreviewPosition();
     }
@@ -89,6 +96,11 @@ public class SkillPreviewToggleUI : MonoBehaviour
     //鼠标点击后触发该方法尝试回溯和关闭提示框
     private void CastAndExit()
     {
+        // #region agent log
+        WriteDebugLog("H6", "CastAndExit called",
+            "{\"mouseButton\":\"" + placeMouseButton
+            + "\",\"isPreviewing\":" + (_isPreviewing ? "true" : "false") + "}");
+        // #endregion
         TryCastRewindInRange();
         ExitPreview();
     }
@@ -138,12 +150,37 @@ public class SkillPreviewToggleUI : MonoBehaviour
     //在范围内挂载EnemyRewindRecorder的敌人开始倒放
     private bool TryCastRewindInRange()
     {
+        // #region agent log
+        WriteDebugLog("H7", "TryCastRewindInRange entered", "{}");
+        // #endregion
+
         int finalCost = Mathf.Max(0, energyCost);
-        if (EnergyPoolRuntime.Instance != null && !EnergyPoolRuntime.Instance.TryConsume(finalCost))
+        bool energyOk = EnergyPoolRuntime.Instance == null || EnergyPoolRuntime.Instance.TryConsume(finalCost);
+        // #region agent log
+        WriteDebugLog("H7", "Energy check result",
+            "{\"energyPoolExists\":" + (EnergyPoolRuntime.Instance != null ? "true" : "false")
+            + ",\"finalCost\":" + finalCost
+            + ",\"energyOk\":" + (energyOk ? "true" : "false")
+            + ",\"currentEnergy\":" + (EnergyPoolRuntime.Instance != null ? EnergyPoolRuntime.Instance.current : -1) + "}");
+        // #endregion
+        if (!energyOk)
             return false;
 
+        // #region agent log
+        WriteDebugLog("H8", "Before TryGetMouseWorldPoint", "{}");
+        // #endregion
         if (!TryGetMouseWorldPoint(out Vector3 center))
             return false;
+
+        // #region agent log
+        WriteDebugLog("H1", "TryCastRewindInRange center resolved",
+            "{\"centerX\":" + center.x.ToString("F4")
+            + ",\"centerY\":" + center.y.ToString("F4")
+            + ",\"centerZ\":" + center.z.ToString("F4")
+            + ",\"rewindRadius\":" + rewindRadius.ToString("F4")
+            + ",\"enemyLayer\":" + enemyLayer.value
+            + ",\"batteryLayer\":" + BatteryLayer.value + "}");
+        // #endregion
 
         EnsureOverlapBuffer();
 
@@ -152,6 +189,14 @@ public class SkillPreviewToggleUI : MonoBehaviour
         float finalPlaybackDuration = Mathf.Max(0.05f, playbackDuration);
 
         int batteryHitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, BatteryLayer);
+        // #region agent log
+        WriteDebugLog("H4", "Battery overlap result",
+            "{\"hitCount\":" + batteryHitCount
+            + ",\"centerX\":" + center.x.ToString("F4")
+            + ",\"centerY\":" + center.y.ToString("F4")
+            + ",\"centerZ\":" + center.z.ToString("F4")
+            + ",\"radius\":" + radius.ToString("F4") + "}");
+        // #endregion
 
         for (int i = 0; i < batteryHitCount; i++)
         {
@@ -164,6 +209,14 @@ public class SkillPreviewToggleUI : MonoBehaviour
 
 
         int hitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, enemyLayer);
+        // #region agent log
+        WriteDebugLog("H3", "Enemy overlap result",
+            "{\"hitCount\":" + hitCount
+            + ",\"centerX\":" + center.x.ToString("F4")
+            + ",\"centerY\":" + center.y.ToString("F4")
+            + ",\"centerZ\":" + center.z.ToString("F4")
+            + ",\"radius\":" + radius.ToString("F4") + "}");
+        // #endregion
         if (hitCount <= 0)
             return false;
 
@@ -218,11 +271,34 @@ public class SkillPreviewToggleUI : MonoBehaviour
             return false;
         }
 
+        // #region agent log
+        WriteDebugLog("H2", "Camera snapshot before world point",
+            "{\"camPosX\":" + cam.transform.position.x.ToString("F4")
+            + ",\"camPosY\":" + cam.transform.position.y.ToString("F4")
+            + ",\"camPosZ\":" + cam.transform.position.z.ToString("F4")
+            + ",\"camRotX\":" + cam.transform.eulerAngles.x.ToString("F4")
+            + ",\"camRotY\":" + cam.transform.eulerAngles.y.ToString("F4")
+            + ",\"camRotZ\":" + cam.transform.eulerAngles.z.ToString("F4")
+            + ",\"camOrthographic\":" + (cam.orthographic ? "true" : "false")
+            + ",\"mouseX\":" + Input.mousePosition.x.ToString("F2")
+            + ",\"mouseY\":" + Input.mousePosition.y.ToString("F2")
+            + ",\"use2DWorldPoint\":" + (use2DWorldPoint ? "true" : "false")
+            + ",\"configuredWorldZ\":" + worldZ.ToString("F4")
+            + ",\"configuredGroundHeight\":" + groundHeight.ToString("F4") + "}");
+        // #endregion
+
         if (use2DWorldPoint)
         {
             float distance = Mathf.Abs(worldZ - cam.transform.position.z);
             worldPoint = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance));
             worldPoint.z = worldZ;
+            // #region agent log
+            WriteDebugLog("H2", "World point resolved via ScreenToWorldPoint",
+                "{\"distance\":" + distance.ToString("F4")
+                + ",\"worldX\":" + worldPoint.x.ToString("F4")
+                + ",\"worldY\":" + worldPoint.y.ToString("F4")
+                + ",\"worldZ\":" + worldPoint.z.ToString("F4") + "}");
+            // #endregion
             return true;
         }
 
@@ -231,10 +307,53 @@ public class SkillPreviewToggleUI : MonoBehaviour
         if (!ground.Raycast(ray, out float enter))
         {
             worldPoint = Vector3.zero;
+            // #region agent log
+            WriteDebugLog("H5", "Ground raycast failed",
+                "{\"rayOriginX\":" + ray.origin.x.ToString("F4")
+                + ",\"rayOriginY\":" + ray.origin.y.ToString("F4")
+                + ",\"rayOriginZ\":" + ray.origin.z.ToString("F4")
+                + ",\"rayDirX\":" + ray.direction.x.ToString("F4")
+                + ",\"rayDirY\":" + ray.direction.y.ToString("F4")
+                + ",\"rayDirZ\":" + ray.direction.z.ToString("F4")
+                + ",\"groundHeight\":" + groundHeight.ToString("F4") + "}");
+            // #endregion
             return false;
         }
 
         worldPoint = ray.GetPoint(enter);
+        // #region agent log
+        WriteDebugLog("H5", "World point resolved via ray-plane",
+            "{\"enter\":" + enter.ToString("F4")
+            + ",\"worldX\":" + worldPoint.x.ToString("F4")
+            + ",\"worldY\":" + worldPoint.y.ToString("F4")
+            + ",\"worldZ\":" + worldPoint.z.ToString("F4") + "}");
+        // #endregion
         return true;
+    }
+
+    private void WriteDebugLog(string hypothesisId, string message, string dataJson)
+    {
+        try
+        {
+            long timestamp = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            string payload = "{\"sessionId\":\"" + DebugSessionId
+                + "\",\"runId\":\"pre-fix\""
+                + ",\"hypothesisId\":\"" + hypothesisId
+                + "\",\"location\":\"SkillPreviewToggleUI.cs\""
+                + ",\"message\":\"" + EscapeForJson(message)
+                + "\",\"data\":" + (string.IsNullOrEmpty(dataJson) ? "{}" : dataJson)
+                + ",\"timestamp\":" + timestamp + "}";
+            File.AppendAllText(DebugLogPath, payload + "\n");
+        }
+        catch
+        {
+        }
+    }
+
+    private static string EscapeForJson(string source)
+    {
+        if (string.IsNullOrEmpty(source))
+            return string.Empty;
+        return source.Replace("\\", "\\\\").Replace("\"", "\\\"");
     }
 }

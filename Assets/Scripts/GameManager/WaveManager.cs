@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
+using qwq;
 
 [System.Serializable]
 public class WaveDetail
@@ -28,7 +28,7 @@ public class SpawnLaneConfig
     [Header("该出怪口波次")]
     public List<WaveDetail> waves = new List<WaveDetail>();
 
-    [Tooltip("隐藏/辅助出兵口：该道出怪不计入关卡总敌人数、场上存活数与死亡回调，不影响胜利判定；波次仍会按表生成。与 isEnabled 独立。")]
+    [Tooltip("隐藏/辅助出兵口：不计入关卡总敌人数、alive 计数与 OnEnemyDied；波次仍会生成。全路结束后若场上仍有该路敌人，胜利会等待其清空。与 isEnabled 独立。")]
     public bool excludeFromWaveTotals;
 
     public bool IsEnabled => isEnabled;
@@ -56,41 +56,9 @@ public class WaveManager : MonoBehaviour
     private int remainingEnemyTotal = 0;
     private bool[] laneCompleted;
     private bool victoryNotified;
-    private int debugLogThrottleFrame;
 
     public int AliveEnemyCount => aliveEnemyCount;
     public int RemainingEnemyTotal => remainingEnemyTotal;
-
-    [System.Serializable]
-    private class DebugLogPayload
-    {
-        public string sessionId;
-        public string runId;
-        public string hypothesisId;
-        public string location;
-        public string message;
-        public string data;
-        public long timestamp;
-    }
-
-    private void AgentLog(string runId, string hypothesisId, string location, string message, string data)
-    {
-        // #region agent log
-        var payload = new DebugLogPayload
-        {
-            sessionId = "46034e",
-            runId = runId,
-            hypothesisId = hypothesisId,
-            location = location,
-            message = message,
-            data = data,
-            timestamp = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-        };
-        string line = JsonUtility.ToJson(payload) + "\n";
-        string logPath = Path.Combine(Directory.GetCurrentDirectory(), "debug-46034e.log");
-        File.AppendAllText(logPath, line);
-        // #endregion
-    }
 
     private void Awake()
     {
@@ -114,12 +82,6 @@ public class WaveManager : MonoBehaviour
             StartCoroutine(SpawnLaneRoutine(i));
 
         StartCoroutine(VictoryWatcherRoutine());
-        AgentLog(
-            "pre-fix",
-            "H1",
-            "WaveManager.cs:Start",
-            "wave manager initialized",
-            $"laneCount={laneCount}, remainingTotal={remainingEnemyTotal}, alive={aliveEnemyCount}");
     }
 
     private IEnumerator SpawnLaneRoutine(int laneIndex)
@@ -191,8 +153,6 @@ public class WaveManager : MonoBehaviour
     public void OnEnemyDied()
     {
         // 这个方法由 DummyEnemy.OnDestroy 触发：敌人死亡或到达终点被销毁都会进入这里
-        int beforeAlive = aliveEnemyCount;
-        int beforeRemain = remainingEnemyTotal;
         aliveEnemyCount--;
         if (aliveEnemyCount < 0)
             aliveEnemyCount = 0;
@@ -200,12 +160,6 @@ public class WaveManager : MonoBehaviour
         remainingEnemyTotal--;
         if (remainingEnemyTotal < 0)
             remainingEnemyTotal = 0;
-        AgentLog(
-            "pre-fix",
-            "H2",
-            "WaveManager.cs:OnEnemyDied",
-            "enemy destroyed callback",
-            $"beforeAlive={beforeAlive}, afterAlive={aliveEnemyCount}, beforeRemain={beforeRemain}, afterRemain={remainingEnemyTotal}");
     }
 
     private int CalculateTotalEnemyCount()
@@ -283,40 +237,15 @@ public class WaveManager : MonoBehaviour
         while (!victoryNotified)
         {
             if (IsDefeat())
-            {
-                AgentLog(
-                    "pre-fix",
-                    "H3",
-                    "WaveManager.cs:VictoryWatcherRoutine",
-                    "victory watcher stopped by defeat",
-                    $"alive={aliveEnemyCount}, remain={remainingEnemyTotal}, allLanesDone={AreAllLanesCompleted()}");
                 yield break;
-            }
 
-            // 全部出怪协程结束且场上无“计数”敌人；含仅隐藏出兵口（无计数）关卡也可胜利
-            if (AreAllLanesCompleted() && aliveEnemyCount <= 0)
+            // 全部出怪协程结束、计数敌人清零，且场景中无任何仍激活的敌人（含 excludeFromWaveTotals 出兵口）
+            if (AreAllLanesCompleted() && aliveEnemyCount <= 0 && !AnyActiveEnemyInScene())
             {
                 victoryNotified = true;
-                AgentLog(
-                    "pre-fix",
-                    "H4",
-                    "WaveManager.cs:VictoryWatcherRoutine",
-                    "victory conditions met",
-                    $"alive={aliveEnemyCount}, remain={remainingEnemyTotal}, allLanesDone={AreAllLanesCompleted()}");
                 if (GameFlowManager.Instance != null)
                     GameFlowManager.Instance.NotifyVictory();
                 yield break;
-            }
-
-            if (Time.frameCount - debugLogThrottleFrame > 300)
-            {
-                AgentLog(
-                    "pre-fix",
-                    "H5",
-                    "WaveManager.cs:VictoryWatcherRoutine",
-                    "waiting victory",
-                    $"alive={aliveEnemyCount}, remain={remainingEnemyTotal}, allLanesDone={AreAllLanesCompleted()}, defeat={IsDefeat()}");
-                debugLogThrottleFrame = Time.frameCount;
             }
 
             yield return null;
@@ -371,6 +300,17 @@ public class WaveManager : MonoBehaviour
     private bool IsDefeat()
     {
         return GameFlowManager.Instance != null && GameFlowManager.Instance.IsDefeat;
+    }
+
+    private static bool AnyActiveEnemyInScene()
+    {
+        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            if (enemies[i] != null && enemies[i].isActiveAndEnabled)
+                return true;
+        }
+        return false;
     }
 }
 

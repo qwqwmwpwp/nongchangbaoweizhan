@@ -1,27 +1,24 @@
+using System.Collections.Generic;
 using UnityEngine;
 using qwq;
 
 /// <summary>
-/// 固定容量记录敌人历史位置，并在触发时平滑倒放到最早快照点。
+/// 按时间顺序记录敌人位置（有上限），回溯时沿历史向旧插值移动；结束后裁剪掉「被抹去的未来」快照并继续录制，
+/// 从而可多次回溯到更早轨迹，直到历史不足。
 /// </summary>
 [DisallowMultipleComponent]
 public class EnemyRewindRecorder : MonoBehaviour
 {
     [Header("记录")]
     [SerializeField] private float recordInterval = 0.1f;
-    [SerializeField] private int maxRecords = 50;
+    [Tooltip("最多保留的快照条数。连续多次回溯（如每次约 5s、间隔 0.1s）需要约 50 点/次，请按需加大。")]
+    [SerializeField] private int maxRecords = 120;
 
     [Header("倒放")]
     [SerializeField] private float rewindDuration = 0.5f;
     [SerializeField] private AnimationCurve rewindEase = AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
-    //写入固定大小数组
-    private Vector3[] _positions;
-    //通过指针操作，head为下一次要写入的位置
-    //一个闭环，到头就从第一位继续写
-    //每次回溯会清空原数组从最后一次回溯点开始记录
-    private int _head;
-    private int _count;
+    private readonly List<Vector3> _history = new List<Vector3>();
     private float _recordTimer;
 
     private bool _isRewinding;
@@ -42,7 +39,6 @@ public class EnemyRewindRecorder : MonoBehaviour
     {
         _enemyMove = GetComponent<EnemyMove>();
         _enemy = GetComponent<Enemy>();
-        EnsureBuffer();
     }
 
     private void OnEnable()
@@ -54,7 +50,7 @@ public class EnemyRewindRecorder : MonoBehaviour
     {
         GameEvent.EnemyRewindRequested -= HandleRewindRequested;
     }
-    //在更新方法中回溯中就不记录位置了
+
     private void Update()
     {
         if (_isRewinding)
@@ -73,7 +69,7 @@ public class EnemyRewindRecorder : MonoBehaviour
 
     public void StartRewind(float duration)
     {
-        float rewindSeconds = Mathf.Max(recordInterval, (_count - 1) * recordInterval);
+        float rewindSeconds = Mathf.Max(recordInterval, (_history.Count - 1) * recordInterval);
         StartRewindBySeconds(rewindSeconds, duration);
     }
 
@@ -84,8 +80,7 @@ public class EnemyRewindRecorder : MonoBehaviour
 
     public void ClearHistory()
     {
-        _head = 0;
-        _count = 0;
+        _history.Clear();
         _recordTimer = 0f;
     }
 
@@ -93,10 +88,10 @@ public class EnemyRewindRecorder : MonoBehaviour
     {
         StartRewindBySeconds(rewindSeconds, Mathf.Max(0.05f, playbackDuration));
     }
+
     private void TickRecord(float deltaTime)
     {
-        if (_positions == null || _positions.Length != maxRecords)
-            EnsureBuffer();
+        int cap = Mathf.Max(2, maxRecords);
 
         _recordTimer += deltaTime;
         if (_recordTimer < recordInterval)
@@ -104,6 +99,9 @@ public class EnemyRewindRecorder : MonoBehaviour
 
         _recordTimer -= recordInterval;
         PushPosition(transform.position);
+
+        while (_history.Count > cap)
+            _history.RemoveAt(0);
     }
 
     private void TickRewind(float deltaTime)
@@ -137,21 +135,20 @@ public class EnemyRewindRecorder : MonoBehaviour
         if (_enemy != null && _enemy.HasRewindResistance)
             return;
 
-        if (_count <= 1)
+        if (_history.Count <= 1)
             return;
 
-        EnsureBuffer();
-
         float clampedRewindSeconds = Mathf.Max(recordInterval, rewindSeconds);
-        _stepsToRewind = Mathf.Clamp(Mathf.RoundToInt(clampedRewindSeconds / recordInterval), 1, _count - 1);
-        _targetLogicalStep = (_count - 1) - _stepsToRewind;
+        int count = _history.Count;
+        _stepsToRewind = Mathf.Clamp(Mathf.RoundToInt(clampedRewindSeconds / recordInterval), 1, count - 1);
+        _targetLogicalStep = (count - 1) - _stepsToRewind;
 
         _isRewinding = true;
         _enemyMove?.SetMovementPaused(true);
         GameEvent.TriggerEnemyRewindStarted(transform);
 
         _segmentDuration = Mathf.Max(0.01f, playbackDuration / _stepsToRewind);
-        _currentLogicalStep = _count - 1;
+        _currentLogicalStep = count - 1;
         _segmentElapsed = 0f;
 
         _segmentStart = transform.position;
@@ -163,38 +160,32 @@ public class EnemyRewindRecorder : MonoBehaviour
         _isRewinding = false;
         _enemyMove?.RebindPathFromCurrentPosition();
         _enemyMove?.SetMovementPaused(false);
-        ClearHistory();
-        GameEvent.TriggerEnemyRewindEnded(transform);
-    }
 
-    private void EnsureBuffer()
-    {
-        int capacity = Mathf.Max(2, maxRecords);
-        if (_positions != null && _positions.Length == capacity)
-            return;
+        // 回溯后若仍停在 Battle（OnUpdate 为空）会卡死移动；并释放对友军的近战占用，避免友军槽位被锁死。
+        EnemyStateController stateCtrl = GetComponent<EnemyStateController>();
+        if (stateCtrl != null)
+            stateCtrl.SwitchToPathMove(false);
 
-        _positions = new Vector3[capacity];
-        _head = 0;
-        _count = 0;
+        int removeStart = _targetLogicalStep + 1;
+        int removeCount = _history.Count - removeStart;
+        if (removeCount > 0)
+            _history.RemoveRange(removeStart, removeCount);
+
         _recordTimer = 0f;
+        GameEvent.TriggerEnemyRewindEnded(transform);
     }
 
     private void PushPosition(Vector3 position)
     {
-        _positions[_head] = position;
-        _head = (_head + 1) % _positions.Length;
-        if (_count < _positions.Length)
-            _count++;
+        _history.Add(position);
     }
 
     private Vector3 GetPositionByLogicalIndex(int logicalIndex)
     {
-        if (_count <= 0)
+        if (_history.Count <= 0)
             return transform.position;
 
-        int clampedIndex = Mathf.Clamp(logicalIndex, 0, _count - 1);
-        int oldestPhysical = (_head - _count + _positions.Length) % _positions.Length;
-        int physicalIndex = (oldestPhysical + clampedIndex) % _positions.Length;
-        return _positions[physicalIndex];
+        int clampedIndex = Mathf.Clamp(logicalIndex, 0, _history.Count - 1);
+        return _history[clampedIndex];
     }
 }

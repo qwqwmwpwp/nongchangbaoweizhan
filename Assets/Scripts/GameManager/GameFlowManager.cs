@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.IO;
 
 /// <summary>
 /// 极简游戏闭环：基地血量、失败、胜利、会话结束。
@@ -27,37 +26,6 @@ public class GameFlowManager : MonoBehaviour
     /// <summary>最后一波最后一只怪被消灭后由 WaveManager 标记</summary>
     public bool IsVictory => isVictory;
     public bool IsSessionOver => isDefeat || isVictory;
-
-    [System.Serializable]
-    private class DebugLogPayload
-    {
-        public string sessionId;
-        public string runId;
-        public string hypothesisId;
-        public string location;
-        public string message;
-        public string data;
-        public long timestamp;
-    }
-
-    private void AgentLog(string runId, string hypothesisId, string location, string message, string data)
-    {
-        // #region agent log
-        var payload = new DebugLogPayload
-        {
-            sessionId = "46034e",
-            runId = runId,
-            hypothesisId = hypothesisId,
-            location = location,
-            message = message,
-            data = data,
-            timestamp = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-        };
-        string line = JsonUtility.ToJson(payload) + "\n";
-        string logPath = Path.Combine(Directory.GetCurrentDirectory(), "debug-46034e.log");
-        File.AppendAllText(logPath, line);
-        // #endregion
-    }
 
     private void Awake()
     {
@@ -96,24 +64,10 @@ public class GameFlowManager : MonoBehaviour
     {
         // 已失败或已胜利时，忽略重复通知
         if (IsSessionOver)
-        {
-            AgentLog(
-                "pre-fix",
-                "H6",
-                "GameFlowManager.cs:NotifyVictory",
-                "notify victory ignored by session over",
-                $"isDefeat={isDefeat}, isVictory={isVictory}, hp={currentHp}");
             return;
-        }
 
         isVictory = true;
         Debug.Log("游戏胜利：已清完所有波次。");
-        AgentLog(
-            "pre-fix",
-            "H7",
-            "GameFlowManager.cs:NotifyVictory",
-            "victory entered",
-            $"isDefeat={isDefeat}, isVictory={isVictory}, hp={currentHp}, timeScaleBefore={Time.timeScale}");
 
         Time.timeScale = 0f;
 
@@ -130,12 +84,6 @@ public class GameFlowManager : MonoBehaviour
 
         isDefeat = true; 
         Debug.Log("游戏失败：基地被摧毁。");
-        AgentLog(
-            "pre-fix",
-            "H8",
-            "GameFlowManager.cs:EnterDefeat",
-            "defeat entered",
-            $"isDefeat={isDefeat}, isVictory={isVictory}, hp={currentHp}, timeScaleBefore={Time.timeScale}");
 
         Time.timeScale = 0f;
 

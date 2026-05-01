@@ -1,12 +1,17 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using qwq;
 
 /// <summary>
 /// 敌人回溯技能入口：外部调用 Cast() 即可触发全场敌人回溯。
 /// </summary>
 public class EnemyRewindSkillRuntime : MonoBehaviour
 {
+    [Header("回溯附加 Buff（可选）")]
+    [Tooltip("与局部 Q 技能相同：可拖入 Buff 组合；成功触发全场回溯时给所有在场敌人施加。留空则不附加。")]
+    [SerializeField] private BuffSetSO buffSetOnCast;
+
     [System.Serializable]
     private struct RewindTier
     {
@@ -53,6 +58,17 @@ public class EnemyRewindSkillRuntime : MonoBehaviour
             return false;
         return CastTier(rewindTiers[0]);
     }
+
+    /// <summary>按档位索引施放全局回溯（与键盘档位共用同一份 <see cref="rewindTiers"/>）。</summary>
+    public bool CastRewindTier(int tierIndex)
+    {
+        if (rewindTiers == null || rewindTiers.Length == 0)
+            return false;
+        if (tierIndex < 0 || tierIndex >= rewindTiers.Length)
+            return false;
+        return CastTier(rewindTiers[tierIndex]);
+    }
+
     //全局回溯调用
     private bool CastTier(RewindTier tier)
     {
@@ -62,10 +78,25 @@ public class EnemyRewindSkillRuntime : MonoBehaviour
 
         float rewindSeconds = Mathf.Max(0.1f, tier.rewindSeconds);
         float playbackDuration = Mathf.Max(0.05f, tier.playbackDuration);
+        ApplyBuffSetToAllActiveEnemies();
         GameEvent.TriggerEnemyRewindRequested(rewindSeconds, playbackDuration);
         OpenAllSpawnLanesTemporarily(tier);
         return true;
     }
+
+    private void ApplyBuffSetToAllActiveEnemies()
+    {
+        if (buffSetOnCast == null)
+            return;
+
+        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            if (enemies[i] != null && enemies[i].isActiveAndEnabled)
+                enemies[i].ApplyBuffSet(buffSetOnCast);
+        }
+    }
+
     //开启塔
     private void OpenAllSpawnLanesTemporarily(RewindTier tier)
     {

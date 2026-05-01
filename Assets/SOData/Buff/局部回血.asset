@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <BuffId>k__BackingField: Health_local
   <Duration>k__BackingField: 9999
-  <CanStack>k__BackingField: 1
+  <CanStack>k__BackingField: 0
   <TargetStat>k__BackingField: 0
   <ModifyMode>k__BackingField: 0
   <Value>k__BackingField: 0

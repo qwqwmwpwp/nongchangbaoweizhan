@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.IO;
 
 /// <summary>
 /// 结果流程“控制层”脚本：
@@ -19,37 +18,6 @@ public class GameOverC : MonoBehaviour
     [Tooltip("须与 Build Settings 中的场景名一致。")]
     [SerializeField] private string mainMenuSceneName = "Main Menu";
 
-    [System.Serializable]
-    private class DebugLogPayload
-    {
-        public string sessionId;
-        public string runId;
-        public string hypothesisId;
-        public string location;
-        public string message;
-        public string data;
-        public long timestamp;
-    }
-
-    private void AgentLog(string runId, string hypothesisId, string location, string message, string data)
-    {
-        // #region agent log
-        var payload = new DebugLogPayload
-        {
-            sessionId = "46034e",
-            runId = runId,
-            hypothesisId = hypothesisId,
-            location = location,
-            message = message,
-            data = data,
-            timestamp = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-        };
-        string line = JsonUtility.ToJson(payload) + "\n";
-        string logPath = Path.Combine(Directory.GetCurrentDirectory(), "debug-46034e.log");
-        File.AppendAllText(logPath, line);
-        // #endregion
-    }
-
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -65,12 +33,6 @@ public class GameOverC : MonoBehaviour
     /// </summary>
     public void ShowDefeat()
     {
-        AgentLog(
-            "pre-fix",
-            "H9",
-            "GameOverC.cs:ShowDefeat",
-            "show defeat called",
-            $"hasGameOverM={(gameOverM != null)}, mainMenuScene={mainMenuSceneName}");
         if (gameOverM != null)
             gameOverM.ShowDefeat();
     }
@@ -80,12 +42,6 @@ public class GameOverC : MonoBehaviour
     /// </summary>
     public void ShowVictory()
     {
-        AgentLog(
-            "pre-fix",
-            "H10",
-            "GameOverC.cs:ShowVictory",
-            "show victory called",
-            $"hasGameOverM={(gameOverM != null)}, mainMenuScene={mainMenuSceneName}");
         if (gameOverM != null)
             gameOverM.ShowVictory();
     }
