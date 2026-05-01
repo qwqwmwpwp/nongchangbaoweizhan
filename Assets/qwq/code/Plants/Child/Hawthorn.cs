@@ -25,15 +25,16 @@ namespace qwq
         protected override void Update()
         {
             base.Update();
+            ctx.Backward_t -= Time.deltaTime;
         }
 
         public override void Backward(float t)
         {
-            if (ctx. Backward_t > 0)
+            if (ctx.Backward_t > 0)
                 return;
 
-          ctx.  Backward_t = t;
-         ctx.   isBackward = true;
+            ctx.Backward_t = t;
+            ctx.isBackward = true;
         }
 
     }
@@ -43,18 +44,18 @@ namespace qwq
     public class HawthornCtx : PlantsCtx
     {
         public GameObject bullet;
-        [Header("������")]
+        [Header("状态1")]
         public GameObject obj1;
         public float attackCooling1 = 1f;
         public float grow1 = 10f;
 
-        [Header("������")]
+        [Header("状态2")]
         public GameObject obj2;
         public float attackCooling2 = 1f;
         public int bulletQuantity2 = 3;
         public float attackInterval2 = 0.3f;
         public float grow2 = 10f;
-        [Header("˥����")]
+        [Header("状态3")]
         public GameObject obj3;
         public float attackCooling3 = 1.5f;
         public int bulletQuantity3 = 2;
@@ -62,8 +63,6 @@ namespace qwq
 
         public bool isBackward;
         public float Backward_t = 0;
-
-
 
         public override void Fire(IDamageable target)
         {
@@ -174,6 +173,9 @@ namespace HSM
 
         protected override State GetTransition()
         {
+            if (Ctx.Backward_t > 0)
+                return null;
+
             if (Ctx.isBackward)
             {
                 Ctx.isBackward = false;
