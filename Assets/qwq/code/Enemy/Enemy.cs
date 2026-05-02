@@ -27,6 +27,7 @@ namespace qwq
         private EnemyBuffController buffController;
         private EnemyMove cachedMove;
         private EnemyStateController stateController;
+        private EnemyAnimatorDriver animatorDriver;
         private EnemyFriendlyDetector friendlyDetector;
 
         [Header("行为状态机")]
@@ -230,8 +231,13 @@ namespace qwq
             if (stateController == null)
                 stateController = gameObject.AddComponent<EnemyStateController>();
 
+            if (animatorDriver == null)
+                animatorDriver = GetComponent<EnemyAnimatorDriver>();
+            if (animatorDriver == null)
+                animatorDriver = gameObject.AddComponent<EnemyAnimatorDriver>();
+
             cachedMove.SetStateMachineDriven(true);
-            stateController.Bind(this, cachedMove, friendlyDetector);
+            stateController.Bind(this, cachedMove, friendlyDetector, animatorDriver);
         }
 
         /// <summary>将 Inspector 中的追击半径同步到已有 Trigger 圆碰撞体（允许缩小）；无则仅在 Ensure 时创建。</summary>

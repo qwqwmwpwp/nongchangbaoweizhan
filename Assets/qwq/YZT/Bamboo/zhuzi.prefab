@@ -82,6 +82,7 @@ MonoBehaviour:
     stage3SpawnInterval: 1.5
     isBackward: 0
     Backward_t: 0
+  drawGuardGizmosInSceneWhenNotSelected: 1
 --- !u!70 &2550821555416803698
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

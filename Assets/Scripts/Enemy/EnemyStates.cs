@@ -4,9 +4,15 @@ public class EnemyPathMoveState : EnemyStateBase
 {
     public EnemyPathMoveState(EnemyStateController controller) : base(controller) { }
 
+    public override void OnEnter()
+    {
+        controller.SetBattleAnimation(false);
+    }
+
     public override void OnUpdate(float deltaTime)
     {
         controller.TickPathMove(deltaTime);
+        controller.SyncPathMoveAnimation();
 
         if (controller.TryAcquireTarget())
             controller.SwitchToChaseFriendly();
@@ -16,6 +22,11 @@ public class EnemyPathMoveState : EnemyStateBase
 public class EnemyChaseFriendlyState : EnemyStateBase
 {
     public EnemyChaseFriendlyState(EnemyStateController controller) : base(controller) { }
+
+    public override void OnEnter()
+    {
+        controller.SetBattleAnimation(false);
+    }
 
     public override void OnUpdate(float deltaTime)
     {
@@ -29,6 +40,7 @@ public class EnemyChaseFriendlyState : EnemyStateBase
         }
 
         controller.MoveTowardsTarget(deltaTime);
+        controller.SyncChaseAnimation();
 
         if (controller.ShouldEnterBattle())
             controller.SwitchToBattle();
@@ -41,16 +53,34 @@ public class EnemyBattleState : EnemyStateBase
 
     public override void OnEnter()
     {
-        // TODO: 战斗状态后续实现
+        controller.SetBattleAnimation(true);
     }
 
     public override void OnUpdate(float deltaTime)
     {
-        // TODO: 战斗状态后续实现
+        if (!controller.HasValidTarget())
+        {
+            if (!controller.TryAcquireTarget())
+            {
+                controller.SwitchToPathMove(true);
+                return;
+            }
+
+            controller.SwitchToChaseFriendly();
+            return;
+        }
+
+        if (!controller.ShouldEnterBattle())
+        {
+            controller.SwitchToChaseFriendly();
+            return;
+        }
+
+        controller.TryTriggerBattleAttackAnimation();
     }
 
     public override void OnExit()
     {
-        // TODO: 战斗状态后续实现
+        controller.SetBattleAnimation(false);
     }
 }

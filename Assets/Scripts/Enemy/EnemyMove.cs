@@ -11,6 +11,8 @@ public class EnemyMove : MonoBehaviour
     private bool isMovementPaused;
     private bool stateMachineDriven;
     [SerializeField] private float nodeArriveDistance = 0.3f;
+    public Vector3 CurrentMoveDirection => moveDirection;
+
     public void StartMove(RoadNode startNode)
     {
         targetNode = startNode;
