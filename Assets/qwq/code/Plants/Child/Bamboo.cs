@@ -18,7 +18,6 @@ public class Bamboo : Plants
         base.Awake();
     }
 
-
     public override void Backward(float t)
     {
         if (ctx.Backward_t > 0f)
