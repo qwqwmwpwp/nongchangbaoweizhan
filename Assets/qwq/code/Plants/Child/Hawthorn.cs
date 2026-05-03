@@ -117,13 +117,8 @@ namespace HSM
 
         protected override State GetTransition()
         {
-        
-
             if (grow <= 0)
-            {
                 return ((HawthornRoot)Parent).state2;
-
-            }
 
             return null;
         }
