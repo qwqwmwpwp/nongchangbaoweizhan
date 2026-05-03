@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EnemyData
   m_EditorClassIdentifier: 
   <MaxHealth>k__BackingField: 10
-  <Attack>k__BackingField: 20
+  <Attack>k__BackingField: 2
   <MoveSpeed>k__BackingField: 2
   <AttackType>k__BackingField: 0
   <AttackRange>k__BackingField: 1.5

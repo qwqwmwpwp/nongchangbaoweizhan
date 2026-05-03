@@ -2,7 +2,7 @@ using UnityEngine;
 using qwq;
 
 [DisallowMultipleComponent]
-public class FriendlyUnit : MonoBehaviour
+public class FriendlyUnit : MonoBehaviour, IDamageable
 {
     [SerializeField] private FriendlyUnitDataSO data;
     [Tooltip("在 Scene 中未选中本物体时也绘制索敌/攻击/追击范围（调数值时不必保持选中 Hierarchy）。")]
@@ -23,6 +23,11 @@ public class FriendlyUnit : MonoBehaviour
     /// <summary>近战追击占用本单位的敌军（每名友军同时最多一名敌军可锁定）。</summary>
     private Enemy meleeEngagedBy;
 
+    private int hp;
+    private int hpMax;
+
+    public GameObject obj => gameObject;
+
     public int Attack => attack;
     public int MoveSpeed => moveSpeed;
     public float AttackRange => attackRange;
@@ -33,6 +38,9 @@ public class FriendlyUnit : MonoBehaviour
     public FriendlyOrbitMovement GuardMover => guardMover;
     public BambooCtx OwnerBambooCtx => ownerBambooCtx;
     public Transform AssignedReturnPoint => assignedReturnPoint;
+
+    [Header("UI")]
+    [SerializeField] private FriendlyHealthUI friendlyHealthUI;
 
     /// <summary>敌军尝试占用本友军用于近战追击；已被其他敌军占用则返回 false。</summary>
     public bool TryClaimMeleeEngagement(Enemy attacker)
@@ -56,6 +64,31 @@ public class FriendlyUnit : MonoBehaviour
             return;
         if (meleeEngagedBy == attacker)
             meleeEngagedBy = null;
+    }
+
+    public void TakeDamage(int amount)
+    {
+        if (amount <= 0)
+            return;
+
+        hp -= amount;
+        if (hp > 0)
+        {
+            RefreshHealthUI();
+            return;
+        }
+
+        hp = 0;
+        if (meleeEngagedBy != null && meleeEngagedBy as Object != null)
+        {
+            EnemyStateController esc = meleeEngagedBy.GetComponent<EnemyStateController>();
+            if (esc != null)
+                esc.ClearFriendlyTargetIfCurrent(this);
+            else
+                ReleaseMeleeEngagement(meleeEngagedBy);
+        }
+
+        Destroy(gameObject);
     }
 
     public void Init(
@@ -109,6 +142,16 @@ public class FriendlyUnit : MonoBehaviour
         moveSpeed = Mathf.Max(1, data.MoveSpeed);
         attackRange = Mathf.Max(0.1f, data.AttackRange);
         attackSpeed = Mathf.Max(0.1f, data.AttackSpeed);
+        hpMax = Mathf.Max(1, data.MaxHealth);
+        hp = hpMax;
+        RefreshHealthUI();
+    }
+
+    private void RefreshHealthUI()
+    {
+        if (friendlyHealthUI == null)
+            return;
+        friendlyHealthUI.PlayerHealthChange(hp, hpMax);
     }
 
     private void EnsureStateController()

@@ -42,6 +42,7 @@ namespace qwq
         public float AttackRange => attackRange;
         public float AttackSpeed => attackSpeed;
         public int MoveSpeed => Mathf.Max(1, finalMoveSpeed > 0 ? finalMoveSpeed : baseMoveSpeed);
+        public int AttackDamage => Mathf.Max(1, finalAttack);
         public float BattleEnterDistance => Mathf.Max(0f, battleEnterDistance);
         public int KillResource1 => killResource1;
         public int KillResource2 => killResource2;

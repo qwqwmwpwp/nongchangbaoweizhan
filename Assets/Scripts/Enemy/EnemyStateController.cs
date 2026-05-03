@@ -14,6 +14,7 @@ public class EnemyStateController : MonoBehaviour
     private EnemyPathMoveState pathMoveState;
     private EnemyChaseFriendlyState chaseFriendlyState;
     private EnemyBattleState battleState;
+    private EnemyRewindRecorder rewindRecorder;
 
     public void Bind(qwq.Enemy enemy, EnemyMove move, EnemyFriendlyDetector detector, EnemyAnimatorDriver driver)
     {
@@ -21,6 +22,7 @@ public class EnemyStateController : MonoBehaviour
         enemyMove = move;
         friendlyDetector = detector;
         animatorDriver = driver;
+        rewindRecorder = enemy != null ? enemy.GetComponent<EnemyRewindRecorder>() : null;
 
         pathMoveState = new EnemyPathMoveState(this);
         chaseFriendlyState = new EnemyChaseFriendlyState(this);
@@ -41,6 +43,13 @@ public class EnemyStateController : MonoBehaviour
             return;
         if (battleAnimCooldown > 0f)
             battleAnimCooldown -= deltaTime;
+
+        if (rewindRecorder != null && rewindRecorder.IsRewinding)
+        {
+            animatorDriver?.ForceLocomotionIdleForRewind();
+            return;
+        }
+
         currentState?.OnUpdate(deltaTime);
     }
 
@@ -141,6 +150,46 @@ public class EnemyStateController : MonoBehaviour
         float sqrDist = (currentTarget.transform.position - transform.position).sqrMagnitude;
         float battleDist = owner.BattleEnterDistance;
         return sqrDist <= battleDist * battleDist;
+    }
+
+    public bool IsInBattleState()
+    {
+        return currentState == battleState;
+    }
+
+    public bool IsTargetInAttackRange()
+    {
+        if (!HasValidTarget())
+            return false;
+
+        float sqrDist = (currentTarget.transform.position - transform.position).sqrMagnitude;
+        float r = owner.AttackRange;
+        return sqrDist <= r * r;
+    }
+
+    /// <summary>动画事件「命中帧」调用：仅在战斗态且目标在攻击距离内时造成伤害。</summary>
+    public void OnAttackHit()
+    {
+        if (!IsInBattleState())
+            return;
+        if (!HasValidTarget())
+            return;
+        if (!ShouldEnterBattle())
+            return;
+        if (!IsTargetInAttackRange())
+            return;
+
+        currentTarget.TakeDamage(owner.AttackDamage);
+    }
+
+    /// <summary>友军死亡时由 FriendlyUnit 调用，解除本敌对该友军的锁定。</summary>
+    public void ClearFriendlyTargetIfCurrent(FriendlyUnit unit)
+    {
+        if (currentTarget != unit)
+            return;
+
+        ReleaseCurrentTargetEngagement();
+        currentTarget = null;
     }
 
     public void SwitchToPathMove(bool rebindPath)

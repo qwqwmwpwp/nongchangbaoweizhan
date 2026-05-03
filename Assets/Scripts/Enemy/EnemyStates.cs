@@ -76,6 +76,12 @@ public class EnemyBattleState : EnemyStateBase
             return;
         }
 
+        if (!controller.IsTargetInAttackRange())
+        {
+            controller.SwitchToChaseFriendly();
+            return;
+        }
+
         controller.TryTriggerBattleAttackAnimation();
     }
 

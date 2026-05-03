@@ -240,7 +240,6 @@ GameObject:
   - component: {fileID: 5358646485299991847}
   - component: {fileID: 2314277666007178624}
   - component: {fileID: 3955561413378558835}
-  - component: {fileID: 3189594755568167378}
   m_Layer: 9
   m_Name: Enemy Health
   m_TagString: Untagged
@@ -331,19 +330,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &3189594755568167378
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4326812197951960503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 22885bc1ef48389468624e9788990858, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  EnemyHealth: {fileID: 4968448960685130521}
 --- !u!1 &4636694202861294061
 GameObject:
   m_ObjectHideFlags: 0
@@ -356,6 +342,10 @@ GameObject:
   - component: {fileID: 257832048899088135}
   - component: {fileID: 8937495428411100558}
   - component: {fileID: 6617533393936098711}
+  - component: {fileID: 7014994411871191289}
+  - component: {fileID: 872262219139323697}
+  - component: {fileID: 969598331315645122}
+  - component: {fileID: 5128720642268683307}
   m_Layer: 9
   m_Name: Friend
   m_TagString: Friend
@@ -494,6 +484,63 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &7014994411871191289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4636694202861294061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75e4136e09cc6d54fa2f4311fba1e4bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FriendlyHealth: {fileID: 4968448960685130521}
+--- !u!114 &872262219139323697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4636694202861294061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d40c69bbd0b996640b0be382f9278dce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 11400000, guid: 256f998946d796946a23b5fdeb9838dd, type: 2}
+  drawGizmosInSceneWhenNotSelected: 1
+  detectRadius: 6
+  chaseRadius: 8
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  friendlyHealthUI: {fileID: 7014994411871191289}
+--- !u!114 &969598331315645122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4636694202861294061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52fe53ee63b4e9649828b24fd45ab268, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5128720642268683307
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4636694202861294061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26cad5566a609c84285723c25dc098e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8450891293880943372
 GameObject:
   m_ObjectHideFlags: 0
