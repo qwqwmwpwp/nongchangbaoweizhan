@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using qwq;
 
 public class WatermelonBullet : MonoBehaviour
 {
@@ -53,18 +54,18 @@ public class WatermelonBullet : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.GetComponent<IDamageable>() is IDamageable enemy)
-        {
-            enemys.Add(enemy);
-        }
+        Enemy enemy = collision.GetComponentInParent<Enemy>();
+        if (enemy == null)
+            return;
+        enemys.Add(enemy);
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.GetComponent<IDamageable>() is IDamageable enemy)
-        {
-            enemys.Remove(enemy);
-        }
+        Enemy enemy = collision.GetComponentInParent<Enemy>();
+        if (enemy == null)
+            return;
+        enemys.Remove(enemy);
     }
 
     public void Initialize(int attack, float Range, IDamageable target)
@@ -109,11 +110,11 @@ public class WatermelonBullet : MonoBehaviour
     {
         enemys.RemoveAll(e => e == null || e.obj == null);
 
-        // 在遍历前创建列表的深拷贝
+        // ???????????б???????
         List<IDamageable> enemiesToAttack = new List<IDamageable>(enemys);
         foreach (var e in enemiesToAttack)
         {
-            if (e != null && e.obj != null)  // 添加安全检查
+            if (e != null && e.obj != null)  // ?????????
             {
                 Debug.Log(e);
                 e.TakeDamage(attack);
