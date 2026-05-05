@@ -112,6 +112,7 @@ public class BambooCtx : PlantsCtx
     [NonSerialized] public readonly List<FriendlyUnit> spawnedUnits = new List<FriendlyUnit>();
     [NonSerialized] private readonly HashSet<Enemy> enemiesInTriggerRange = new HashSet<Enemy>();
     [NonSerialized] private Bamboo ownerBamboo;
+    [NonSerialized] private bool warnedSlotsOutsideChase;
 
     public bool isBackward;
     public float Backward_t = 0;
@@ -167,6 +168,7 @@ public class BambooCtx : PlantsCtx
     {
         ownerBamboo = bamboo;
         transform = bamboo != null ? bamboo.transform : null;
+        warnedSlotsOutsideChase = false;
         ResolveTriggerDetector();
     }
 
@@ -241,12 +243,13 @@ public class BambooCtx : PlantsCtx
 
     private void SpawnFriendlyUnit()
     {
-        GameObject go = GameObject.Instantiate(friendlyUnitPrefab, transform.position, Quaternion.identity);
+        int assignIndex = spawnedUnits.Count;
+        Transform assignedReturnPoint = GetAssignedReturnPoint(assignIndex);
+        Vector3 spawnPos = assignedReturnPoint != null ? assignedReturnPoint.position : transform.position;
+        GameObject go = GameObject.Instantiate(friendlyUnitPrefab, spawnPos, Quaternion.identity);
         FriendlyUnit unit = go.GetComponent<FriendlyUnit>();
         if (unit == null)
             unit = go.AddComponent<FriendlyUnit>();
-        int assignIndex = spawnedUnits.Count;
-        Transform assignedReturnPoint = GetAssignedReturnPoint(assignIndex);
 
         unit.Init(
             friendlyUnitData,
@@ -307,12 +310,78 @@ public class BambooCtx : PlantsCtx
         return null;
     }
 
+    private static readonly string[] PlantingFriendlySlotNames =
+    {
+        "FriendlyReturnSlot_1",
+        "FriendlyReturnSlot_2",
+        "FriendlyReturnSlot_3"
+    };
+
+    /// <summary>
+    /// 若竹子挂在含 Planting point 子物体 FriendlyReturnSlot_1..3 的层级下，则用其作为友军回位/待机锚点。
+    /// </summary>
+    private bool TryBindReturnPointsFromPlantingPointHierarchy()
+    {
+        if (ownerBamboo == null)
+            return false;
+
+        for (Transform p = ownerBamboo.transform.parent; p != null; p = p.parent)
+        {
+            Transform s0 = p.Find(PlantingFriendlySlotNames[0]);
+            Transform s1 = p.Find(PlantingFriendlySlotNames[1]);
+            Transform s2 = p.Find(PlantingFriendlySlotNames[2]);
+            if (s0 == null || s1 == null || s2 == null)
+                continue;
+
+            if (returnPoints == null || returnPoints.Length != 3)
+                returnPoints = new Transform[3];
+            returnPoints[0] = s0;
+            returnPoints[1] = s1;
+            returnPoints[2] = s2;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void WarnIfPlantingSlotsOutsideChaseRadius()
+    {
+        if (warnedSlotsOutsideChase || ownerBamboo == null || returnPoints == null)
+            return;
+
+        Vector3 center = ownerBamboo.transform.position
+            + ownerBamboo.transform.forward * Mathf.Max(0f, guardForwardOffset);
+        float r = Mathf.Max(0.1f, chaseRadius);
+        float rSqr = r * r;
+
+        for (int i = 0; i < returnPoints.Length; i++)
+        {
+            Transform t = returnPoints[i];
+            if (t == null)
+                continue;
+            if ((t.position - center).sqrMagnitude > rSqr)
+            {
+                warnedSlotsOutsideChase = true;
+                Debug.LogWarning(
+                    $"BambooCtx: {PlantingFriendlySlotNames[i]} 距追击圆心超过 chaseRadius={chaseRadius}，友军可能无法接敌；请拉近锚点或增大 chaseRadius。",
+                    ownerBamboo);
+                break;
+            }
+        }
+    }
+
     private void EnsureReturnPoints()
     {
         if (ownerBamboo == null)
             return;
         if (returnPoints == null || returnPoints.Length != 3)
             returnPoints = new Transform[3];
+
+        if (TryBindReturnPointsFromPlantingPointHierarchy())
+        {
+            WarnIfPlantingSlotsOutsideChaseRadius();
+            return;
+        }
 
         Vector3[] fallbackLocalOffsets = new Vector3[3]
         {

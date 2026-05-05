@@ -5,10 +5,8 @@ using qwq;
 using System.IO;
 
 /// <summary>
-/// 最小技能预览交互：
-/// - 按键进入预览模式
-/// - 预览框跟随鼠标
-/// - 鼠标左键点击后退出预览模式
+/// 技能预览交互：按键进入预览、左键施法退出。
+/// 可仅用 Canvas 占位，或指定 <see cref="worldRangePreview"/> 使用与关卡同平面的世界空间圆形预览（与 <see cref="rewindRadius"/> 检测一致）。
 /// </summary>
 public class SkillPreviewToggleUI : MonoBehaviour
 {
@@ -18,6 +16,10 @@ public class SkillPreviewToggleUI : MonoBehaviour
     [Header("引用")]
     [SerializeField] private Canvas targetCanvas;
     [SerializeField] private RectTransform previewRoot;
+    [Tooltip("指定后：用该物体在世界坐标跟随鼠标，并以其位置为施法圆心；不再自动创建 Canvas 方块（可关闭 autoCreatePlaceholder）。")]
+    [SerializeField] private Transform worldRangePreview;
+    [Tooltip("为 true 时按 Sprite 原始尺寸与 rewindRadius 自动设置 worldRangePreview 的均匀 localScale。")]
+    [SerializeField] private bool syncWorldPreviewScaleFromRadius = true;
 
     [Header("按键")]
     [SerializeField] private KeyCode triggerKey = KeyCode.Q;
@@ -56,7 +58,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
         if (targetCanvas != null)
             _canvasRect = targetCanvas.transform as RectTransform;
 
-        if (previewRoot == null && autoCreatePlaceholder)
+        if (previewRoot == null && autoCreatePlaceholder && !UsesWorldRangePreview())
             previewRoot = CreatePlaceholder();
 
         _overlapResults = new Collider2D[Mathf.Max(8, maxOverlapResults)];
@@ -107,6 +109,16 @@ public class SkillPreviewToggleUI : MonoBehaviour
 
     private void UpdatePreviewPosition()
     {
+        if (UsesWorldRangePreview())
+        {
+            if (!TryGetMouseWorldPoint(out Vector3 worldPoint))
+                return;
+            worldRangePreview.position = worldPoint;
+            if (syncWorldPreviewScaleFromRadius)
+                ApplyWorldPreviewScaleToMatchRadius();
+            return;
+        }
+
         if (previewRoot == null || targetCanvas == null)
             return;
 
@@ -123,8 +135,53 @@ public class SkillPreviewToggleUI : MonoBehaviour
             previewRoot.anchoredPosition = localPoint;
     }
 
+    private bool UsesWorldRangePreview()
+    {
+        return worldRangePreview != null;
+    }
+
+    private void ApplyWorldPreviewScaleToMatchRadius()
+    {
+        if (worldRangePreview == null)
+            return;
+
+        float radius = Mathf.Max(0.1f, rewindRadius);
+        float diameterWorld = 2f * radius;
+
+        var sr = worldRangePreview.GetComponent<SpriteRenderer>();
+        float baseDiameter = 1f;
+        if (sr != null && sr.sprite != null)
+        {
+            Bounds b = sr.sprite.bounds;
+            baseDiameter = Mathf.Max(b.size.x, b.size.y);
+        }
+        if (baseDiameter < 1e-4f)
+            baseDiameter = 1f;
+
+        Transform parent = worldRangePreview.parent;
+        float parentMaxScale = 1f;
+        if (parent != null)
+        {
+            Vector3 pls = parent.lossyScale;
+            parentMaxScale = Mathf.Max(Mathf.Abs(pls.x), Mathf.Abs(pls.y));
+            if (parentMaxScale < 1e-4f)
+                parentMaxScale = 1f;
+        }
+
+        float uniformLocal = diameterWorld / (baseDiameter * parentMaxScale);
+        worldRangePreview.localScale = new Vector3(uniformLocal, uniformLocal, 1f);
+    }
+
     private void SetPreviewVisible(bool visible)
     {
+        if (UsesWorldRangePreview())
+        {
+            worldRangePreview.gameObject.SetActive(visible);
+            if (previewRoot != null)
+                previewRoot.gameObject.SetActive(false);
+            return;
+        }
+
         if (previewRoot != null)
             previewRoot.gameObject.SetActive(visible);
     }
@@ -167,9 +224,13 @@ public class SkillPreviewToggleUI : MonoBehaviour
             return false;
 
         // #region agent log
-        WriteDebugLog("H8", "Before TryGetMouseWorldPoint", "{}");
+        WriteDebugLog("H8", "Before resolve cast center", "{}");
         // #endregion
-        if (!TryGetMouseWorldPoint(out Vector3 center))
+
+        Vector3 center;
+        if (UsesWorldRangePreview())
+            center = worldRangePreview.position;
+        else if (!TryGetMouseWorldPoint(out center))
             return false;
 
         // #region agent log
@@ -179,7 +240,8 @@ public class SkillPreviewToggleUI : MonoBehaviour
             + ",\"centerZ\":" + center.z.ToString("F4")
             + ",\"rewindRadius\":" + rewindRadius.ToString("F4")
             + ",\"enemyLayer\":" + enemyLayer.value
-            + ",\"batteryLayer\":" + BatteryLayer.value + "}");
+            + ",\"batteryLayer\":" + BatteryLayer.value
+            + ",\"fromWorldPreview\":" + (UsesWorldRangePreview() ? "true" : "false") + "}");
         // #endregion
 
         EnsureOverlapBuffer();
