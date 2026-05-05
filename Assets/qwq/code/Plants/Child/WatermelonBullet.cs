@@ -1,8 +1,6 @@
-using System.Collections;
+﻿using qwq;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using qwq;
 
 public class WatermelonBullet : MonoBehaviour
 {
@@ -12,12 +10,14 @@ public class WatermelonBullet : MonoBehaviour
     List<IDamageable> enemys = new();
     CircleCollider2D circleCollider2D;
     [SerializeField] int attack = 2;
-    [SerializeField] float speed = 5;
-    [SerializeField] float t_max;
-    float t;
+    [SerializeField] float speed = 5; // 初速度大小
+    [SerializeField] float detection_max;
+    float detection_t;//
     Rigidbody2D rb;
     Vector2 target;
     int currentMethod = -1;
+
+
 
     private void Awake()
     {
@@ -31,7 +31,7 @@ public class WatermelonBullet : MonoBehaviour
         switch (currentMethod)
         {
             case 0:
-                t = t_max;
+                detection_t = detection_max;
                 currentMethod++;
                 break;
             case 1:
@@ -68,7 +68,7 @@ public class WatermelonBullet : MonoBehaviour
         enemys.Remove(enemy);
     }
 
-    public void Initialize(int attack, float Range, IDamageable target)
+    public void Initialize(int attack, float Range, IDamageable target,bool isaa=false)
     {
         this.attack = attack;
         circleCollider2D.radius = Range/2;
@@ -98,19 +98,19 @@ public class WatermelonBullet : MonoBehaviour
     private void Detection(float deltaTime)
     {
 
-        if (t <= 0)
+        if (detection_t <= 0)
         {
             currentMethod++;
 
         }
-        t -= deltaTime;
+        detection_t -= deltaTime;
     }
 
     private void Attack(float deltaTime)
     {
         enemys.RemoveAll(e => e == null || e.obj == null);
 
-        // ???????????��???????
+        // ???????????б???????
         List<IDamageable> enemiesToAttack = new List<IDamageable>(enemys);
         foreach (var e in enemiesToAttack)
         {

@@ -15,6 +15,7 @@ public class Watermelon : Plants
     protected override void Awake()
     {
         ctx.transform = transform;
+        ctx.plant = gameObject;
         root = new WatermelonRoot(null, ctx);
         base.Awake();
     }
@@ -22,7 +23,10 @@ public class Watermelon : Plants
     protected override void Update()
     {
         base.Update();
-        ctx.backward_t -= Time.deltaTime;
+        if (ctx.backward_t > 0)
+            ctx.backward_t -= Time.deltaTime;
+        if (ctx.catalysis > 0)
+            ctx.catalysis -= Time.deltaTime;
     }
 
     public override void Backward(float t)
@@ -33,40 +37,65 @@ public class Watermelon : Plants
 
         ctx.backward_t = t;
         ctx.isBackward = true;
+        ctx.backward++;
     }
 }
 
 [Serializable]
 public class WatermelonCtx : PlantsCtx
 {
+    public GameObject plant;
+
     public GameObject bullet;
 
     public int attack;
 
     public bool isBackward;
     public float backward_t;
+    public float catalysis;
     [Header("状态1")]
     public GameObject obj1;
     public float grow1 = 5;
+    public float catalysis_1 = 0.2f;
     public int attack1 = 5;
-    public float Range1 = 4;
-    public float AttackSpeed1 = 1;
+    public float bulletRange1 = 1;
+    public float AttackSpeed1 = 3f;
 
     [Header("状态2")]
     public GameObject obj2;
     public float g2 = 5;
     public int attack2 = 8;
-    public float Range2 = 5;
-    public float AttackSpeed2 = 0.5f;
+    public float bulletRange2 = 1;
+    public float AttackSpeed2 = 3f;
+    public float catalysis_2 = 0.2f;
 
     [Header("状态3")]
     public GameObject obj3;
     public int attack3 = 10;
-    public float Range3 = 4;
-    public float AttackSpeed3 = 1.5f;
+    public float bulletRange3 = 1;
+    public float AttackSpeed3 = 4f;
+    [HideInInspector] public int backward = 0;
+    
+    [Header("逆龄盛放")]
+    public GameObject specialEffects4;
+
+    public int attack4 = 5;
+    public float AttackSpeed4 = 1f;
+    public float bulletRange4 = 1f;
+
+    [Header("枯荣过载")]
+    [HideInInspector] public int catalysis_5 = 0;
+    public GameObject specialEffects5;
+
+    public int attack5 = 5;
+    public float AttackSpeed5 = 2f;
+    public float bulletRange5 =1f ;
 
 
-
+    public void Death()
+    {
+        GameObject.Destroy(plant);
+    }
 }
 
 namespace HSM
@@ -76,13 +105,14 @@ namespace HSM
         public WatermelonState1 state1;
         public WatermelonState2 state2;
         public WatermelonState3 state3;
+        public WatermelonState5 state5;
 
         public WatermelonRoot(StateMachine machine, WatermelonCtx ctx) : base(machine, null)
         {
             state1 = new WatermelonState1(machine, this, ctx);
             state2 = new WatermelonState2(machine, this, ctx);
             state3 = new WatermelonState3(machine, this, ctx);
-
+            state5 = new WatermelonState5(machine, this, ctx);
         }
 
         protected override State GetInitialState()
@@ -109,7 +139,8 @@ namespace HSM
         protected override State GetTransition()
         {
 
-            if (grow <= 0){
+            if (grow <= 0)
+            {
                 return ((WatermelonRoot)Parent).state2;
             }
             return null;
@@ -120,7 +151,7 @@ namespace HSM
             Ctx.obj1.SetActive(true);
             grow = Ctx.grow1;
             t = Ctx.AttackSpeed1;
-          
+
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -134,7 +165,7 @@ namespace HSM
                     return;
 
                 GameObject bullet = GameObject.Instantiate(Ctx.bullet, Ctx.transform);
-                bullet.GetComponent<WatermelonBullet>().Initialize(Ctx.attack1, Ctx.Range1, Ctx.enemys[0]);
+                bullet.GetComponent<WatermelonBullet>().Initialize(Ctx.attack1, Ctx.bulletRange1, Ctx.enemys[0]);
             }
         }
 
@@ -195,7 +226,7 @@ namespace HSM
                     return;
 
                 GameObject bullet = GameObject.Instantiate(Ctx.bullet, Ctx.transform);
-                bullet.GetComponent<WatermelonBullet>().Initialize(Ctx.attack2, Ctx.Range2, Ctx.enemys[0]);
+                bullet.GetComponent<WatermelonBullet>().Initialize(Ctx.attack2, Ctx.bulletRange2, Ctx.enemys[0]);
             }
         }
 
@@ -220,7 +251,13 @@ namespace HSM
             if (Ctx.isBackward)
             {
                 Ctx.isBackward = false;
+
                 return ((WatermelonRoot)Parent).state2;
+
+            }
+            if (Ctx.catalysis > 0)
+            {
+                return ((WatermelonRoot)Parent).state5;
             }
 
             return null;
@@ -229,7 +266,7 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.obj3.SetActive(true);
-            t = Ctx.AttackSpeed1;
+            t = Ctx.AttackSpeed3;
 
         }
 
@@ -243,7 +280,7 @@ namespace HSM
                     return;
 
                 GameObject bullet = GameObject.Instantiate(Ctx.bullet, Ctx.transform);
-                bullet.GetComponent<WatermelonBullet>().Initialize(Ctx.attack3, Ctx.Range3, Ctx.enemys[0]);
+                bullet.GetComponent<WatermelonBullet>().Initialize(Ctx.attack3, Ctx.bulletRange3, Ctx.enemys[0]);
             }
         }
 
@@ -253,4 +290,68 @@ namespace HSM
         }
     }
 
+    public class WatermelonState4 : State
+    {
+        WatermelonCtx Ctx;
+        float t;
+        public WatermelonState4(StateMachine machine, State parent, WatermelonCtx ctx) : base(machine, parent)
+        {
+            Ctx = ctx;
+        }
+    }
+
+    public class WatermelonState5 : State
+    {
+        WatermelonCtx Ctx;
+        float t;
+        public WatermelonState5(StateMachine machine, State parent, WatermelonCtx ctx) : base(machine, parent)
+        {
+            Ctx = ctx;
+        }
+
+        protected override State GetTransition()
+        {
+            if (Ctx.catalysis < 0)
+            {
+                return ((WatermelonRoot)Parent).state3;
+            }
+
+            return null;
+        }
+
+        protected override void OnEnter()
+        {
+            Ctx.obj3.SetActive(true);
+            t = Ctx.AttackSpeed5;
+            Ctx.specialEffects5.SetActive(true);
+
+            Ctx.catalysis = 0.5f;
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            t -= deltaTime;
+            if (t <= 0)
+            {
+                t = Ctx.AttackSpeed5;
+                if (Ctx.enemys.Count == 0)
+                    return;
+
+                GameObject bullet = GameObject.Instantiate(Ctx.bullet, Ctx.transform);
+                bullet.GetComponent<WatermelonBullet>().Initialize(Ctx.attack5, Ctx.bulletRange5, Ctx.enemys[0], true);
+            }
+        }
+
+        protected override void OnExit()
+        {
+            Ctx.specialEffects5.SetActive(false);
+            Ctx.obj3.SetActive(false);
+            Ctx.catalysis_5++;
+            if (Ctx.catalysis_5 >= 4)
+            {
+                Ctx.Death();
+            }
+        }
+
+    }
 }
