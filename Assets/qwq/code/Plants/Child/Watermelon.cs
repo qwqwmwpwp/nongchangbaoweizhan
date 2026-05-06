@@ -43,6 +43,7 @@ public class WatermelonCtx : PlantsCtx
 {
     public GameObject bullet;
 
+    public Transform bulletTransform;
     public int attack;
 
     [Header("状态1")]
@@ -89,7 +90,7 @@ public class WatermelonCtx : PlantsCtx
     {
         if (this.bullet == null)
             return;
-        GameObject bullet = GameObject.Instantiate(this.bullet, transform);
+        GameObject bullet = GameObject.Instantiate(this.bullet, bulletTransform.position, bulletTransform.rotation);
         bullet.GetComponent<WatermelonBullet>().Initialize(attack, range, target);
     }
 }

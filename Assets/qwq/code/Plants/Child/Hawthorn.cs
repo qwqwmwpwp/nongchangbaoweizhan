@@ -45,6 +45,10 @@ namespace qwq
     public class HawthornCtx : PlantsCtx
     {
         public GameObject bullet;//子弹
+        public GameObject specialEffects;
+        public Transform bulletTransform;
+        public Animator animator;
+
         [Header("状态1")]
         public GameObject obj1;
         public float attackCooling1 = 1f;//冷却
@@ -65,7 +69,7 @@ namespace qwq
 
         public override void Fire(IDamageable target)
         {
-            GameObject newBullet = GameObject.Instantiate(bullet, transform.position, transform.localRotation);
+            GameObject newBullet = GameObject.Instantiate(bullet, bulletTransform.position, bulletTransform.localRotation);
             newBullet!.GetComponent<IWeapon>().Fire(target);
         }
 
@@ -147,6 +151,7 @@ namespace HSM
 
                 t = Ctx.attackCooling1;
                 Ctx.Fire(Ctx.enemys[0]);
+                Ctx.animator.SetTrigger("attack");
             }
         }
     }
@@ -220,6 +225,7 @@ namespace HSM
             quantity = Ctx.bulletQuantity2;
             interval = 0;
 
+            Ctx.animator.SetTrigger("attack");
         }
     }
 
@@ -280,6 +286,7 @@ namespace HSM
             quantity = Ctx.bulletQuantity3;
             interval = 0;
 
+            Ctx.animator.SetTrigger("attack");
         }
 
         protected override void OnExit()
