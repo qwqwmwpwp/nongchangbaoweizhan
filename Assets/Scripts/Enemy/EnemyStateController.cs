@@ -136,6 +136,7 @@ public class EnemyStateController : MonoBehaviour
         if (battleAnimCooldown > 0f)
             return;
 
+        SetBattleAnimation(true);
         animatorDriver?.TriggerAttack();
         battleAnimCooldown = 1f / Mathf.Max(0.1f, owner.AttackSpeed);
     }
@@ -180,6 +181,14 @@ public class EnemyStateController : MonoBehaviour
             return;
 
         currentTarget.TakeDamage(owner.AttackDamage);
+    }
+
+    public void OnBattleAnimationFinished()
+    {
+        if (!IsInBattleState())
+            return;
+
+        animatorDriver?.ForceIdleAfterBattleAnimation();
     }
 
     /// <summary>友军死亡时由 FriendlyUnit 调用，解除本敌对该友军的锁定。</summary>

@@ -59,6 +59,8 @@ public class EnemyAnimatorDriver : MonoBehaviour
     [SerializeField] private string isBattleParam = "IsBattle";
     [Tooltip("仅在 AttackAnimDriveMode=AnimatorTrigger 时使用。")]
     [SerializeField] private string attackTriggerParam = "Attack";
+    [SerializeField] private string idleStateName = "Idle";
+    [SerializeField] private int idleLayerIndex = 0;
 
     [Header("攻击动画驱动")]
     [SerializeField] private AttackAnimDriveMode attackAnimMode = AttackAnimDriveMode.AnimatorTrigger;
@@ -83,6 +85,7 @@ public class EnemyAnimatorDriver : MonoBehaviour
     private int _isBackHash;
     private int _isBattleHash;
     private int _attackHash;
+    private int _idleStateNameHash;
     private int _attackStateNameHash;
     private bool _hasMoveDirParam;
     private float _cachedAbsScaleX = 1f;
@@ -221,6 +224,31 @@ public class EnemyAnimatorDriver : MonoBehaviour
         if (animator == null)
             return;
 
+        ResetToIdleParameters();
+    }
+
+    public void ForceIdleAfterBattleAnimation()
+    {
+        if (animator == null)
+            return;
+
+        ResetToIdleParameters();
+        
+    }
+
+    public void OnBattleAnimationFinished()
+    {
+        if (stateController != null)
+        {
+            stateController.OnBattleAnimationFinished();
+            return;
+        }
+
+        ForceIdleAfterBattleAnimation();
+    }
+
+    private void ResetToIdleParameters()
+    {
         animator.SetFloat(_speedHash, 0f);
         if (_hasMoveDirParam)
             animator.SetInteger(_moveDirHash, 0);
@@ -251,6 +279,7 @@ public class EnemyAnimatorDriver : MonoBehaviour
         _isBackHash = Animator.StringToHash(isBackParam);
         _isBattleHash = Animator.StringToHash(isBattleParam);
         _attackHash = Animator.StringToHash(attackTriggerParam);
+        _idleStateNameHash = string.IsNullOrEmpty(idleStateName) ? 0 : Animator.StringToHash(idleStateName);
         _attackStateNameHash = string.IsNullOrEmpty(attackStateName) ? 0 : Animator.StringToHash(attackStateName);
 
         _hasMoveDirParam = !string.IsNullOrEmpty(moveDirParam);

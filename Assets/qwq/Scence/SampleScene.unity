@@ -1088,10 +1088,10 @@ MonoBehaviour:
     spawnPoint: {fileID: 1631134325}
     startNode: {fileID: 1237962080}
     waves:
-    - enemyPrefab: {fileID: 4636694202861294061, guid: 8ba66e389346b714489a974ae412d2fd, type: 3}
+    - enemyPrefab: {fileID: 4636694202861294061, guid: df36404b9152a4244a9b8256ec239867, type: 3}
       spawnCount: 10
       spawnInterval: 5
-    - enemyPrefab: {fileID: 4636694202861294061, guid: 8ba66e389346b714489a974ae412d2fd, type: 3}
+    - enemyPrefab: {fileID: 4636694202861294061, guid: df36404b9152a4244a9b8256ec239867, type: 3}
       spawnCount: 5
       spawnInterval: 1
     excludeFromWaveTotals: 0
