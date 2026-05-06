@@ -72,7 +72,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 858450979
   m_SortingLayer: 3
-  m_SortingOrder: 2
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: c4734a991e9a5274a9e39644e4eab5ef, type: 3}
   m_Color: {r: 0.26981127, g: 1, b: 0.7167592, a: 1}
   m_FlipX: 0
@@ -156,7 +156,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 858450979
   m_SortingLayer: 3
-  m_SortingOrder: 2
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: c4734a991e9a5274a9e39644e4eab5ef, type: 3}
   m_Color: {r: 1, g: 0, b: 0.06809282, a: 1}
   m_FlipX: 0
@@ -335,9 +335,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ctx:
     UI: {fileID: 21300000, guid: 17fa84703485d314b8d6b5216987d4b1, type: 3}
+    plant: {fileID: 0}
     transform: {fileID: 0}
     <fertilizer>k__BackingField: 0
     <diamond>k__BackingField: 0
+    globalBacktracking_t: 0
+    partialBacktracking_t: 0
+    backward: 0
+    catalysisNumber: 0
     bullet: {fileID: 3019595320723696993, guid: b9925f9f08d85e847ab99a1be62eef0f, type: 3}
     obj1: {fileID: 1090416456357501851}
     attackCooling1: 1
@@ -351,8 +356,6 @@ MonoBehaviour:
     attackCooling3: 1.5
     bulletQuantity3: 2
     attackInterval3: 0.3
-    isBackward: 0
-    Backward_t: 0
   batteryData: {fileID: 11400000, guid: dd6bc0647c61bcd4684d2b7d905ac6b6, type: 2}
 --- !u!1 &8009738223133209178
 GameObject:
@@ -426,7 +429,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 858450979
   m_SortingLayer: 3
-  m_SortingOrder: 2
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: c4734a991e9a5274a9e39644e4eab5ef, type: 3}
   m_Color: {r: 1, g: 0.49887022, b: 0.27058828, a: 1}
   m_FlipX: 0

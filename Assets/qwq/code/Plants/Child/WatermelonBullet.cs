@@ -68,13 +68,13 @@ public class WatermelonBullet : MonoBehaviour
         enemys.Remove(enemy);
     }
 
-    public void Initialize(int attack, float Range, IDamageable target,bool isaa=false)
+    public void Initialize(int attack, float Range, Vector2 target,bool isaa=false)
     {
         this.attack = attack;
         circleCollider2D.radius = Range/2;
         rangeSprite.transform.localScale = Vector2.one * Range;
 
-        this.target = target.obj.transform.position;
+        this.target = target;
         if (currentMethod == -1)
             currentMethod = 0;
     }
