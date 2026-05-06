@@ -100,7 +100,7 @@ public class EnemyStateController : MonoBehaviour
             return false;
         }
 
-        if (!currentTarget.gameObject.activeInHierarchy)
+        if (!currentTarget.IsInteractable)
         {
             currentTarget.ReleaseMeleeEngagement(owner);
             currentTarget = null;

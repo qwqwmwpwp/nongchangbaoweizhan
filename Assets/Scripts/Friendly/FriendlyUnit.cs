@@ -17,6 +17,7 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
     private float attackSpeed;
     private FriendlyOrbitMovement guardMover;
     private FriendlyUnitStateController stateController;
+    private FriendlyUnitAnimatorDriver animatorDriver;
     private BambooCtx ownerBambooCtx;
     private Transform assignedReturnPoint;
 
@@ -25,6 +26,7 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
 
     private int hp;
     private int hpMax;
+    private bool isDead;
 
     public GameObject obj => gameObject;
 
@@ -38,6 +40,8 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
     public FriendlyOrbitMovement GuardMover => guardMover;
     public BambooCtx OwnerBambooCtx => ownerBambooCtx;
     public Transform AssignedReturnPoint => assignedReturnPoint;
+    public bool IsDead => isDead;
+    public bool IsInteractable => !isDead && gameObject.activeInHierarchy;
 
     [Header("UI")]
     [SerializeField] private FriendlyHealthUI friendlyHealthUI;
@@ -45,6 +49,9 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
     /// <summary>敌军尝试占用本友军用于近战追击；已被其他敌军占用则返回 false。</summary>
     public bool TryClaimMeleeEngagement(Enemy attacker)
     {
+        if (isDead)
+            return false;
+
         if (attacker == null || attacker as Object == null)
             return false;
 
@@ -68,7 +75,7 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
 
     public void TakeDamage(int amount)
     {
-        if (amount <= 0)
+        if (isDead || amount <= 0)
             return;
 
         hp -= amount;
@@ -78,7 +85,23 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
             return;
         }
 
+        BeginDeath();
+    }
+
+    public void DestroyAfterDeathAnimation()
+    {
+        Destroy(gameObject);
+    }
+
+    private void BeginDeath()
+    {
+        if (isDead)
+            return;
+
+        isDead = true;
         hp = 0;
+        RefreshHealthUI();
+
         if (meleeEngagedBy != null && meleeEngagedBy as Object != null)
         {
             EnemyStateController esc = meleeEngagedBy.GetComponent<EnemyStateController>();
@@ -87,8 +110,13 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
             else
                 ReleaseMeleeEngagement(meleeEngagedBy);
         }
+        meleeEngagedBy = null;
 
-        Destroy(gameObject);
+        DisableExternalInteractions();
+        if (stateController != null)
+            stateController.SwitchToDeath();
+        else
+            DestroyAfterDeathAnimation();
     }
 
     public void Init(
@@ -105,6 +133,7 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
         if (initData != null)
             data = initData;
 
+        isDead = false;
         ApplyData();
         detectRadius = Mathf.Max(0.1f, initDetectRadius);
         chaseRadius = Mathf.Max(detectRadius, initChaseRadius);
@@ -116,7 +145,7 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
             guardMover = gameObject.AddComponent<FriendlyOrbitMovement>();
         guardMover.Init(ownerTower, guardForwardOffset, guardBoxSize, moveSpeed, guardMoveSpeedScale);
 
-        EnsureStateController();
+        EnsureBehaviorComponents();
         stateController.StartStateMachine();
     }
 
@@ -125,7 +154,7 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
         if (data != null)
             ApplyData();
 
-        EnsureStateController();
+        EnsureBehaviorComponents();
     }
 
     private void Update()
@@ -147,6 +176,20 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
         RefreshHealthUI();
     }
 
+    private void DisableExternalInteractions()
+    {
+        Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            if (colliders[i] != null)
+                colliders[i].enabled = false;
+        }
+
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null)
+            rb.velocity = Vector2.zero;
+    }
+
     private void RefreshHealthUI()
     {
         if (friendlyHealthUI == null)
@@ -154,14 +197,19 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
         friendlyHealthUI.PlayerHealthChange(hp, hpMax);
     }
 
-    private void EnsureStateController()
+    private void EnsureBehaviorComponents()
     {
+        if (animatorDriver == null)
+            animatorDriver = GetComponent<FriendlyUnitAnimatorDriver>();
+        if (animatorDriver == null)
+            animatorDriver = gameObject.AddComponent<FriendlyUnitAnimatorDriver>();
+
         if (stateController == null)
             stateController = GetComponent<FriendlyUnitStateController>();
         if (stateController == null)
             stateController = gameObject.AddComponent<FriendlyUnitStateController>();
 
-        stateController.Bind(this);
+        stateController.Bind(this, animatorDriver);
     }
 
     private void OnDrawGizmos()

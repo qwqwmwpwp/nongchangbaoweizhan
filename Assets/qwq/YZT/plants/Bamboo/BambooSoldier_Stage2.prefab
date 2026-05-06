@@ -14,9 +14,12 @@ GameObject:
   - component: {fileID: 3922818570123575980}
   - component: {fileID: 9203324677996372401}
   - component: {fileID: 690201047085409368}
-  m_Layer: 0
-  m_Name: 'BambooSoldier '
-  m_TagString: Untagged
+  - component: {fileID: 910001000000000001}
+  - component: {fileID: 910001000000000002}
+  - component: {fileID: 6242293406212802021}
+  m_Layer: 9
+  m_Name: BambooSoldier_Stage2
+  m_TagString: Friend
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -31,8 +34,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5621822512663390556}
   m_Father: {fileID: 0}
@@ -179,7 +182,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 847405351146536333}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 387adc8c4177ff94c88d978fb14031cd, type: 3}
   m_Name: 
@@ -187,6 +190,7 @@ MonoBehaviour:
   ctx:
     rb: {fileID: 0}
     anim: {fileID: 0}
+    transform: {fileID: 0}
     AttackInterval: 1
     speed: 3
     attack: 2
@@ -194,6 +198,57 @@ MonoBehaviour:
     attack1: 0
     attack2: 0
     attack3: 0
+--- !u!114 &910001000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847405351146536333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d40c69bbd0b996640b0be382f9278dce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 11400000, guid: ec8e5a0396454125aed28b8629ebbe42, type: 2}
+  drawGizmosInSceneWhenNotSelected: 1
+  detectRadius: 6
+  chaseRadius: 8
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  friendlyHealthUI: {fileID: 0}
+--- !u!114 &910001000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847405351146536333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9eae9b2d6b7d4d448a1a4f36f0e6a3b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: -3017715574905731474}
+  idleStateName:
+  moveStateName: 
+  attackStateName: 
+  deathStateName: 
+  layerIndex: 0
+--- !u!114 &6242293406212802021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847405351146536333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75e4136e09cc6d54fa2f4311fba1e4bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FriendlyHealth: {fileID: 0}
 --- !u!1 &4654591509734874066
 GameObject:
   m_ObjectHideFlags: 0
@@ -205,7 +260,7 @@ GameObject:
   - component: {fileID: 5621822512663390556}
   - component: {fileID: 2204607534031969485}
   - component: {fileID: 8249507124858636707}
-  m_Layer: 7
+  m_Layer: 9
   m_Name: Detection
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -234,7 +289,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4654591509734874066}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f0e59272d222f724582e466be4368a02, type: 3}
   m_Name: 
@@ -275,3 +330,5 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 1}
   serializedVersion: 2
   m_Radius: 4
+
+

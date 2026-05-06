@@ -72,6 +72,14 @@ namespace qwq
             GameObject newBullet = GameObject.Instantiate(bullet, bulletTransform.position, bulletTransform.localRotation);
             newBullet!.GetComponent<IWeapon>().Fire(target);
         }
+        public void CleanupInvalidEnemyTargets()
+        {
+            enemys.RemoveAll(enemy =>
+                enemy == null ||
+                enemy.obj == null ||
+                (enemy is Enemy e && !e.IsInteractable));
+        }
+
 
     }
 }

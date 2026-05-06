@@ -4,6 +4,11 @@ public class FriendlyIdleGuardState : FriendlyUnitStateBase
 {
     public FriendlyIdleGuardState(FriendlyUnitStateController controller) : base(controller) { }
 
+    public override void OnEnter()
+    {
+        controller.PlayIdleAnimation();
+    }
+
     public override void OnUpdate(float deltaTime)
     {
         controller.TickGuardMove(deltaTime);
@@ -86,7 +91,7 @@ public class FriendlyAttackState : FriendlyUnitStateBase
             return;
         }
 
-        controller.TryAttackCurrentTarget();
+        controller.TryStartAttackCurrentTarget();
     }
 }
 
@@ -99,5 +104,26 @@ public class FriendlyReturnToGuardState : FriendlyUnitStateBase
         controller.TickReturnMove(deltaTime);
         if (controller.IsGuardReady())
             controller.SwitchToIdleGuard();
+    }
+}
+
+public class FriendlyDeathState : FriendlyUnitStateBase
+{
+    private bool hasDeathAnimation;
+
+    public FriendlyDeathState(FriendlyUnitStateController controller) : base(controller) { }
+
+    public override void OnEnter()
+    {
+        controller.EnterDeathState();
+        hasDeathAnimation = controller.PlayDeathAnimation();
+        if (!hasDeathAnimation)
+            controller.DestroyOwner();
+    }
+
+    public override void OnUpdate(float deltaTime)
+    {
+        if (hasDeathAnimation && controller.IsDeathAnimationFinished())
+            controller.DestroyOwner();
     }
 }
