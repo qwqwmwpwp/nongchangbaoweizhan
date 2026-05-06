@@ -120,6 +120,7 @@ public class BambooCtx : PlantsCtx
     private readonly float[] spawnTimers = new float[3];
     private bool warnedMissingSpawnConfig;
 
+
     public void TickSpawn(int stageIndex, float deltaTime)
     {
         CleanupDestroyedUnits();

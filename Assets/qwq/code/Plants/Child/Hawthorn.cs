@@ -16,7 +16,9 @@ namespace qwq
 
         protected override void Awake()
         {
+            ctx.plant = gameObject;
             ctx.transform = transform;
+
             root = new HSM.HawthornRoot(null, ctx);
             base.Awake();
         }
@@ -25,17 +27,16 @@ namespace qwq
         protected override void Update()
         {
             base.Update();
-            ctx.Backward_t -= Time.deltaTime;
         }
 
-        public override void Backward(float t)
-        {
-            if (ctx.Backward_t > 0)
-                return;
+        //public override void Backward(float t)
+        //{
+        //    if (ctx.Backward_t > 0)
+        //        return;
 
-            ctx.Backward_t = t;
-            ctx.isBackward = true;
-        }
+        //    ctx.Backward_t = t;
+        //    ctx.isBackward = true;
+        //}
 
     }
 
@@ -43,30 +44,32 @@ namespace qwq
     [Serializable]
     public class HawthornCtx : PlantsCtx
     {
-        public GameObject bullet;
+        public GameObject bullet;//子弹
+        public GameObject specialEffects;
+        public Transform bulletTransform;
+        public Animator animator;
+
         [Header("状态1")]
         public GameObject obj1;
-        public float attackCooling1 = 1f;
+        public float attackCooling1 = 1f;//冷却
         public float grow1 = 10f;
 
         [Header("状态2")]
         public GameObject obj2;
-        public float attackCooling2 = 1f;
+        public float attackCooling2 = 1f;//冷却
         public int bulletQuantity2 = 3;
-        public float attackInterval2 = 0.3f;
+        public float attackInterval2 = 0.3f;//攻击间隔
         public float grow2 = 10f;
         [Header("状态3")]
         public GameObject obj3;
-        public float attackCooling3 = 1.5f;
+        public float attackCooling3 = 1.5f;//冷却
         public int bulletQuantity3 = 2;
-        public float attackInterval3 = 0.3f;
+        public float attackInterval3 = 0.3f;//攻击间隔
 
-        public bool isBackward;
-        public float Backward_t = 0;
 
         public override void Fire(IDamageable target)
         {
-            GameObject newBullet = GameObject.Instantiate(bullet, transform.position, transform.localRotation);
+            GameObject newBullet = GameObject.Instantiate(bullet, bulletTransform.position, bulletTransform.localRotation);
             newBullet!.GetComponent<IWeapon>().Fire(target);
         }
 
@@ -82,8 +85,7 @@ namespace HSM
         public readonly HawthornState2 state2;
         public readonly HawthornState3 state3;
         public HawthornCtx Ctx;
-        float t;
-        float t_max = 0.1f;
+
         public HawthornRoot(StateMachine m, HawthornCtx ctx) : base(m, null)
         {
             Ctx = ctx;
@@ -113,6 +115,7 @@ namespace HSM
         public HawthornState1(StateMachine m, State parent, HawthornCtx ctx) : base(m, parent)
         {
             Ctx = ctx;
+            grow = Ctx.grow1;
         }
 
         protected override State GetTransition()
@@ -127,7 +130,6 @@ namespace HSM
         {
             t = Ctx.attackCooling1;
             Ctx.obj1.SetActive(true);
-            grow = Ctx.grow1;
         }
 
         protected override void OnExit()
@@ -149,6 +151,7 @@ namespace HSM
 
                 t = Ctx.attackCooling1;
                 Ctx.Fire(Ctx.enemys[0]);
+                Ctx.animator.SetTrigger("attack");
             }
         }
     }
@@ -163,25 +166,16 @@ namespace HSM
         public HawthornState2(StateMachine m, State parent, HawthornCtx ctx) : base(m, parent)
         {
             Ctx = ctx;
-
+            grow = Ctx.grow2;
         }
 
         protected override State GetTransition()
         {
-            if (Ctx.Backward_t > 0)
+            if (Ctx.globalBacktracking_t > 0)
                 return null;
 
-            if (Ctx.isBackward)
-            {
-                Ctx.isBackward = false;
-                grow = Ctx.grow1;
-            }
-
             if (grow <= 0)
-            {
                 return ((HawthornRoot)Parent).state3;
-
-            }
 
             return null;
         }
@@ -190,7 +184,6 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.obj2.SetActive(true);
-            grow = Ctx.grow2;
             cooling = Ctx.attackCooling2;
             quantity = Ctx.bulletQuantity2;
             interval = 0;
@@ -232,6 +225,7 @@ namespace HSM
             quantity = Ctx.bulletQuantity2;
             interval = 0;
 
+            Ctx.animator.SetTrigger("attack");
         }
     }
 
@@ -249,11 +243,8 @@ namespace HSM
 
         protected override State GetTransition()
         {
-            if (Ctx.isBackward)
-            {
-                Ctx.isBackward = false;
+            if (Ctx.globalBacktracking_t > 0)
                 return ((HawthornRoot)Parent).state2;
-            }
 
             return null;
         }
@@ -295,6 +286,7 @@ namespace HSM
             quantity = Ctx.bulletQuantity3;
             interval = 0;
 
+            Ctx.animator.SetTrigger("attack");
         }
 
         protected override void OnExit()

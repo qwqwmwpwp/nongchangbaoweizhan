@@ -11,6 +11,7 @@ public class WatermelonBullet : MonoBehaviour
     CircleCollider2D circleCollider2D;
     [SerializeField] int attack = 2;
     [SerializeField] float speed = 5; // 初速度大小
+    Vector2 v;
     [SerializeField] float detection_max;
     float detection_t;//
     Rigidbody2D rb;
@@ -68,19 +69,25 @@ public class WatermelonBullet : MonoBehaviour
         enemys.Remove(enemy);
     }
 
-    public void Initialize(int attack, float Range, IDamageable target,bool isaa=false)
+    public void Initialize(int attack, float Range, Vector2 target,bool isaa=false)
     {
         this.attack = attack;
         circleCollider2D.radius = Range/2;
         rangeSprite.transform.localScale = Vector2.one * Range;
 
-        this.target = target.obj.transform.position;
+        this.target = target;
+        v = speed * Vector2.up;
         if (currentMethod == -1)
             currentMethod = 0;
     }
 
     private void Move(float deltaTime)
     {
+        Vector2 new_v = v.normalized + (target - (Vector2)transform.position).normalized *13 *deltaTime;
+        v = new_v.normalized * speed;
+        rb.velocity = v;
+
+
         float magnitude = (target - (Vector2)transform.position).magnitude;
         if (magnitude < 0.1)
         {
@@ -92,7 +99,6 @@ public class WatermelonBullet : MonoBehaviour
             currentMethod++;
             return;
         }
-        rb.velocity = (target - (Vector2)transform.position).normalized * speed;
     }
 
     private void Detection(float deltaTime)
