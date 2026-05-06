@@ -50,6 +50,10 @@ namespace qwq
         [field: SerializeField] public int fertilizer { get; private set; }//
         [field: SerializeField] public int diamond { get; private set; }//
 
+        public void CleanupInvalidEnemyTargets()
+        {
+            enemys.RemoveAll(enemy => enemy == null || enemy.obj == null || (enemy is Enemy e && !e.IsInteractable));
+        }
     }
     public interface IBatteryBackward
     {

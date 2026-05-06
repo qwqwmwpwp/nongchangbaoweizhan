@@ -55,7 +55,7 @@ public class WatermelonBullet : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         Enemy enemy = collision.GetComponentInParent<Enemy>();
-        if (enemy == null)
+        if (enemy == null || !enemy.IsInteractable)
             return;
         enemys.Add(enemy);
     }
@@ -108,7 +108,7 @@ public class WatermelonBullet : MonoBehaviour
 
     private void Attack(float deltaTime)
     {
-        enemys.RemoveAll(e => e == null || e.obj == null);
+        enemys.RemoveAll(e => e == null || e.obj == null || (e is Enemy enemy && !enemy.IsInteractable));
 
         // ???????????б???????
         List<IDamageable> enemiesToAttack = new List<IDamageable>(enemys);

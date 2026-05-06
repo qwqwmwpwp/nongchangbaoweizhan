@@ -144,8 +144,8 @@ namespace HSM
                 t -= deltaTime;
             else
             {
+                Ctx.CleanupInvalidEnemyTargets();
                 if (Ctx.enemys.Count < 1) return;
-                if (Ctx.enemys[0] == null) Ctx.enemys.RemoveAt(0);
 
                 t = Ctx.attackCooling1;
                 Ctx.Fire(Ctx.enemys[0]);
@@ -219,8 +219,8 @@ namespace HSM
 
             if (quantity > 0)
             {
+                Ctx.CleanupInvalidEnemyTargets();
                 if (Ctx.enemys.Count < 1) return;
-                if (Ctx.enemys[0] == null) Ctx.enemys.RemoveAt(0);
 
                 Ctx.Fire(Ctx.enemys[0]);
                 interval = Ctx.attackInterval2;
@@ -282,8 +282,8 @@ namespace HSM
 
             if (quantity > 0)
             {
+                Ctx.CleanupInvalidEnemyTargets();
                 if (Ctx.enemys.Count < 1) return;
-                if (Ctx.enemys[0] == null) Ctx.enemys.RemoveAt(0);
 
                 Ctx.Fire(Ctx.enemys[0]);
                 interval = Ctx.attackInterval3;

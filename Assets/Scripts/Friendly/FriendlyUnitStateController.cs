@@ -150,6 +150,11 @@ public class FriendlyUnitStateController : MonoBehaviour
                 currentTarget = null;
                 return false;
             }
+            if (targetComp is Enemy enemy && !enemy.IsInteractable)
+            {
+                currentTarget = null;
+                return false;
+            }
             return true;
         }
 

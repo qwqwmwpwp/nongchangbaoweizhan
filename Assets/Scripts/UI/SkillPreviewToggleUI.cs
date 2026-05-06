@@ -237,7 +237,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
             if (collider2D == null) continue;
 
             Enemy enemy = collider2D.GetComponentInParent<Enemy>();
-            if (enemy != null && !_buffAppliedEnemies.Contains(enemy))
+            if (enemy != null && enemy.IsInteractable && !_buffAppliedEnemies.Contains(enemy))
             {
                 _buffAppliedEnemies.Add(enemy);
                 if (buffSetOnCast != null)
@@ -245,7 +245,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
             }
 
             EnemyRewindRecorder recorder = collider2D.GetComponentInParent<EnemyRewindRecorder>();
-            if (recorder != null && !_rewindAppliedRecorders.Contains(recorder))
+            if (recorder != null && enemy != null && enemy.IsInteractable && !_rewindAppliedRecorders.Contains(recorder))
             {
                 _rewindAppliedRecorders.Add(recorder);
                 recorder.StartRewindBySkill(finalRewindSeconds, finalPlaybackDuration);

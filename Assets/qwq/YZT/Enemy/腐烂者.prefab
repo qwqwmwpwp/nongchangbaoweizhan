@@ -576,18 +576,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 601932288050872621}
-  speedParam: Speed
-  moveDirParam: 
-  isBackParam: IsBack
-  isBattleParam: IsBattle
-  attackTriggerParam: Attack
-  attackAnimMode: 0
-  attackStateName: Attack
-  attackLayerIndex: 0
+  idleStateName: "Idle_\u8150\u70C2\u8005"
+  moveBackStateName: "MoveBack_\u8150\u70C2\u8005"
+  moveForwardStateName: "MoveForward_\u8150\u70C2\u8005"
+  battleStateName: "Battle_\u8150\u70C2\u8005"
+  deathStateName: "Death_\u8150\u70C2\u8005"
+  layerIndex: 0
   flipFacingByNegativeScaleX: 1
   flipHorizontalDeadZone: 0.0008
-  useTransformUpAsForward: 1
-  manualForwardWorld: {x: 0, y: 1}
 --- !u!1 &8450891293880943372
 GameObject:
   m_ObjectHideFlags: 0
