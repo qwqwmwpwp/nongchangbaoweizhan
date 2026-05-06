@@ -22,6 +22,9 @@ public class EnemyBuffController : MonoBehaviour
 
     private void Update()
     {
+        if (owner != null && owner.IsDead)
+            return;
+
         if (activeBuffs.Count == 0)
             return;
 
@@ -46,6 +49,9 @@ public class EnemyBuffController : MonoBehaviour
             return;
 
         EnsureOwner();
+        if (owner != null && owner.IsDead)
+            return;
+
         string groupKey = BuildBuffKey(buff);
         float duration = Mathf.Max(0.05f, buff.Duration);
 
@@ -86,6 +92,10 @@ public class EnemyBuffController : MonoBehaviour
     public void ApplyBuffSet(BuffSetSO buffSet)
     {
         if (buffSet == null || buffSet.Buffs == null || buffSet.Buffs.Length == 0)
+            return;
+
+        EnsureOwner();
+        if (owner != null && owner.IsDead)
             return;
 
         for (int i = 0; i < buffSet.Buffs.Length; i++)
@@ -131,6 +141,9 @@ public class EnemyBuffController : MonoBehaviour
     private void NotifyBuffChanged()
     {
         EnsureOwner();
+        if (owner != null && owner.IsDead)
+            return;
+
         owner?.RefreshStatsByBuff();
     }
 

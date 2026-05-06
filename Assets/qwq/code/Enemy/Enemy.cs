@@ -1,14 +1,12 @@
-using System;
 using UnityEngine;
 
 namespace qwq
 {
-    // 这个脚本只处理敌人属性、血量和死亡逻辑，不包含移动、UI控制等
     public class Enemy : MonoBehaviour, IDamageable
     {
         public GameObject obj => gameObject;
 
-        [Header("数据")]
+        [Header("Data")]
         [SerializeField] private EnemyDataSO enemyData;
 
         private int hp;
@@ -21,33 +19,38 @@ namespace qwq
         private EnemyAttackType attackType;
         private float attackRange;
         private float attackSpeed;
+        private float attackAnimationCooldown;
         private int killResource1;
         private int killResource2;
         private int killResource3;
+        private bool isDead;
+        private bool rewardGranted;
         private EnemyBuffController buffController;
         private EnemyMove cachedMove;
         private EnemyStateController stateController;
         private EnemyAnimatorDriver animatorDriver;
         private EnemyFriendlyDetector friendlyDetector;
 
-        [Header("行为状态机")]
-        [Tooltip("友军进入此半径（与敌人身上第一个 Trigger 圆形碰撞体同步）时会被追击索敌。")]
+        [Header("Behavior State Machine")]
         [SerializeField] private float chaseDetectRadius = 2.5f;
-        [Tooltip("为 0：追击时不会自动切入「战斗」状态。大于 0：与当前追击友军距离 ≤ 该值时切入 Battle（战斗逻辑可后续在 EnemyBattleState 中实现）。")]
         [SerializeField] private float battleEnterDistance = 0f;
-        [Tooltip("在 Scene 中绘制追击检测圆与战斗距离圆（与 Inspector 数值同步）。")]
         [SerializeField] private bool drawBehaviorGizmos = true;
 
         public EnemyAttackType AttackType => attackType;
         public float AttackRange => attackRange;
         public float AttackSpeed => attackSpeed;
+        public float AttackAnimationCooldown => attackAnimationCooldown > 0f
+            ? attackAnimationCooldown
+            : 1f / Mathf.Max(0.1f, attackSpeed);
         public int MoveSpeed => Mathf.Max(1, finalMoveSpeed > 0 ? finalMoveSpeed : baseMoveSpeed);
         public int AttackDamage => Mathf.Max(1, finalAttack);
         public float BattleEnterDistance => Mathf.Max(0f, battleEnterDistance);
         public int KillResource1 => killResource1;
         public int KillResource2 => killResource2;
         public int KillResource3 => killResource3;
-        public bool HasRewindResistance => enemyData != null && enemyData.RewindResistance;
+        public bool HasRewindResistance => isDead || (enemyData != null && enemyData.RewindResistance);
+        public bool IsDead => isDead;
+        public bool IsInteractable => !isDead && gameObject.activeInHierarchy;
 
         [Header("UI")]
         public EnemyHealthUI enemyHealthUI;
@@ -56,7 +59,7 @@ namespace qwq
         {
             if (enemyData == null)
             {
-                Debug.LogError($"Enemy: 未指定 EnemyDataSO（{gameObject.name}）", this);
+                Debug.LogError($"Enemy: Missing EnemyDataSO ({gameObject.name})", this);
                 return;
             }
 
@@ -66,6 +69,7 @@ namespace qwq
             attackType = enemyData.AttackType;
             attackRange = enemyData.AttackRange;
             attackSpeed = enemyData.AttackSpeed;
+            attackAnimationCooldown = enemyData.AttackAnimationCooldown;
             killResource1 = enemyData.KillResource1;
             killResource2 = enemyData.KillResource2;
             killResource3 = enemyData.KillResource3;
@@ -78,11 +82,7 @@ namespace qwq
 
             RefreshStatsByBuff();
             hp = finalHpMax;
-
-            if (enemyHealthUI != null)
-            {
-                enemyHealthUI.PlayerHealthChange(hp, finalHpMax);
-            }
+            RefreshHpUI();
 
             EnsureBehaviorComponents();
             stateController?.StartStateMachine();
@@ -117,29 +117,29 @@ namespace qwq
 
         public void TakeDamage(int amount)
         {
-            if (enemyData == null) return;
+            if (isDead || enemyData == null || amount <= 0)
+                return;
 
             hp -= amount;
-            if (enemyHealthUI != null)
-            {
-                enemyHealthUI.PlayerHealthChange(hp, finalHpMax);
-            }
+            RefreshHpUI();
 
             if (hp <= 0)
-            {
                 DieFromCombat();
-            }
         }
 
         public int AttackBase()
         {
+            if (isDead)
+                return 0;
+
             Death();
             return finalAttack;
         }
 
-        /// <summary>当敌人走到终点（最后一个节点）时对基地造成的伤害，返回攻击力</summary>
         public int GetLeakDamage()
         {
+            if (isDead)
+                return 0;
             if (enemyData == null)
                 return 1;
             return Mathf.Max(1, finalAttack);
@@ -147,7 +147,7 @@ namespace qwq
 
         public void ApplyBuff(BuffDataSO buff)
         {
-            if (buff == null)
+            if (isDead || buff == null)
                 return;
 
             if (buffController == null)
@@ -158,7 +158,7 @@ namespace qwq
 
         public void Heal(int amount)
         {
-            if (amount <= 0)
+            if (isDead || amount <= 0)
                 return;
 
             hp = Mathf.Min(finalHpMax, hp + amount);
@@ -167,7 +167,7 @@ namespace qwq
 
         public void ApplyBuffSet(BuffSetSO buffSet)
         {
-            if (buffSet == null)
+            if (isDead || buffSet == null)
                 return;
 
             if (buffController == null)
@@ -178,6 +178,9 @@ namespace qwq
 
         public void RefreshStatsByBuff()
         {
+            if (isDead)
+                return;
+
             int oldMaxHp = finalHpMax;
 
             finalHpMax = CalculateFinalIntStat(baseHpMax, BuffTargetStat.MaxHealth, 1);
@@ -241,7 +244,6 @@ namespace qwq
             stateController.Bind(this, cachedMove, friendlyDetector, animatorDriver);
         }
 
-        /// <summary>将 Inspector 中的追击半径同步到已有 Trigger 圆碰撞体（允许缩小）；无则仅在 Ensure 时创建。</summary>
         private void ApplyChaseDetectRadiusToCollider()
         {
             CircleCollider2D[] circles = GetComponents<CircleCollider2D>();
@@ -281,21 +283,57 @@ namespace qwq
 
         public void Death()
         {
-            Destroy(gameObject);
+            BeginDeath(false);
         }
 
-        /// <summary>被伤害击杀：发资源事件后销毁；与撞基地 <see cref="AttackBase"/> 的单纯销毁区分。</summary>
         private void DieFromCombat()
         {
-            if (enemyData != null)
+            BeginDeath(true);
+        }
+
+        private void BeginDeath(bool grantReward)
+        {
+            if (isDead)
+                return;
+
+            isDead = true;
+            hp = 0;
+            RefreshHpUI();
+
+            if (grantReward && !rewardGranted && enemyData != null)
             {
-                // 兼容当前单资源奖励事件：优先使用资源1，未配置时回退旧字段。
                 int reward = killResource1 > 0 ? killResource1 : enemyData.KillResourceReward;
                 if (reward > 0)
                     GameEvent.TriggerEnemyDefeatedReward(reward);
+                rewardGranted = true;
             }
 
-            Destroy(gameObject);
+            DisableExternalInteractions();
+            if (stateController != null)
+                stateController.SwitchToDeath();
+            else
+                Destroy(gameObject);
+        }
+
+        private void DisableExternalInteractions()
+        {
+            if (cachedMove == null)
+                cachedMove = GetComponent<EnemyMove>();
+            cachedMove?.SetMovementPaused(true);
+
+            Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                if (colliders[i] != null)
+                    colliders[i].enabled = false;
+            }
+
+            Rigidbody2D rb = GetComponent<Rigidbody2D>();
+            if (rb != null)
+                rb.velocity = Vector2.zero;
+
+            if (buffController != null)
+                buffController.enabled = false;
         }
     }
 }

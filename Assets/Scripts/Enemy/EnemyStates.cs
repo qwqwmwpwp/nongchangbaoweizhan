@@ -6,7 +6,7 @@ public class EnemyPathMoveState : EnemyStateBase
 
     public override void OnEnter()
     {
-        controller.SetBattleAnimation(false);
+        controller.PlayIdleAnimation();
     }
 
     public override void OnUpdate(float deltaTime)
@@ -25,7 +25,7 @@ public class EnemyChaseFriendlyState : EnemyStateBase
 
     public override void OnEnter()
     {
-        controller.SetBattleAnimation(false);
+        controller.PlayIdleAnimation();
     }
 
     public override void OnUpdate(float deltaTime)
@@ -53,7 +53,7 @@ public class EnemyBattleState : EnemyStateBase
 
     public override void OnEnter()
     {
-        controller.SetBattleAnimation(true);
+        controller.StartBattleAnimationCycle();
     }
 
     public override void OnUpdate(float deltaTime)
@@ -87,6 +87,27 @@ public class EnemyBattleState : EnemyStateBase
 
     public override void OnExit()
     {
-        controller.SetBattleAnimation(false);
+        controller.PlayIdleAnimation();
+    }
+}
+
+public class EnemyDeathState : EnemyStateBase
+{
+    private bool hasDeathAnimation;
+
+    public EnemyDeathState(EnemyStateController controller) : base(controller) { }
+
+    public override void OnEnter()
+    {
+        controller.EnterDeathState();
+        hasDeathAnimation = controller.PlayDeathAnimation();
+        if (!hasDeathAnimation)
+            controller.DestroyOwner();
+    }
+
+    public override void OnUpdate(float deltaTime)
+    {
+        if (hasDeathAnimation && controller.IsDeathAnimationFinished())
+            controller.DestroyOwner();
     }
 }

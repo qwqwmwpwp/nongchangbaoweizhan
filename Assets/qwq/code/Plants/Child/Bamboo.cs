@@ -175,7 +175,7 @@ public class BambooCtx : PlantsCtx
 
     public void RegisterEnemyInRange(Enemy enemy)
     {
-        if (enemy == null)
+        if (enemy == null || !enemy.IsInteractable)
             return;
         enemiesInTriggerRange.Add(enemy);
     }
@@ -189,7 +189,7 @@ public class BambooCtx : PlantsCtx
 
     public bool IsEnemyInTriggerRange(Enemy enemy)
     {
-        return enemy != null && enemiesInTriggerRange.Contains(enemy);
+        return enemy != null && enemy.IsInteractable && enemiesInTriggerRange.Contains(enemy);
     }
 
     public Enemy FindNearestEnemyInTriggerRange(Vector3 fromPos)
@@ -200,7 +200,7 @@ public class BambooCtx : PlantsCtx
 
         foreach (Enemy enemy in enemiesInTriggerRange)
         {
-            if (enemy == null || !enemy.gameObject.activeInHierarchy)
+            if (enemy == null || !enemy.IsInteractable)
                 continue;
 
             float sqr = (enemy.transform.position - fromPos).sqrMagnitude;
@@ -275,7 +275,7 @@ public class BambooCtx : PlantsCtx
 
     private void CleanupInvalidEnemies()
     {
-        enemiesInTriggerRange.RemoveWhere(enemy => enemy == null || !enemy.gameObject.activeInHierarchy);
+        enemiesInTriggerRange.RemoveWhere(enemy => enemy == null || !enemy.IsInteractable);
     }
 
     private void ResolveTriggerDetector()

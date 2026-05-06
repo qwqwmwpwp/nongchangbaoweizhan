@@ -10,10 +10,12 @@ public class EnemyStateController : MonoBehaviour
     private FriendlyUnit currentTarget;
     private EnemyStateBase currentState;
     private float battleAnimCooldown;
+    private bool isDead;
 
     private EnemyPathMoveState pathMoveState;
     private EnemyChaseFriendlyState chaseFriendlyState;
     private EnemyBattleState battleState;
+    private EnemyDeathState deathState;
     private EnemyRewindRecorder rewindRecorder;
 
     public void Bind(qwq.Enemy enemy, EnemyMove move, EnemyFriendlyDetector detector, EnemyAnimatorDriver driver)
@@ -27,10 +29,14 @@ public class EnemyStateController : MonoBehaviour
         pathMoveState = new EnemyPathMoveState(this);
         chaseFriendlyState = new EnemyChaseFriendlyState(this);
         battleState = new EnemyBattleState(this);
+        deathState = new EnemyDeathState(this);
     }
 
     public void StartStateMachine()
     {
+        if (isDead)
+            return;
+
         ReleaseCurrentTargetEngagement();
         currentTarget = null;
         battleAnimCooldown = 0f;
@@ -41,6 +47,12 @@ public class EnemyStateController : MonoBehaviour
     {
         if (owner == null)
             return;
+        if (isDead)
+        {
+            currentState?.OnUpdate(deltaTime);
+            return;
+        }
+
         if (battleAnimCooldown > 0f)
             battleAnimCooldown -= deltaTime;
 
@@ -60,6 +72,9 @@ public class EnemyStateController : MonoBehaviour
 
     public bool TryAcquireTarget()
     {
+        if (isDead)
+            return false;
+
         FriendlyUnit next = friendlyDetector != null
             ? friendlyDetector.FindNearestEngageableFriendly(transform.position, owner)
             : null;
@@ -74,6 +89,9 @@ public class EnemyStateController : MonoBehaviour
 
     public bool HasValidTarget()
     {
+        if (isDead)
+            return false;
+
         if (currentTarget == null)
             return false;
         if (currentTarget as Object == null)
@@ -105,27 +123,45 @@ public class EnemyStateController : MonoBehaviour
     {
         Vector3 moveDir = enemyMove != null ? enemyMove.CurrentMoveDirection : Vector3.zero;
         bool isMoving = moveDir.sqrMagnitude > 0.0001f;
-        animatorDriver?.SetMoveWorldDelta(moveDir, isMoving);
+        animatorDriver?.PlayMove(moveDir, isMoving);
     }
 
     public void SyncChaseAnimation()
     {
         if (!HasValidTarget())
         {
-            animatorDriver?.SetMoveWorldDelta(Vector3.zero, false);
+            animatorDriver?.PlayIdle();
             return;
         }
 
         Vector3 delta = (currentTarget.transform.position - transform.position).normalized;
         bool isMoving = delta.sqrMagnitude > 0.0001f;
-        animatorDriver?.SetMoveWorldDelta(delta, isMoving);
+        animatorDriver?.PlayMove(delta, isMoving);
     }
 
-    public void SetBattleAnimation(bool isBattle)
+    public void PlayIdleAnimation()
     {
-        animatorDriver?.SetStateFlags(false, false, isBattle);
-        if (isBattle)
-            animatorDriver?.SetMoveWorldDelta(Vector3.zero, false);
+        if (isDead)
+            return;
+
+        animatorDriver?.PlayIdle();
+    }
+
+    public void PlayBattleAnimation()
+    {
+        if (isDead)
+            return;
+
+        animatorDriver?.PlayBattle(true);
+    }
+
+    public void StartBattleAnimationCycle()
+    {
+        if (isDead)
+            return;
+
+        PlayBattleAnimation();
+        battleAnimCooldown = Mathf.Max(0f, owner.AttackAnimationCooldown);
     }
 
     public void TryTriggerBattleAttackAnimation()
@@ -136,8 +172,7 @@ public class EnemyStateController : MonoBehaviour
         if (battleAnimCooldown > 0f)
             return;
 
-        animatorDriver?.TriggerAttack();
-        battleAnimCooldown = 1f / Mathf.Max(0.1f, owner.AttackSpeed);
+        StartBattleAnimationCycle();
     }
 
     public bool ShouldEnterBattle()
@@ -157,6 +192,8 @@ public class EnemyStateController : MonoBehaviour
         return currentState == battleState;
     }
 
+    public bool IsDead => isDead || currentState == deathState;
+
     public bool IsTargetInAttackRange()
     {
         if (!HasValidTarget())
@@ -170,6 +207,8 @@ public class EnemyStateController : MonoBehaviour
     /// <summary>动画事件「命中帧」调用：仅在战斗态且目标在攻击距离内时造成伤害。</summary>
     public void OnAttackHit()
     {
+        if (IsDead)
+            return;
         if (!IsInBattleState())
             return;
         if (!HasValidTarget())
@@ -180,6 +219,22 @@ public class EnemyStateController : MonoBehaviour
             return;
 
         currentTarget.TakeDamage(owner.AttackDamage);
+    }
+
+    public void OnBattleAnimationFinished()
+    {
+        if (IsDead || !IsInBattleState())
+            return;
+
+        animatorDriver?.ForceIdleAfterBattleAnimation();
+    }
+
+    public void OnDeathAnimationFinished()
+    {
+        if (!IsDead)
+            return;
+
+        DestroyOwner();
     }
 
     /// <summary>友军死亡时由 FriendlyUnit 调用，解除本敌对该友军的锁定。</summary>
@@ -194,6 +249,9 @@ public class EnemyStateController : MonoBehaviour
 
     public void SwitchToPathMove(bool rebindPath)
     {
+        if (IsDead)
+            return;
+
         ReleaseCurrentTargetEngagement();
         currentTarget = null;
         if (rebindPath)
@@ -203,12 +261,52 @@ public class EnemyStateController : MonoBehaviour
 
     public void SwitchToChaseFriendly()
     {
+        if (IsDead)
+            return;
+
         SwitchState(chaseFriendlyState);
     }
 
     public void SwitchToBattle()
     {
+        if (IsDead)
+            return;
+
         SwitchState(battleState);
+    }
+
+    public void SwitchToDeath()
+    {
+        if (currentState == deathState)
+            return;
+
+        isDead = true;
+        SwitchState(deathState);
+    }
+
+    public void EnterDeathState()
+    {
+        isDead = true;
+        battleAnimCooldown = 0f;
+        ReleaseCurrentTargetEngagement();
+        currentTarget = null;
+        enemyMove?.SetMovementPaused(true);
+    }
+
+    public bool PlayDeathAnimation()
+    {
+        return animatorDriver != null && animatorDriver.PlayDeath(true);
+    }
+
+    public bool IsDeathAnimationFinished()
+    {
+        return animatorDriver == null || animatorDriver.IsDeathAnimationFinished();
+    }
+
+    public void DestroyOwner()
+    {
+        if (owner != null && owner as Object != null)
+            Destroy(owner.gameObject);
     }
 
     private void SwitchState(EnemyStateBase newState)

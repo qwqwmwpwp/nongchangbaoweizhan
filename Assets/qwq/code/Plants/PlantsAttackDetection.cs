@@ -10,7 +10,7 @@ public class PlantsAttackDetection : MonoBehaviour
     {
         // 仅敌人：友军也实现 IDamageable，不能进塔索敌列表
         Enemy enemy = collision.GetComponentInParent<Enemy>();
-        if (enemy == null)
+        if (enemy == null || !enemy.IsInteractable)
             return;
         battery.plantsCtx.enemys.Add(enemy);
     }

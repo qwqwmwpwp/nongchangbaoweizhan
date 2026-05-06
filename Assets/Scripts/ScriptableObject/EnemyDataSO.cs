@@ -22,6 +22,8 @@ public class EnemyDataSO : ScriptableObject
     [field: SerializeField] public float AttackRange { get; private set; } = 1.5f;
     [field: Tooltip("攻击速度（每秒攻击次数）。")]
     [field: SerializeField] public float AttackSpeed { get; private set; } = 1f;
+    [field: Tooltip("Attack animation cooldown in seconds. When <= 0, it falls back to AttackSpeed.")]
+    [field: SerializeField] public float AttackAnimationCooldown { get; private set; } = 1f;
 
     [field: Header("击杀奖励")]
     [field: SerializeField] public int KillResource1 { get; private set; } = 1;
