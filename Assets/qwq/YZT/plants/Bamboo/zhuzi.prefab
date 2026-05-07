@@ -57,13 +57,13 @@ MonoBehaviour:
     transform: {fileID: 0}
     <fertilizer>k__BackingField: 100
     <diamond>k__BackingField: 0
-    globalBacktracking_t: 15
-    partialBacktracking_t: 15
+    globalBacktracking_t: 2
+    partialBacktracking_t: 2
     backward: 0
     catalysisNumber: 0
-    catalysis_t: 15
-    catalysisGrowthSpeedMultiplier: 2
-    rewindGrowthSpeedMultiplier: 1
+    catalysis_t: 2
+    catalysisGrowthSpeedMultiplier: 50
+    rewindGrowthSpeedMultiplier: 50
     boundaryRewindDeathThreshold: 4
     boundaryCatalysisDeathThreshold: 4
     growthTimerEpsilon: 0.01
