@@ -42,6 +42,7 @@ namespace qwq
                     plantsCtx.partialBacktracking_t = 0.01f;
             }
 
+            plantsCtx.catalysis_t -= Time.deltaTime;
 
 
             machine.Tick(Time.deltaTime);
@@ -53,6 +54,7 @@ namespace qwq
                 return;
 
             plantsCtx.globalBacktracking_t = arg1;
+
         }
 
 
@@ -61,6 +63,10 @@ namespace qwq
             plantsCtx.backward++;
         }
 
+        public void Catalysis(float t = 3f)
+        {
+            plantsCtx.catalysis_t = t;
+        }
     }
 
     public class PlantsCtx
@@ -80,6 +86,7 @@ namespace qwq
         [HideInInspector] public int backward = 0;//回溯次数
         [Header("生长加速")]
         public int catalysisNumber = 0;//次数
+        public float catalysis_t;
 
         public void Death()
         {
@@ -108,6 +115,7 @@ namespace qwq
             else
                 return true;
         }
+
 
     }
 

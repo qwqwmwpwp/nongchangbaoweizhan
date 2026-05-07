@@ -125,13 +125,29 @@ namespace HSM
 
         protected override State GetTransition()
         {
-            if (Ctx.partialBacktracking_t > 0 && ActiveChild != state4){
-                state6 = ActiveChild;
-                return state4;
+            if (Ctx.partialBacktracking_t > 0)
+            {
+                if (ActiveChild != state4)
+                {
+                    state6 = ActiveChild;
+                    return state4;
+                }
+                return null;
             }
-         
+
+            if (Ctx.catalysis_t > 0)
+            {
+                if (ActiveChild != state5)
+                {
+                    state6 = ActiveChild;
+                    return state5;
+                }
+                return null;
+            }
+
             return null;
         }
+
     }
 
     public class WatermelonState1 : State
@@ -363,6 +379,9 @@ namespace HSM
 
         protected override State GetTransition()
         {
+            if (Ctx.catalysis_t<= 0)
+                return ((WatermelonRoot)Parent).state6;
+
             return null;
         }
 

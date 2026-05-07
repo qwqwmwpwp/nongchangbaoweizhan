@@ -67,6 +67,8 @@ namespace qwq
         [Header("枯荣过载")]
         public int attack5 = 5;
         public float attackCooling5 = 0.8f;//冷却
+        public GameObject catalysisSpecialEffects;
+
 
         public  void Attack(IDamageable target,int attack)
         {
@@ -86,6 +88,7 @@ namespace HSM
         public readonly HawthornState2 state2;
         public readonly HawthornState3 state3;
         public readonly HawthornState4 state4;
+        public readonly HawthornState5 state5;
         public State state6;
         public HawthornCtx Ctx;
 
@@ -96,7 +99,7 @@ namespace HSM
             state2 = new HawthornState2(m, this, ctx);
             state3 = new HawthornState3(m, this, ctx);
             state4 = new HawthornState4(m, this, ctx);
-
+            state5 = new HawthornState5(m, this, ctx);
 
         }
 
@@ -107,12 +110,24 @@ namespace HSM
 
         protected override State GetTransition()
         {
-            Debug.Log("qwq");
-            if (Ctx.partialBacktracking_t > 0 && ActiveChild != state4)
+            if (Ctx.partialBacktracking_t > 0)
             {
-                Debug.Log("pwp");
-                state6 = ActiveChild;
-                return state4;
+                if (ActiveChild != state4)
+                {
+                    state6 = ActiveChild;
+                    return state4;
+                }
+                return null;
+            }
+
+            if (Ctx.catalysis_t> 0)
+            {
+                if (ActiveChild != state5)
+                {
+                    state6 = ActiveChild;
+                    return state5;
+                }
+                return null;
             }
 
             return null;
