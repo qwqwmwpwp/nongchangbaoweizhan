@@ -83,22 +83,31 @@ public class WatermelonBullet : MonoBehaviour
 
     private void Move(float deltaTime)
     {
-        Vector2 new_v = v.normalized + (target - (Vector2)transform.position).normalized *13 *deltaTime;
-        v = new_v.normalized * speed;
-        rb.velocity = v;
+        // 计算到目标的向量
+        Vector2 toTarget = target - (Vector2)transform.position;
+        float distance = toTarget.magnitude;
 
-
-        float magnitude = (target - (Vector2)transform.position).magnitude;
-        if (magnitude < 0.1)
+        // 距离足够近时停止
+        if (distance < 0.1f)
         {
             rb.velocity = Vector2.zero;
             circleCollider2D.enabled = true;
             bulletSprite.SetActive(false);
             rangeSprite.SetActive(true);
-
             currentMethod++;
             return;
         }
+
+        // 简化移动逻辑
+        Vector2 targetDirection = toTarget / distance; // 避免重复normalized
+        float maxSpeed = speed;
+
+        // 使用更简单的加速/减速逻辑
+        Vector2 desiredVelocity = targetDirection * maxSpeed;
+        Vector2 steering = (desiredVelocity - v) * 6f * deltaTime;
+
+        v = Vector2.ClampMagnitude(v + steering, maxSpeed);
+        rb.velocity = v;
     }
 
     private void Detection(float deltaTime)
@@ -114,7 +123,7 @@ public class WatermelonBullet : MonoBehaviour
 
     private void Attack(float deltaTime)
     {
-        enemys.RemoveAll(e => e == null || e.obj == null);
+        enemys.RemoveAll(e => e == null ||e.Equals(null) ||e.obj == null);
 
         List<IDamageable> enemiesToAttack = new List<IDamageable>(enemys);
         foreach (var e in enemiesToAttack)
