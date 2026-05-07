@@ -27,6 +27,11 @@ public class Bamboo : Plants
         ctx.isBackward = true;
     }
 
+    public void CollectRewindTargetEnemies(HashSet<Enemy> results)
+    {
+        ctx?.CollectRewindTargetEnemies(results);
+    }
+
     [Tooltip("在 Scene 中未选中竹子时也绘制驻守区域（调 ctx 数值时不必保持选中 Hierarchy）。")]
     [SerializeField] private bool drawGuardGizmosInSceneWhenNotSelected = true;
 
@@ -223,6 +228,19 @@ public class BambooCtx : PlantsCtx
         }
 
         return nearest;
+    }
+
+    public void CollectRewindTargetEnemies(HashSet<Enemy> results)
+    {
+        if (results == null)
+            return;
+
+        CleanupInvalidEnemies();
+        foreach (Enemy enemy in enemiesInTriggerRange)
+        {
+            if (enemy != null && enemy.IsInteractable)
+                results.Add(enemy);
+        }
     }
 
     private int GetStageSpawnLimit(int stageIndex)
