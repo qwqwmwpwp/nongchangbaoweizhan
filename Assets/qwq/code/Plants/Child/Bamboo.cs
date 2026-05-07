@@ -27,6 +27,11 @@ public class Bamboo : Plants
         ctx.isBackward = true;
     }
 
+    public void CollectRewindTargetEnemies(HashSet<Enemy> results)
+    {
+        ctx?.CollectRewindTargetEnemies(results);
+    }
+
     [Tooltip("在 Scene 中未选中竹子时也绘制驻守区域（调 ctx 数值时不必保持选中 Hierarchy）。")]
     [SerializeField] private bool drawGuardGizmosInSceneWhenNotSelected = true;
 
@@ -80,6 +85,15 @@ public class BambooCtx : PlantsCtx
     public GameObject friendlyUnitPrefab;
     [Tooltip("友军属性数据（血量、攻击力、移速等）。")]
     public FriendlyUnitDataSO friendlyUnitData;
+    [Header("Stage 1 Friendly Unit")]
+    public GameObject stage1FriendlyUnitPrefab;
+    public FriendlyUnitDataSO stage1FriendlyUnitData;
+    [Header("Stage 2 Friendly Unit")]
+    public GameObject stage2FriendlyUnitPrefab;
+    public FriendlyUnitDataSO stage2FriendlyUnitData;
+    [Header("Stage 3 Friendly Unit")]
+    public GameObject stage3FriendlyUnitPrefab;
+    public FriendlyUnitDataSO stage3FriendlyUnitData;
     [Tooltip("驻守区域相对竹子的前向偏移。")]
     public float guardForwardOffset = 2f;
     [Tooltip("驻守区域尺寸：X=宽度，Y=深度。")]
@@ -126,7 +140,10 @@ public class BambooCtx : PlantsCtx
         CleanupDestroyedUnits();
         CleanupInvalidEnemies();
 
-        if (friendlyUnitPrefab == null || friendlyUnitData == null || transform == null)
+        GameObject prefab = GetStageFriendlyUnitPrefab(stageIndex);
+        FriendlyUnitDataSO data = GetStageFriendlyUnitData(stageIndex);
+
+        if (prefab == null || data == null || transform == null)
         {
             if (!warnedMissingSpawnConfig)
             {
@@ -145,7 +162,7 @@ public class BambooCtx : PlantsCtx
         if (spawnTimers[stageIndex] > 0f)
             return;
 
-        SpawnFriendlyUnit();
+        SpawnFriendlyUnit(prefab, data);
         spawnTimers[stageIndex] = interval;
     }
 
@@ -213,6 +230,19 @@ public class BambooCtx : PlantsCtx
         return nearest;
     }
 
+    public void CollectRewindTargetEnemies(HashSet<Enemy> results)
+    {
+        if (results == null)
+            return;
+
+        CleanupInvalidEnemies();
+        foreach (Enemy enemy in enemiesInTriggerRange)
+        {
+            if (enemy != null && enemy.IsInteractable)
+                results.Add(enemy);
+        }
+    }
+
     private int GetStageSpawnLimit(int stageIndex)
     {
         int configured = stageIndex switch
@@ -242,18 +272,44 @@ public class BambooCtx : PlantsCtx
         };
     }
 
-    private void SpawnFriendlyUnit()
+    private GameObject GetStageFriendlyUnitPrefab(int stageIndex)
+    {
+        GameObject stagePrefab = stageIndex switch
+        {
+            0 => stage1FriendlyUnitPrefab,
+            1 => stage2FriendlyUnitPrefab,
+            2 => stage3FriendlyUnitPrefab,
+            _ => null
+        };
+
+        return stagePrefab != null ? stagePrefab : friendlyUnitPrefab;
+    }
+
+    private FriendlyUnitDataSO GetStageFriendlyUnitData(int stageIndex)
+    {
+        FriendlyUnitDataSO stageData = stageIndex switch
+        {
+            0 => stage1FriendlyUnitData,
+            1 => stage2FriendlyUnitData,
+            2 => stage3FriendlyUnitData,
+            _ => null
+        };
+
+        return stageData != null ? stageData : friendlyUnitData;
+    }
+
+    private void SpawnFriendlyUnit(GameObject prefab, FriendlyUnitDataSO data)
     {
         int assignIndex = spawnedUnits.Count;
         Transform assignedReturnPoint = GetAssignedReturnPoint(assignIndex);
         Vector3 spawnPos = assignedReturnPoint != null ? assignedReturnPoint.position : transform.position;
-        GameObject go = GameObject.Instantiate(friendlyUnitPrefab, spawnPos, Quaternion.identity);
+        GameObject go = GameObject.Instantiate(prefab, spawnPos, Quaternion.identity);
         FriendlyUnit unit = go.GetComponent<FriendlyUnit>();
         if (unit == null)
             unit = go.AddComponent<FriendlyUnit>();
 
         unit.Init(
-            friendlyUnitData,
+            data,
             transform,
             guardForwardOffset,
             guardBoxSize,

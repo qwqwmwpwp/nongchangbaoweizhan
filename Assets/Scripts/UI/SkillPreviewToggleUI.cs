@@ -43,7 +43,8 @@ public class SkillPreviewToggleUI : MonoBehaviour
     private RectTransform _canvasRect;
     private bool _isPreviewing;
     private Collider2D[] _overlapResults;
-    private readonly HashSet<Enemy> _buffAppliedEnemies = new HashSet<Enemy>();
+    private readonly HashSet<Plants> _affectedTowers = new HashSet<Plants>();
+    private readonly HashSet<Enemy> _towerRangeEnemies = new HashSet<Enemy>();
     private readonly HashSet<EnemyRewindRecorder> _rewindAppliedRecorders = new HashSet<EnemyRewindRecorder>();
 
     private void Awake()
@@ -58,6 +59,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
             previewRoot = CreatePlaceholder();
 
         _overlapResults = new Collider2D[Mathf.Max(8, maxOverlapResults)];
+        EnsureTowerLayerMask();
         SetPreviewVisible(false);
     }
 
@@ -195,11 +197,6 @@ public class SkillPreviewToggleUI : MonoBehaviour
     //在范围内挂载EnemyRewindRecorder的敌人开始倒放
     private bool TryCastRewindInRange()
     {
-        int finalCost = Mathf.Max(0, energyCost);
-        bool energyOk = EnergyPoolRuntime.Instance == null || EnergyPoolRuntime.Instance.TryConsume(finalCost);
-        if (!energyOk)
-            return false;
-
         Vector3 center;
         if (UsesWorldRangePreview())
             center = worldRangePreview.position;
@@ -212,50 +209,48 @@ public class SkillPreviewToggleUI : MonoBehaviour
         float finalRewindSeconds = Mathf.Max(0.1f, rewindSeconds);
         float finalPlaybackDuration = Mathf.Max(0.05f, playbackDuration);
 
-        int batteryHitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, BatteryLayer);
-
-        for (int i = 0; i < batteryHitCount; i++)
-        {
-            if (_overlapResults[i].GetComponent<IBatteryBackward>() is IBatteryBackward batteryBackward)
-            {
-                Debug.Log(batteryBackward);
-                batteryBackward.Backward(finalRewindSeconds);
-            }
-        }
-
-
-        int hitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, enemyLayer);
-        if (hitCount <= 0)
-            return false;
-
-        _buffAppliedEnemies.Clear();
+        _affectedTowers.Clear();
+        _towerRangeEnemies.Clear();
         _rewindAppliedRecorders.Clear();
 
-        for (int i = 0; i < hitCount; i++)
+        int towerHitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, BatteryLayer);
+        for (int i = 0; i < towerHitCount; i++)
         {
             Collider2D collider2D = _overlapResults[i];
-            if (collider2D == null) continue;
+            if (collider2D == null)
+                continue;
 
-            Enemy enemy = collider2D.GetComponentInParent<Enemy>();
-            if (enemy != null && enemy.IsInteractable && !_buffAppliedEnemies.Contains(enemy))
-            {
-                _buffAppliedEnemies.Add(enemy);
-                if (buffSetOnCast != null)
-                    enemy.ApplyBuffSet(buffSetOnCast);
-            }
+            Plants tower = collider2D.GetComponentInParent<Plants>();
+            if (tower != null)
+                _affectedTowers.Add(tower);
 
-            EnemyRewindRecorder recorder = collider2D.GetComponentInParent<EnemyRewindRecorder>();
-            if (recorder != null && enemy != null && enemy.IsInteractable && !_rewindAppliedRecorders.Contains(recorder))
+            _overlapResults[i] = null;
+        }
+
+        foreach (Plants tower in _affectedTowers)
+        {
+            CollectTowerRangeEnemies(tower, _towerRangeEnemies);
+        }
+
+        if (_towerRangeEnemies.Count <= 0)
+            return false;
+
+        int finalCost = Mathf.Max(0, energyCost);
+        bool energyOk = EnergyPoolRuntime.Instance == null || EnergyPoolRuntime.Instance.TryConsume(finalCost);
+        if (!energyOk)
+            return false;
+
+        foreach (Enemy enemy in _towerRangeEnemies)
+        {
+            if (enemy == null || !enemy.IsInteractable)
+                continue;
+
+            EnemyRewindRecorder recorder = enemy.GetComponent<EnemyRewindRecorder>();
+            if (recorder != null && !_rewindAppliedRecorders.Contains(recorder))
             {
                 _rewindAppliedRecorders.Add(recorder);
                 recorder.StartRewindBySkill(finalRewindSeconds, finalPlaybackDuration);
             }
-
-            _overlapResults[i] = null;
-
-
-
-
         }
 
      
@@ -268,6 +263,49 @@ public class SkillPreviewToggleUI : MonoBehaviour
         if (_overlapResults != null && _overlapResults.Length == targetSize)
             return;
         _overlapResults = new Collider2D[targetSize];
+    }
+
+    private void CollectTowerRangeEnemies(Plants tower, HashSet<Enemy> results)
+    {
+        if (tower == null || results == null)
+            return;
+
+        if (tower is Bamboo bamboo)
+        {
+            bamboo.CollectRewindTargetEnemies(results);
+            return;
+        }
+
+        List<IDamageable> enemies = tower.plantsCtx?.enemys;
+        if (enemies == null)
+            return;
+
+        for (int i = enemies.Count - 1; i >= 0; i--)
+        {
+            IDamageable target = enemies[i];
+            if (target == null || target.obj == null)
+            {
+                enemies.RemoveAt(i);
+                continue;
+            }
+
+            if (target is Enemy enemy)
+            {
+                if (enemy.IsInteractable)
+                    results.Add(enemy);
+                else
+                    enemies.RemoveAt(i);
+            }
+        }
+    }
+
+    private void EnsureTowerLayerMask()
+    {
+        if (BatteryLayer.value != 0)
+            return;
+
+        int towerLayer = LayerMask.NameToLayer("Palyer");
+        BatteryLayer = towerLayer >= 0 ? 1 << towerLayer : ~0;
     }
 
     private bool TryGetMouseWorldPoint(out Vector3 worldPoint)

@@ -51,7 +51,7 @@ public class EnemyFriendlyDetector : MonoBehaviour
 
         foreach (FriendlyUnit unit in friendlyUnitsInRange)
         {
-            if (unit == null || !unit.gameObject.activeInHierarchy)
+            if (unit == null || !unit.IsInteractable)
                 continue;
 
             float sqr = (unit.transform.position - fromPos).sqrMagnitude;
@@ -72,7 +72,7 @@ public class EnemyFriendlyDetector : MonoBehaviour
 
         foreach (FriendlyUnit unit in friendlyUnitsInRange)
         {
-            if (unit == null || unit as Object == null || !unit.gameObject.activeInHierarchy)
+            if (unit == null || unit as Object == null || !unit.IsInteractable)
                 continue;
             scratchSortedFriendlies.Add(unit);
         }
@@ -101,7 +101,7 @@ public class EnemyFriendlyDetector : MonoBehaviour
 
     private void CleanupDestroyedTargets()
     {
-        friendlyUnitsInRange.RemoveWhere(unit => unit == null || !unit.gameObject.activeInHierarchy);
+        friendlyUnitsInRange.RemoveWhere(unit => unit == null || !unit.IsInteractable);
     }
 
     private bool IsFriendlyTarget(Collider2D collision)
