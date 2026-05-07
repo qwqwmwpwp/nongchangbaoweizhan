@@ -9,6 +9,12 @@ using qwq;
 /// </summary>
 public class SkillPreviewToggleUI : MonoBehaviour
 {
+    private enum SkillCastMode
+    {
+        RewindEnemiesInTowerRange,
+        CatalyzeTowersInRange
+    }
+
     [Header("引用")]
     [SerializeField] private Canvas targetCanvas;
     [SerializeField] private RectTransform previewRoot;
@@ -20,6 +26,10 @@ public class SkillPreviewToggleUI : MonoBehaviour
     [Header("按键")]
     [SerializeField] private KeyCode triggerKey = KeyCode.Q;
     [SerializeField] private int placeMouseButton = 0;
+
+    [Header("Effect")]
+    [SerializeField] private SkillCastMode castMode = SkillCastMode.RewindEnemiesInTowerRange;
+    [SerializeField] private float catalysisSeconds = 3f;
 
     [Header("倒放技能")]
     [SerializeField] private int energyCost = 20;  // 能量消耗
@@ -42,6 +52,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
 
     private RectTransform _canvasRect;
     private bool _isPreviewing;
+    private SkillCastMode _activeCastMode;
     private Collider2D[] _overlapResults;
     private readonly HashSet<Plants> _affectedTowers = new HashSet<Plants>();
     private readonly HashSet<Enemy> _towerRangeEnemies = new HashSet<Enemy>();
@@ -59,6 +70,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
             previewRoot = CreatePlaceholder();
 
         _overlapResults = new Collider2D[Mathf.Max(8, maxOverlapResults)];
+        _activeCastMode = castMode;
         EnsureTowerLayerMask();
         SetPreviewVisible(false);
     }
@@ -80,6 +92,31 @@ public class SkillPreviewToggleUI : MonoBehaviour
 
     public void EnterPreview()
     {
+        EnterPreview(castMode);
+    }
+
+    public void EnterRewindPreview()
+    {
+        EnterPreview(SkillCastMode.RewindEnemiesInTowerRange);
+    }
+
+    public void EnterCatalysisPreview()
+    {
+        EnterPreview(SkillCastMode.CatalyzeTowersInRange);
+    }
+
+    public void ConfigureAsCatalysisPreview(KeyCode key, Color previewColor)
+    {
+        castMode = SkillCastMode.CatalyzeTowersInRange;
+        _activeCastMode = castMode;
+        triggerKey = key;
+        ApplyWorldPreviewColor(previewColor);
+        SetPreviewVisible(false);
+    }
+
+    private void EnterPreview(SkillCastMode activeMode)
+    {
+        _activeCastMode = activeMode;
         _isPreviewing = true;
         SetPreviewVisible(true);
         UpdatePreviewPosition();
@@ -88,12 +125,13 @@ public class SkillPreviewToggleUI : MonoBehaviour
     public void ExitPreview()
     {
         _isPreviewing = false;
+        _activeCastMode = castMode;
         SetPreviewVisible(false);
     }
     //鼠标点击后触发该方法尝试回溯和关闭提示框
     private void CastAndExit()
     {
-        TryCastRewindInRange();
+        TryCastCurrentEffectInRange();
         ExitPreview();
     }
 
@@ -162,6 +200,16 @@ public class SkillPreviewToggleUI : MonoBehaviour
         worldRangePreview.localScale = new Vector3(uniformLocal, uniformLocal, 1f);
     }
 
+    private void ApplyWorldPreviewColor(Color color)
+    {
+        if (worldRangePreview == null)
+            return;
+
+        SpriteRenderer sr = worldRangePreview.GetComponent<SpriteRenderer>();
+        if (sr != null)
+            sr.color = color;
+    }
+
     private void SetPreviewVisible(bool visible)
     {
         if (UsesWorldRangePreview())
@@ -195,50 +243,49 @@ public class SkillPreviewToggleUI : MonoBehaviour
         return rect;
     }
     //在范围内挂载EnemyRewindRecorder的敌人开始倒放
+    private bool TryCastCurrentEffectInRange()
+    {
+        switch (_activeCastMode)
+        {
+            case SkillCastMode.CatalyzeTowersInRange:
+                return TryCastCatalysisInRange();
+            case SkillCastMode.RewindEnemiesInTowerRange:
+            default:
+                return TryCastRewindInRange();
+        }
+    }
+
     private bool TryCastRewindInRange()
     {
-        Vector3 center;
-        if (UsesWorldRangePreview())
-            center = worldRangePreview.position;
-        else if (!TryGetMouseWorldPoint(out center))
+        if (!TryGetCastCenter(out Vector3 center))
             return false;
-
-        EnsureOverlapBuffer();
 
         float radius = Mathf.Max(0.1f, rewindRadius);
         float finalRewindSeconds = Mathf.Max(0.1f, rewindSeconds);
         float finalPlaybackDuration = Mathf.Max(0.05f, playbackDuration);
 
-        _affectedTowers.Clear();
         _towerRangeEnemies.Clear();
         _rewindAppliedRecorders.Clear();
+        CollectTowersInRadius(center, radius);
 
-        int towerHitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, BatteryLayer);
-        for (int i = 0; i < towerHitCount; i++)
-        {
-            Collider2D collider2D = _overlapResults[i];
-            if (collider2D == null)
-                continue;
-
-            Plants tower = collider2D.GetComponentInParent<Plants>();
-            if (tower != null)
-                _affectedTowers.Add(tower);
-
-            _overlapResults[i] = null;
-        }
+        if (_affectedTowers.Count <= 0)
+            return false;
 
         foreach (Plants tower in _affectedTowers)
         {
             CollectTowerRangeEnemies(tower, _towerRangeEnemies);
         }
 
-        if (_towerRangeEnemies.Count <= 0)
-            return false;
-
         int finalCost = Mathf.Max(0, energyCost);
         bool energyOk = EnergyPoolRuntime.Instance == null || EnergyPoolRuntime.Instance.TryConsume(finalCost);
         if (!energyOk)
             return false;
+
+        foreach (Plants tower in _affectedTowers)
+        {
+            if (tower != null)
+                tower.Backward(finalRewindSeconds);
+        }
 
         foreach (Enemy enemy in _towerRangeEnemies)
         {
@@ -253,8 +300,64 @@ public class SkillPreviewToggleUI : MonoBehaviour
             }
         }
 
-     
         return true;
+    }
+
+    private bool TryCastCatalysisInRange()
+    {
+        if (!TryGetCastCenter(out Vector3 center))
+            return false;
+
+        float radius = Mathf.Max(0.1f, rewindRadius);
+        CollectTowersInRadius(center, radius);
+
+        if (_affectedTowers.Count <= 0)
+            return false;
+
+        int finalCost = Mathf.Max(0, energyCost);
+        bool energyOk = EnergyPoolRuntime.Instance == null || EnergyPoolRuntime.Instance.TryConsume(finalCost);
+        if (!energyOk)
+            return false;
+
+        float duration = Mathf.Max(0.05f, catalysisSeconds);
+        foreach (Plants tower in _affectedTowers)
+        {
+            if (tower != null)
+                tower.Catalysis(duration);
+        }
+
+        return true;
+    }
+
+    private bool TryGetCastCenter(out Vector3 center)
+    {
+        if (UsesWorldRangePreview())
+        {
+            center = worldRangePreview.position;
+            return true;
+        }
+
+        return TryGetMouseWorldPoint(out center);
+    }
+
+    private void CollectTowersInRadius(Vector3 center, float radius)
+    {
+        EnsureOverlapBuffer();
+        _affectedTowers.Clear();
+
+        int towerHitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, BatteryLayer);
+        for (int i = 0; i < towerHitCount; i++)
+        {
+            Collider2D collider2D = _overlapResults[i];
+            if (collider2D == null)
+                continue;
+
+            Plants tower = collider2D.GetComponentInParent<Plants>();
+            if (tower != null)
+                _affectedTowers.Add(tower);
+
+            _overlapResults[i] = null;
+        }
     }
 
     private void EnsureOverlapBuffer()

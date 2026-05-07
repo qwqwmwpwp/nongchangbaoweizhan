@@ -335,10 +335,18 @@ MonoBehaviour:
     transform: {fileID: 0}
     <fertilizer>k__BackingField: 0
     <diamond>k__BackingField: 0
-    globalBacktracking_t: 0
-    partialBacktracking_t: 0
+    globalBacktracking_t: 15
+    partialBacktracking_t: 15
     backward: 0
     catalysisNumber: 0
+    catalysis_t: 15
+    catalysisGrowthSpeedMultiplier: 2
+    rewindGrowthSpeedMultiplier: 1
+    boundaryRewindDeathThreshold: 4
+    boundaryCatalysisDeathThreshold: 4
+    growthTimerEpsilon: 0.01
+    currentGrowthStageIndex: 0
+    finalGrowthStageIndex: 2
     bullet: {fileID: 7217745369761416708, guid: 0fc5803d2469003439a4f6b858efabbe, type: 3}
     bulletTransform: {fileID: 6032659453858177354}
     attack: 0

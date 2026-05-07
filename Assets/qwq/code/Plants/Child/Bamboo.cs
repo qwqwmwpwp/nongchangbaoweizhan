@@ -1,7 +1,6 @@
-using HSM;
+﻿using HSM;
 using qwq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,6 +12,7 @@ public class Bamboo : Plants
 
     protected override void Awake()
     {
+        ctx.plant = gameObject;
         ctx.BindOwner(this);
         root = new BambooRoot(null, ctx);
         base.Awake();
@@ -20,11 +20,7 @@ public class Bamboo : Plants
 
     public override void Backward(float t)
     {
-        if (ctx.Backward_t > 0f)
-            return;
-
-        ctx.Backward_t = t;
-        ctx.isBackward = true;
+        base.Backward(t);
     }
 
     public void CollectRewindTargetEnemies(HashSet<Enemy> results)
@@ -32,9 +28,7 @@ public class Bamboo : Plants
         ctx?.CollectRewindTargetEnemies(results);
     }
 
-    [Tooltip("在 Scene 中未选中竹子时也绘制驻守区域（调 ctx 数值时不必保持选中 Hierarchy）。")]
     [SerializeField] private bool drawGuardGizmosInSceneWhenNotSelected = true;
-
 
     private void OnDrawGizmos()
     {
@@ -67,23 +61,19 @@ public class Bamboo : Plants
 [Serializable]
 public class BambooCtx : PlantsCtx
 {
-    [Header("生长阶段1")]
+    [Header("Stage 1")]
     public GameObject obj1;
-    [Tooltip("阶段1持续时间（秒）。")]
     public float grow1 = 10f;
 
-    [Header("生长阶段2")]
+    [Header("Stage 2")]
     public GameObject obj2;
-    [Tooltip("阶段2持续时间（秒）。")]
     public float grow2 = 10f;
 
-    [Header("衰老阶段")]
+    [Header("Stage 3")]
     public GameObject obj3;
 
-    [Header("友军生成")]
-    [Tooltip("友军单位预制体。")]
+    [Header("Friendly Spawn")]
     public GameObject friendlyUnitPrefab;
-    [Tooltip("友军属性数据（血量、攻击力、移速等）。")]
     public FriendlyUnitDataSO friendlyUnitData;
     [Header("Stage 1 Friendly Unit")]
     public GameObject stage1FriendlyUnitPrefab;
@@ -94,32 +84,25 @@ public class BambooCtx : PlantsCtx
     [Header("Stage 3 Friendly Unit")]
     public GameObject stage3FriendlyUnitPrefab;
     public FriendlyUnitDataSO stage3FriendlyUnitData;
-    [Tooltip("驻守区域相对竹子的前向偏移。")]
+
     public float guardForwardOffset = 2f;
-    [Tooltip("驻守区域尺寸：X=宽度，Y=深度。")]
     public Vector2 guardBoxSize = new Vector2(4f, 3f);
-    [Tooltip("待机/回防移动速度倍率。")]
     public float guardMoveSpeedScale = 1f;
-    [Tooltip("友军索敌半径。")]
     public float detectRadius = 6f;
-    [Tooltip("友军追击半径（以当前驻守区中心为基准）。")]
     public float chaseRadius = 8f;
-    [Tooltip("全局友军数量硬上限。")]
     public int defaultMaxFriendlyCount = 3;
-    [Tooltip("竹子触发器检测器（为空时会自动查找子物体上的检测器）。")]
     public BambooEnemyTriggerDetector triggerDetector;
-    [Tooltip("三个友军对应的回位点（按生成顺序分配）。")]
     public Transform[] returnPoints = new Transform[3];
 
-    [Header("阶段1生成")]
+    [Header("Stage 1 Spawn")]
     public int stage1SpawnLimit = 1;
     public float stage1SpawnInterval = 2f;
 
-    [Header("阶段2生成")]
+    [Header("Stage 2 Spawn")]
     public int stage2SpawnLimit = 3;
     public float stage2SpawnInterval = 1f;
 
-    [Header("阶段3生成")]
+    [Header("Stage 3 Spawn")]
     public int stage3SpawnLimit = 2;
     public float stage3SpawnInterval = 1.5f;
 
@@ -129,11 +112,10 @@ public class BambooCtx : PlantsCtx
     [NonSerialized] private bool warnedSlotsOutsideChase;
 
     public bool isBackward;
-    public float Backward_t = 0;
+    public float Backward_t = 0f;
 
     private readonly float[] spawnTimers = new float[3];
     private bool warnedMissingSpawnConfig;
-
 
     public void TickSpawn(int stageIndex, float deltaTime)
     {
@@ -148,7 +130,7 @@ public class BambooCtx : PlantsCtx
             if (!warnedMissingSpawnConfig)
             {
                 warnedMissingSpawnConfig = true;
-                Debug.LogWarning("BambooCtx: 缺少 friendlyUnitPrefab 或 friendlyUnitData，无法生成友军单位。");
+                Debug.LogWarning("BambooCtx: Missing friendlyUnitPrefab or friendlyUnitData, cannot spawn friendly unit.");
             }
             return;
         }
@@ -241,6 +223,24 @@ public class BambooCtx : PlantsCtx
             if (enemy != null && enemy.IsInteractable)
                 results.Add(enemy);
         }
+    }
+
+    public override void Death()
+    {
+        KillSpawnedUnits();
+        base.Death();
+    }
+
+    private void KillSpawnedUnits()
+    {
+        CleanupDestroyedUnits();
+        for (int i = 0; i < spawnedUnits.Count; i++)
+        {
+            FriendlyUnit unit = spawnedUnits[i];
+            if (unit != null && !unit.IsDead)
+                unit.ForceDeath();
+        }
+        spawnedUnits.Clear();
     }
 
     private int GetStageSpawnLimit(int stageIndex)
@@ -374,9 +374,6 @@ public class BambooCtx : PlantsCtx
         "FriendlyReturnSlot_3"
     };
 
-    /// <summary>
-    /// 若竹子挂在含 Planting point 子物体 FriendlyReturnSlot_1..3 的层级下，则用其作为友军回位/待机锚点。
-    /// </summary>
     private bool TryBindReturnPointsFromPlantingPointHierarchy()
     {
         if (ownerBamboo == null)
@@ -406,8 +403,7 @@ public class BambooCtx : PlantsCtx
         if (warnedSlotsOutsideChase || ownerBamboo == null || returnPoints == null)
             return;
 
-        Vector3 center = ownerBamboo.transform.position
-            + ownerBamboo.transform.forward * Mathf.Max(0f, guardForwardOffset);
+        Vector3 center = ownerBamboo.transform.position + ownerBamboo.transform.forward * Mathf.Max(0f, guardForwardOffset);
         float r = Mathf.Max(0.1f, chaseRadius);
         float rSqr = r * r;
 
@@ -419,9 +415,7 @@ public class BambooCtx : PlantsCtx
             if ((t.position - center).sqrMagnitude > rSqr)
             {
                 warnedSlotsOutsideChase = true;
-                Debug.LogWarning(
-                    $"BambooCtx: {PlantingFriendlySlotNames[i]} 距追击圆心超过 chaseRadius={chaseRadius}，友军可能无法接敌；请拉近锚点或增大 chaseRadius。",
-                    ownerBamboo);
+                Debug.LogWarning($"BambooCtx: {PlantingFriendlySlotNames[i]} is outside chaseRadius={chaseRadius}; move the anchor closer or increase chaseRadius.", ownerBamboo);
                 break;
             }
         }
@@ -466,29 +460,27 @@ public class BambooCtx : PlantsCtx
     }
 }
 
-
 public class BambooRoot : State
 {
-public    BambooState1 state1;
-public    BambooState2 state2;
-public    BambooState3 state3;
+    public BambooState1 state1;
+    public BambooState2 state2;
+    public BambooState3 state3;
 
-    public BambooRoot(StateMachine m,BambooCtx ctx) : base(m, null)
+    public BambooRoot(StateMachine m, BambooCtx ctx) : base(m, null)
     {
         state1 = new BambooState1(m, this, ctx);
         state2 = new BambooState2(m, this, ctx);
         state3 = new BambooState3(m, this, ctx);
     }
-    protected override State GetInitialState() => state1;
 
-    protected override State GetTransition() => null;
-    
+    protected override State GetInitialState() => state1;
 }
 
-public class BambooState1 : State
+public class BambooState1 : State, IPlantGrowthTimerState
 {
-    BambooCtx Ctx;
+    private readonly BambooCtx Ctx;
     public float grow;
+
     public BambooState1(StateMachine machine, State parent, BambooCtx ctx) : base(machine, parent)
     {
         Ctx = ctx;
@@ -496,6 +488,7 @@ public class BambooState1 : State
 
     protected override void OnEnter()
     {
+        Ctx.SetGrowthStage(0, 2);
         grow = Ctx.grow1;
         if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
         Ctx.ResetSpawnTimer(0);
@@ -510,7 +503,7 @@ public class BambooState1 : State
 
     protected override void OnUpdate(float deltaTime)
     {
-        grow -= deltaTime;
+        TickStoredGrowth(deltaTime);
         Ctx.TickSpawn(0, deltaTime);
     }
 
@@ -518,12 +511,18 @@ public class BambooState1 : State
     {
         if (Ctx.obj1 != null) Ctx.obj1.SetActive(false);
     }
+
+    public void TickStoredGrowth(float deltaTime)
+    {
+        grow = Ctx.TickGrowthTimer(grow, Ctx.grow1, deltaTime);
+    }
 }
 
-public class BambooState2 : State
+public class BambooState2 : State, IPlantGrowthTimerState
 {
-    BambooCtx Ctx;
+    private readonly BambooCtx Ctx;
     public float grow;
+    private bool rewindReadyForPrevious;
 
     public BambooState2(StateMachine machine, State parent, BambooCtx ctx) : base(machine, parent)
     {
@@ -532,31 +531,27 @@ public class BambooState2 : State
 
     protected override State GetTransition()
     {
-        if (Ctx.isBackward)
-        {
-            Ctx.isBackward = false;
+        if (rewindReadyForPrevious)
             return ((BambooRoot)Parent).state1;
-        }
 
-        if (grow <= 0)
-        {
+        if (grow <= 0f)
             return ((BambooRoot)Parent).state3;
-
-        }
 
         return null;
     }
 
     protected override void OnEnter()
     {
+        Ctx.SetGrowthStage(1, 2);
         if (Ctx.obj2 != null) Ctx.obj2.SetActive(true);
         grow = Ctx.grow2;
+        rewindReadyForPrevious = false;
         Ctx.ResetSpawnTimer(1);
     }
 
     protected override void OnUpdate(float deltaTime)
     {
-        grow -= deltaTime;
+        TickStoredGrowth(deltaTime);
         Ctx.TickSpawn(1, deltaTime);
     }
 
@@ -564,29 +559,35 @@ public class BambooState2 : State
     {
         if (Ctx.obj2 != null) Ctx.obj2.SetActive(false);
     }
+
+    public void TickStoredGrowth(float deltaTime)
+    {
+        grow = Ctx.TickGrowthTimer(grow, Ctx.grow2, deltaTime);
+        if (Ctx.IsRewindingGrowth && Ctx.IsGrowthRewoundToStart(grow, Ctx.grow2))
+            rewindReadyForPrevious = true;
+    }
 }
 
 public class BambooState3 : State
 {
-    BambooCtx Ctx;
+    private readonly BambooCtx Ctx;
 
     public BambooState3(StateMachine machine, State parent, BambooCtx ctx) : base(machine, parent)
     {
         Ctx = ctx;
     }
+
     protected override State GetTransition()
     {
-        if (Ctx.isBackward)
-        {
-            Ctx.isBackward = false;
+        if (Ctx.IsRewindingGrowth)
             return ((BambooRoot)Parent).state2;
-        }
 
         return null;
     }
 
     protected override void OnEnter()
     {
+        Ctx.SetGrowthStage(2, 2);
         if (Ctx.obj3 != null) Ctx.obj3.SetActive(true);
         Ctx.ResetSpawnTimer(2);
     }

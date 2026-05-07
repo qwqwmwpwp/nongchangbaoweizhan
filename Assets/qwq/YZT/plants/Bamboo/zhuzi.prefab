@@ -57,10 +57,18 @@ MonoBehaviour:
     transform: {fileID: 0}
     <fertilizer>k__BackingField: 100
     <diamond>k__BackingField: 0
-    globalBacktracking_t: 0
-    partialBacktracking_t: 0
+    globalBacktracking_t: 15
+    partialBacktracking_t: 15
     backward: 0
     catalysisNumber: 0
+    catalysis_t: 15
+    catalysisGrowthSpeedMultiplier: 2
+    rewindGrowthSpeedMultiplier: 1
+    boundaryRewindDeathThreshold: 4
+    boundaryCatalysisDeathThreshold: 4
+    growthTimerEpsilon: 0.01
+    currentGrowthStageIndex: 0
+    finalGrowthStageIndex: 2
     obj1: {fileID: 7176011339920291802}
     grow1: 10
     obj2: {fileID: 1822506622252545325}

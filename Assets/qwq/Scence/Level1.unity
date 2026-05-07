@@ -13608,7 +13608,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38c8bd9386282e4598daa5f7d6f4d72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buffSetOnCast: {fileID: 0}
+  buffSetOnCast: {fileID: 11400000, guid: 102ab0d1b7e5e1c4780a63bca55f8f11, type: 2}
   rewindTiers:
   - name: Low
     triggerKey: 276
@@ -16287,6 +16287,8 @@ MonoBehaviour:
   syncWorldPreviewScaleFromRadius: 1
   triggerKey: 113
   placeMouseButton: 0
+  castMode: 0
+  catalysisSeconds: 3
   energyCost: 0
   rewindRadius: 1
   rewindSeconds: 3
@@ -18808,8 +18810,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   localRewind: {fileID: 1684122017}
+  catalysisSkill: {fileID: 0}
   globalRewind: {fileID: 1333381457}
   globalTierPanel: {fileID: 699315938}
+  catalysisTriggerKey: 101
+  catalysisPreviewColor: {r: 1, g: 0.55, b: 0.05, a: 0.35}
 --- !u!114 &2107493014
 MonoBehaviour:
   m_ObjectHideFlags: 0

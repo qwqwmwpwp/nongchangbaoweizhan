@@ -7,15 +7,41 @@ public class RewindSkillsHubUI : MonoBehaviour
 {
     [Header("引用")]
     [SerializeField] private SkillPreviewToggleUI localRewind;
+    [SerializeField] private SkillPreviewToggleUI catalysisSkill;
     [SerializeField] private EnemyRewindSkillRuntime globalRewind;
     [Tooltip("全局三档按钮的父节点，初始建议设为隐藏。")]
     [SerializeField] private GameObject globalTierPanel;
+    [SerializeField] private KeyCode catalysisTriggerKey = KeyCode.E;
+    [SerializeField] private Color catalysisPreviewColor = new Color(1f, 0.55f, 0.05f, 0.35f);
+
+    private void Awake()
+    {
+        if (catalysisSkill != null || localRewind == null)
+            return;
+
+        catalysisSkill = Instantiate(localRewind, localRewind.transform.parent);
+        catalysisSkill.name = "CatalysisSkill";
+        catalysisSkill.ConfigureAsCatalysisPreview(KeyCode.None, catalysisPreviewColor);
+    }
+
+    private void Update()
+    {
+        if (catalysisTriggerKey != KeyCode.None && Input.GetKeyDown(catalysisTriggerKey))
+            OpenCatalysisPreview();
+    }
 
     public void OpenLocalRewindPreview()
     {
         if (localRewind == null)
             return;
-        localRewind.EnterPreview();
+        localRewind.EnterRewindPreview();
+    }
+
+    public void OpenCatalysisPreview()
+    {
+        if (catalysisSkill == null)
+            return;
+        catalysisSkill.EnterCatalysisPreview();
     }
 
     public void ShowGlobalTierPanel()
