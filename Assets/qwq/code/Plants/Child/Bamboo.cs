@@ -302,7 +302,7 @@ public class BambooCtx : PlantsCtx
     {
         int assignIndex = spawnedUnits.Count;
         Transform assignedReturnPoint = GetAssignedReturnPoint(assignIndex);
-        Vector3 spawnPos = assignedReturnPoint != null ? assignedReturnPoint.position : transform.position;
+        Vector3 spawnPos = transform.position;
         GameObject go = GameObject.Instantiate(prefab, spawnPos, Quaternion.identity);
         FriendlyUnit unit = go.GetComponent<FriendlyUnit>();
         if (unit == null)
