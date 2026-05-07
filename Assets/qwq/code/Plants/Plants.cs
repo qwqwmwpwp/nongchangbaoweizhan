@@ -37,9 +37,12 @@ namespace qwq
             if (plantsCtx.globalBacktracking_t > 0)
             {
                 plantsCtx.globalBacktracking_t -= Time.deltaTime;
+
                 if (plantsCtx.partialBacktracking_t > 0)
                     plantsCtx.partialBacktracking_t = 0.01f;
             }
+
+
 
             machine.Tick(Time.deltaTime);
         }
@@ -60,14 +63,13 @@ namespace qwq
 
     }
 
-    public class PlantsCtx : IWeapon
+    public class PlantsCtx
     {
         public Sprite UI;
         [HideInInspector] public GameObject plant;
 
         [HideInInspector] public Transform transform;
         public List<IDamageable> enemys = new();
-        public virtual void Fire(IDamageable target) { }
         [field: SerializeField] public int fertilizer { get; private set; }//
         [field: SerializeField] public int diamond { get; private set; }//
 
@@ -83,9 +85,31 @@ namespace qwq
         {
             GameObject.Destroy(plant);
         }
+
+        public bool EnemyDetection()
+        {
+            for (int i = enemys.Count - 1; i >= 0; i--)
+            {
+                if (enemys[i] == null || enemys[i].obj == null)
+                {
+                    enemys.RemoveAt(i);
+                }
+            }
+
+            enemys.Sort((a, b) =>
+            {
+                float aDist = (a.obj.transform.position - transform.position).magnitude;
+                float bDist = (b.obj.transform.position - transform.position).magnitude;
+                return aDist.CompareTo(bDist);
+            });
+
+            if (enemys.Count == 0)
+                return false;
+            else
+                return true;
+        }
+
     }
-
-
 
     public interface IBatteryBackward
     {

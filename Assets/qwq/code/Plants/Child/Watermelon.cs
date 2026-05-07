@@ -86,12 +86,12 @@ public class WatermelonCtx : PlantsCtx
     public float bulletRange5 = 1f;
 
 
-    public void Attack(int attack, float range, Vector2 target)
+    public void Attack(int attack, float range, Vector2 target,bool isStrengthen=false)
     {
         if (this.bullet == null)
             return;
         GameObject bullet = GameObject.Instantiate(this.bullet, bulletTransform.position, bulletTransform.rotation);
-        bullet.GetComponent<WatermelonBullet>().Initialize(attack, range, target);
+        bullet.GetComponent<WatermelonBullet>().Initialize(attack, range, target,isStrengthen);
     }
 }
 
@@ -172,8 +172,9 @@ namespace HSM
             if (t <= 0)
             {
                 t = Ctx.AttackSpeed1;
-                if (Ctx.enemys.Count >= 0)
+                if (!Ctx.EnemyDetection())
                     return;
+
                 Ctx.Attack(Ctx.attack1, Ctx.bulletRange1, Ctx.enemys[0].obj.transform.position);
                 Ctx.animator1.SetTrigger("attack");
 
@@ -229,8 +230,9 @@ namespace HSM
             if (t <= 0)
             {
                 t = Ctx.AttackSpeed2;
-                if (Ctx.enemys.Count == 0)
+                if (!Ctx.EnemyDetection())
                     return;
+
                 Ctx.Attack(Ctx.attack2, Ctx.bulletRange2, Ctx.enemys[0].obj.transform.position);
                 Ctx.animator1.SetTrigger("attack");
             }
@@ -266,7 +268,7 @@ namespace HSM
             t = Ctx.AttackSpeed3;
             Ctx.animator1.speed = Ctx.AttackSpeed3;
 
-            if (Ctx.enemys.Count > 0)
+            if (Ctx.EnemyDetection())
                 Ctx.animator1.SetTrigger("attack");
         }
 
@@ -276,7 +278,7 @@ namespace HSM
             if (t <= 0)
             {
                 t = Ctx.AttackSpeed3;
-                if (Ctx.enemys.Count == 0)
+                if (!Ctx.EnemyDetection())
                     return;
 
                 Ctx.Attack(Ctx.attack3, Ctx.bulletRange3, Ctx.enemys[0].obj.transform.position);
@@ -299,7 +301,7 @@ namespace HSM
         public WatermelonState4(StateMachine machine, State parent, WatermelonCtx ctx) : base(machine, parent)
         {
             Ctx = ctx;
-           
+
         }
 
         protected override State GetTransition()
@@ -318,7 +320,7 @@ namespace HSM
             Ctx.specialEffects5.SetActive(true);
             Ctx.animator1.speed = Ctx.AttackSpeed4;
 
-            if (Ctx.enemys.Count > 0)
+            if (Ctx.EnemyDetection())
                 Ctx.animator1.SetTrigger("attack");
         }
 
@@ -340,14 +342,12 @@ namespace HSM
             if (t <= 0)
             {
                 t = Ctx.AttackSpeed4;
-                if (Ctx.enemys.Count == 0)
+                if (!Ctx.EnemyDetection())
                     return;
 
                 Ctx.Attack(Ctx.attack4, Ctx.bulletRange4, Ctx.enemys[0].obj.transform.position);
                 Ctx.animator1.SetTrigger("attack");
             }
-
-
 
         }
     }
@@ -379,10 +379,10 @@ namespace HSM
             if (attackSpeed <= 0)
             {
                 attackSpeed = Ctx.attackSpeed5;
-                if (Ctx.enemys.Count == 0)
+                if (!Ctx.EnemyDetection())
                     return;
 
-                Ctx.Attack(Ctx.attack5, Ctx.bulletRange5, Ctx.enemys[0].obj.transform.position);
+                Ctx.Attack(Ctx.attack5, Ctx.bulletRange5, Ctx.enemys[0].obj.transform.position,true);
             }
         }
 

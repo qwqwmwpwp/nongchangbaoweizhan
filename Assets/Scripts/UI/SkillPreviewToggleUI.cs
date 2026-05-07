@@ -218,7 +218,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
         {
             if (_overlapResults[i].GetComponent<IBatteryBackward>() is IBatteryBackward batteryBackward)
             {
-
+                Debug.Log(batteryBackward);
                 batteryBackward.Backward(finalRewindSeconds);
             }
         }

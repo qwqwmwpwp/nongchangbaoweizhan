@@ -16,7 +16,6 @@ public class JDYY : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
     //    if (b && a < 0)

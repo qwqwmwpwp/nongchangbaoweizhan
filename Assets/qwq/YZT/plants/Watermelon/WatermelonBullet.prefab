@@ -281,5 +281,5 @@ MonoBehaviour:
   bulletSprite: {fileID: 5149153168714753705}
   rangeSprite: {fileID: 1618654671914783740}
   attack: 2
-  speed: 5
-  detection_max: 1
+  speed: 4
+  detection_max: 0.2
