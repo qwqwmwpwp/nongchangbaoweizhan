@@ -37,9 +37,13 @@ namespace qwq
             if (plantsCtx.globalBacktracking_t > 0)
             {
                 plantsCtx.globalBacktracking_t -= Time.deltaTime;
+
                 if (plantsCtx.partialBacktracking_t > 0)
                     plantsCtx.partialBacktracking_t = 0.01f;
             }
+
+            plantsCtx.catalysis_t -= Time.deltaTime;
+
 
             machine.Tick(Time.deltaTime);
         }
@@ -50,6 +54,7 @@ namespace qwq
                 return;
 
             plantsCtx.globalBacktracking_t = arg1;
+
         }
 
 
@@ -58,16 +63,19 @@ namespace qwq
             plantsCtx.backward++;
         }
 
+        public void Catalysis(float t = 3f)
+        {
+            plantsCtx.catalysis_t = t;
+        }
     }
 
-    public class PlantsCtx : IWeapon
+    public class PlantsCtx
     {
         public Sprite UI;
         [HideInInspector] public GameObject plant;
 
         [HideInInspector] public Transform transform;
         public List<IDamageable> enemys = new();
-        public virtual void Fire(IDamageable target) { }
         [field: SerializeField] public int fertilizer { get; private set; }//
         [field: SerializeField] public int diamond { get; private set; }//
 
@@ -78,14 +86,38 @@ namespace qwq
         [HideInInspector] public int backward = 0;//回溯次数
         [Header("生长加速")]
         public int catalysisNumber = 0;//次数
+        public float catalysis_t;
 
         public void Death()
         {
             GameObject.Destroy(plant);
         }
+
+        public bool EnemyDetection()
+        {
+            for (int i = enemys.Count - 1; i >= 0; i--)
+            {
+                if (enemys[i] == null || enemys[i].obj == null)
+                {
+                    enemys.RemoveAt(i);
+                }
+            }
+
+            enemys.Sort((a, b) =>
+            {
+                float aDist = (a.obj.transform.position - transform.position).magnitude;
+                float bDist = (b.obj.transform.position - transform.position).magnitude;
+                return aDist.CompareTo(bDist);
+            });
+
+            if (enemys.Count == 0)
+                return false;
+            else
+                return true;
+        }
+
+
     }
-
-
 
     public interface IBatteryBackward
     {

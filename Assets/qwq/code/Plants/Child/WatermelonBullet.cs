@@ -63,10 +63,10 @@ public class WatermelonBullet : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        Enemy enemy = collision.GetComponentInParent<Enemy>();
-        if (enemy == null)
-            return;
-        enemys.Remove(enemy);
+        //Enemy enemy = collision.GetComponentInParent<Enemy>();
+        //if (enemy == null)
+        //    return;
+        //enemys.Remove(enemy);
     }
 
     public void Initialize(int attack, float Range, Vector2 target,bool isaa=false)
@@ -114,13 +114,12 @@ public class WatermelonBullet : MonoBehaviour
 
     private void Attack(float deltaTime)
     {
-        enemys.RemoveAll(e => e == null || e.obj == null || (e is Enemy enemy && !enemy.IsInteractable));
+        enemys.RemoveAll(e => e == null || e.obj == null);
 
-        // ???????????б???????
         List<IDamageable> enemiesToAttack = new List<IDamageable>(enemys);
         foreach (var e in enemiesToAttack)
         {
-            if (e != null && e.obj != null)  // ?????????
+            if (e != null && e.obj != null)  
             {
                 Debug.Log(e);
                 e.TakeDamage(attack);
