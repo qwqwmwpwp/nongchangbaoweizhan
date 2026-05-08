@@ -858,7 +858,7 @@ MonoBehaviour:
     growUI: {fileID: 1306350925967609927}
     plant: {fileID: 0}
     transform: {fileID: 0}
-    <fertilizer>k__BackingField: 0
+    <fertilizer>k__BackingField: 100
     <diamond>k__BackingField: 0
     globalBacktracking_t: 0
     partialBacktracking_t: 0

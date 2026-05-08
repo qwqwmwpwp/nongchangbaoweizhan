@@ -29,6 +29,7 @@ namespace qwq
         public Transform bulletTransform;
         public Animator animator;
 
+
         [Header("Stage 1")]
         public GameObject obj1;
         public float grow1 = 10f;
@@ -54,6 +55,8 @@ namespace qwq
         public int attack5 = 5;
         public float attackCooling5 = 0.8f;
         public GameObject catalysisSpecialEffects;
+
+
 
         public void Attack(IDamageable target, int attack)
         {
@@ -149,7 +152,6 @@ namespace HSM
             cooling = Ctx.attackCooling1;
 
             Ctx.growUI.gameObject.SetActive(true);
-            Ctx.GrowUiUpdate(Ctx.grow1 - grow, Ctx.grow1);
 
             Ctx.obj1.SetActive(true);
         }
@@ -218,8 +220,8 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(1, 2);
-            Ctx.growUI.gameObject.SetActive(true);
 
+            Ctx.growUI.gameObject.SetActive(true);
             Ctx.obj2.SetActive(true);
             
             cooling = Ctx.attackCooling2;
@@ -233,6 +235,8 @@ namespace HSM
 
         protected override void OnUpdate(float deltaTime)
         {
+            Ctx.GrowUiUpdate(Ctx.grow1 - grow, Ctx.grow1);
+
             TickStoredGrowth(deltaTime);
             TickAttack(deltaTime, Ctx.attackCooling2, Ctx.attack2);
         }

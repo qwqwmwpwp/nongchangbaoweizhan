@@ -309,6 +309,7 @@ namespace qwq
             if (isDead)
                 return;
 
+            PlayMusic(deathClip);
             isDead = true;
             hp = 0;
             RefreshHpUI();
@@ -347,6 +348,18 @@ namespace qwq
 
             if (buffController != null)
                 buffController.enabled = false;
+        }
+
+        [Header("“Ù–ß")]
+        [SerializeField] AudioClip attackClip;
+        [SerializeField] AudioClip deathClip;
+
+        public void PlayMusic(AudioClip audio)
+        {
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayUISound(audio);
+            }
         }
     }
 }

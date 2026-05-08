@@ -18,13 +18,6 @@ public class JDYY : MonoBehaviour
 
     void Update()
     {
-    //    if (b && a < 0)
-    //    {
 
-    //        AudioManager.Instance.PlayMusic(clip2);
-    //        b = false;
-    //        AudioManager.Instance.SetMasterVolume(0.1f);
-    //    }
-    //    a -= Time.deltaTime;
     }
 }
