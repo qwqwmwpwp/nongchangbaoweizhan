@@ -1,128 +1,225 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+
 /// <summary>
-/// UnityÒôÆµ¹ÜÀíÆ÷ - ¼ò»¯°æµ«ÏêÏ¸×¢ÊÍ
-/// ¹¦ÄÜ£ºÒôÀÖ²¥·Å¡¢ÒôĞ§¿ØÖÆ¡¢ÒôÁ¿µ÷½Ú¡¢µ­Èëµ­³öĞ§¹û
-/// Éè¼ÆÄ£Ê½£ºµ¥ÀıÄ£Ê½£¨È«¾ÖÎ¨Ò»ÊµÀı£©
+/// UnityéŸ³é¢‘ç®¡ç†å™¨ - ç®€åŒ–ç‰ˆä½†è¯¦ç»†æ³¨é‡Š
+/// åŠŸèƒ½ï¼šéŸ³ä¹æ’­æ”¾ã€éŸ³æ•ˆæ§åˆ¶ã€éŸ³é‡è°ƒèŠ‚ã€æ·¡å…¥æ·¡å‡ºæ•ˆæœ
+/// è®¾è®¡æ¨¡å¼ï¼šå•ä¾‹æ¨¡å¼ï¼ˆå…¨å±€å”¯ä¸€å®ä¾‹ï¼‰
 /// </summary>
 public class AudioManager : MonoBehaviour
 {
-    // µ¥ÀıÊµÀı - È«¾Ö·ÃÎÊµã
+    private const float MutedVolumeDb = -80f;
+
+    // å•ä¾‹å®ä¾‹ - å…¨å±€è®¿é—®ç‚¹
     public static AudioManager Instance { get; private set; }
 
-    [Header("ÒôÆµ»ìºÏÆ÷ÅäÖÃ")]
-    [Tooltip("ÓÃÓÚ¿ØÖÆ²»Í¬ÒôÆµ×éµÄÒôÁ¿£¬ĞèÔÚUnity±à¼­Æ÷ÖĞ·ÖÅä")]
+    [Header("éŸ³é¢‘æ··åˆå™¨é…ç½®")]
+    [Tooltip("ç”¨äºæ§åˆ¶ä¸åŒéŸ³é¢‘ç»„çš„éŸ³é‡ï¼Œéœ€åœ¨Unityç¼–è¾‘å™¨ä¸­åˆ†é…")]
     public AudioMixer audioMixer;
 
-    [Header("ÒôÆµÔ´×é¼ş")]
-    [Tooltip("ÓÃÓÚ²¥·Å±³¾°ÒôÀÖµÄÒôÆµÔ´")]
+    [Header("éŸ³é¢‘æºç»„ä»¶")]
+    [Tooltip("ç”¨äºæ’­æ”¾èƒŒæ™¯éŸ³ä¹çš„éŸ³é¢‘æº")]
     public AudioSource musicSource;
 
-    [Tooltip("ÓÃÓÚ²¥·Å»·¾³ÒôĞ§µÄÒôÆµÔ´")]
+    [Tooltip("ç”¨äºæ’­æ”¾ç¯å¢ƒéŸ³æ•ˆçš„éŸ³é¢‘æº")]
     public AudioSource ambientSource;
 
-    [Tooltip("ÓÃÓÚ²¥·ÅUIÒôĞ§µÄÒôÆµÔ´")]
+    [Tooltip("ç”¨äºæ’­æ”¾UIéŸ³æ•ˆçš„éŸ³é¢‘æº")]
     public AudioSource uiSource;
 
-    // ÒôÆµ»ìºÏÆ÷²ÎÊı³£Á¿
+    // éŸ³é¢‘æ··åˆå™¨å‚æ•°å¸¸é‡
     private const string MASTER_VOLUME = "MasterVolume";
     private const string MUSIC_VOLUME = "MusicVolume";
     private const string SFX_VOLUME = "SFXVolume";
 
     public ToolUIData toolUIData;
+
+    private float fallbackMasterVolume = 1f;
+    private float fallbackMusicVolume = 1f;
+    private float fallbackSfxVolume = 1f;
+    private bool fallbackMasterMuted;
+    private bool fallbackSfxMuted;
+
+    public bool IsMasterMuted => toolUIData != null ? toolUIData.masterMuted : fallbackMasterMuted;
+    public bool IsSfxMuted => toolUIData != null ? toolUIData.sfxMuted : fallbackSfxMuted;
+
     /// <summary>
-    /// ³õÊ¼»¯·½·¨ - ÔÚ¶ÔÏó´´½¨Ê±µ÷ÓÃ
+    /// åˆå§‹åŒ–æ–¹æ³• - åœ¨å¯¹è±¡åˆ›å»ºæ—¶è°ƒç”¨
     /// </summary>
     private void Awake()
     {
-        // µ¥ÀıÄ£Ê½ÊµÏÖ
+        // å•ä¾‹æ¨¡å¼å®ç°
         if (Instance == null)
         {
-            // Ê×´Î´´½¨ÊµÀı
+            // é¦–æ¬¡åˆ›å»ºå®ä¾‹
             Instance = this;
 
-            // ¿ç³¡¾°±£Áô´Ë¶ÔÏó
+            // è·¨åœºæ™¯ä¿ç•™æ­¤å¯¹è±¡
             DontDestroyOnLoad(gameObject);
-         
         }
         else
         {
-            // Èç¹ûÒÑ´æÔÚÊµÀı£¬Ïú»ÙĞÂ´´½¨µÄ¶ÔÏó
+            // å¦‚æœå·²å­˜åœ¨å®ä¾‹ï¼Œé”€æ¯æ–°åˆ›å»ºçš„å¯¹è±¡
             Destroy(gameObject);
         }
     }
+
     private void Start()
     {
-
+        ApplyStoredVolumes();
     }
-    #region ÒôÁ¿¿ØÖÆ¹¦ÄÜ
+
+    #region éŸ³é‡æ§åˆ¶åŠŸèƒ½
     /// <summary>
-    /// ÉèÖÃÖ÷ÒôÁ¿£¨Ó°ÏìËùÓĞÒôÆµ£©
+    /// è®¾ç½®ä¸»éŸ³é‡ï¼ˆå½±å“æ‰€æœ‰éŸ³é¢‘ï¼‰
     /// </summary>
-    /// <param name="volume">ÒôÁ¿Öµ£¨0.0¾²Òô - 1.0×î´ó£©</param>
+    /// <param name="volume">éŸ³é‡å€¼ï¼ˆ0.0é™éŸ³ - 1.0æœ€å¤§ï¼‰</param>
     public void SetMasterVolume(float volume)
     {
-        // ½«ÏßĞÔÒôÁ¿Öµ×ª»»Îª·Ö±´Öµ²¢ÉèÖÃµ½ÒôÆµ»ìºÏÆ÷
-        audioMixer.SetFloat(MASTER_VOLUME, ConvertToDecibel(volume));
+        volume = Mathf.Clamp01(volume);
+        if (toolUIData != null)
+            toolUIData.masterVolumeDate = volume;
+        else
+            fallbackMasterVolume = volume;
+
+        ApplyMasterVolume();
     }
 
     /// <summary>
-    /// ÉèÖÃÒôÀÖÒôÁ¿£¨½öÓ°Ïì±³¾°ÒôÀÖ£©
+    /// è®¾ç½®éŸ³ä¹éŸ³é‡ï¼ˆä»…å½±å“èƒŒæ™¯éŸ³ä¹ï¼‰
     /// </summary>
-    /// <param name="volume">ÒôÁ¿Öµ£¨0.0¾²Òô - 1.0×î´ó£©</param>
+    /// <param name="volume">éŸ³é‡å€¼ï¼ˆ0.0é™éŸ³ - 1.0æœ€å¤§ï¼‰</param>
     public void SetMusicVolume(float volume)
     {
-        audioMixer.SetFloat(MUSIC_VOLUME, ConvertToDecibel(volume));
+        volume = Mathf.Clamp01(volume);
+        if (toolUIData != null)
+            toolUIData.musicVolumeDate = volume;
+        else
+            fallbackMusicVolume = volume;
+
+        SetMixerFloat(MUSIC_VOLUME, ConvertToDecibel(volume));
     }
 
     /// <summary>
-    /// ÉèÖÃÒôĞ§ÒôÁ¿£¨Ó°ÏìUIÒôĞ§ºÍ»·¾³ÒôĞ§£©
+    /// è®¾ç½®éŸ³æ•ˆéŸ³é‡ï¼ˆå½±å“UIéŸ³æ•ˆå’Œç¯å¢ƒéŸ³æ•ˆï¼‰
     /// </summary>
-    /// <param name="volume">ÒôÁ¿Öµ£¨0.0¾²Òô - 1.0×î´ó£©</param>
+    /// <param name="volume">éŸ³é‡å€¼ï¼ˆ0.0é™éŸ³ - 1.0æœ€å¤§ï¼‰</param>
     public void SetSFXVolume(float volume)
     {
-        audioMixer.SetFloat(SFX_VOLUME, ConvertToDecibel(volume));
+        volume = Mathf.Clamp01(volume);
+        if (toolUIData != null)
+            toolUIData.SFXVolumeDate = volume;
+        else
+            fallbackSfxVolume = volume;
+
+        ApplySfxVolume();
+    }
+
+    public void SetMasterMuted(bool muted)
+    {
+        if (toolUIData != null)
+            toolUIData.masterMuted = muted;
+        else
+            fallbackMasterMuted = muted;
+
+        ApplyMasterVolume();
+    }
+
+    public void SetSfxMuted(bool muted)
+    {
+        if (toolUIData != null)
+            toolUIData.sfxMuted = muted;
+        else
+            fallbackSfxMuted = muted;
+
+        ApplySfxVolume();
+    }
+
+    public bool ToggleMasterMuted()
+    {
+        bool muted = !IsMasterMuted;
+        SetMasterMuted(muted);
+        return !muted;
+    }
+
+    public bool ToggleSfxMuted()
+    {
+        bool muted = !IsSfxMuted;
+        SetSfxMuted(muted);
+        return !muted;
     }
 
     /// <summary>
-    /// ½«ÏßĞÔÒôÁ¿Öµ×ª»»Îª·Ö±´Öµ£¨dB£©
-    /// ÒôÆµ¹¤³Ì±ê×¼×ª»»¹«Ê½
+    /// å°†çº¿æ€§éŸ³é‡å€¼è½¬æ¢ä¸ºåˆ†è´å€¼ï¼ˆdBï¼‰
+    /// éŸ³é¢‘å·¥ç¨‹æ ‡å‡†è½¬æ¢å…¬å¼
     /// </summary>
-    /// <param name="volume">ÏßĞÔÒôÁ¿Öµ£¨0.0-1.0£©</param>
-    /// <returns>¶ÔÓ¦µÄ·Ö±´Öµ</returns>
+    /// <param name="volume">çº¿æ€§éŸ³é‡å€¼ï¼ˆ0.0-1.0ï¼‰</param>
+    /// <returns>å¯¹åº”çš„åˆ†è´å€¼</returns>
     private float ConvertToDecibel(float volume)
     {
-        // µ±ÒôÁ¿½Ó½ü0Ê±·µ»Ø-80dB£¨¾²Òô£©
-        // ·ñÔòÊ¹ÓÃ¶ÔÊı¹«Ê½×ª»»£ºdB = 20 * log10(volume)
-        return volume <= 0.0001f ? -80f : Mathf.Log10(volume) * 20f;
+        // å½“éŸ³é‡æ¥è¿‘0æ—¶è¿”å›-80dBï¼ˆé™éŸ³ï¼‰
+        // å¦åˆ™ä½¿ç”¨å¯¹æ•°å…¬å¼è½¬æ¢ï¼šdB = 20 * log10(volume)
+        return volume <= 0.0001f ? MutedVolumeDb : Mathf.Log10(volume) * 20f;
     }
-    #endregion
 
-    #region ÒôÀÖ¿ØÖÆ¹¦ÄÜ
-    /// <summary>
-    /// ²¥·Å±³¾°ÒôÀÖ
-    /// </summary>
-    /// <param name="clip">Òª²¥·ÅµÄÒôÀÖ¼ô¼­</param>
-    /// <param name="loop">ÊÇ·ñÑ­»·²¥·Å£¨Ä¬ÈÏtrue£©</param>
-    public void PlayMusic(AudioClip clip, bool loop = true)
+    private void ApplyStoredVolumes()
     {
-        // °²È«¼ì²é£ºÈ·±£ÒôÀÖ¼ô¼­²»Îª¿Õ
-        if (clip == null)
+        ApplyMasterVolume();
+        SetMixerFloat(MUSIC_VOLUME, ConvertToDecibel(CurrentMusicVolume));
+        ApplySfxVolume();
+    }
+
+    private void ApplyMasterVolume()
+    {
+        SetMixerFloat(MASTER_VOLUME, IsMasterMuted ? MutedVolumeDb : ConvertToDecibel(CurrentMasterVolume));
+    }
+
+    private void ApplySfxVolume()
+    {
+        SetMixerFloat(SFX_VOLUME, IsSfxMuted ? MutedVolumeDb : ConvertToDecibel(CurrentSfxVolume));
+    }
+
+    private float CurrentMasterVolume => Mathf.Clamp01(toolUIData != null ? toolUIData.masterVolumeDate : fallbackMasterVolume);
+    private float CurrentMusicVolume => Mathf.Clamp01(toolUIData != null ? toolUIData.musicVolumeDate : fallbackMusicVolume);
+    private float CurrentSfxVolume => Mathf.Clamp01(toolUIData != null ? toolUIData.SFXVolumeDate : fallbackSfxVolume);
+
+    private void SetMixerFloat(string parameterName, float value)
+    {
+        if (audioMixer == null)
         {
-            Debug.LogWarning("AudioManager: ³¢ÊÔ²¥·Å¿ÕÒôÀÖ¼ô¼­");
+            Debug.LogWarning("AudioManager: æœªæŒ‡å®š AudioMixerï¼Œæ— æ³•è®¾ç½®éŸ³é‡ã€‚", this);
             return;
         }
 
-        // ÉèÖÃÒôÀÖÔ´ÊôĞÔ²¢²¥·Å
+        audioMixer.SetFloat(parameterName, value);
+    }
+    #endregion
+
+    #region éŸ³ä¹æ§åˆ¶åŠŸèƒ½
+    /// <summary>
+    /// æ’­æ”¾èƒŒæ™¯éŸ³ä¹
+    /// </summary>
+    /// <param name="clip">è¦æ’­æ”¾çš„éŸ³ä¹å‰ªè¾‘</param>
+    /// <param name="loop">æ˜¯å¦å¾ªç¯æ’­æ”¾ï¼ˆé»˜è®¤trueï¼‰</param>
+    public void PlayMusic(AudioClip clip, bool loop = true)
+    {
+        // å®‰å…¨æ£€æŸ¥ï¼šç¡®ä¿éŸ³ä¹å‰ªè¾‘ä¸ä¸ºç©º
+        if (clip == null)
+        {
+            Debug.LogWarning("AudioManager: å°è¯•æ’­æ”¾ç©ºéŸ³ä¹å‰ªè¾‘");
+            return;
+        }
+
+        // è®¾ç½®éŸ³ä¹æºå±æ€§å¹¶æ’­æ”¾
         musicSource.clip = clip;
         musicSource.loop = loop;
         musicSource.Play();
     }
 
     /// <summary>
-    /// Í£Ö¹µ±Ç°²¥·ÅµÄÒôÀÖ
+    /// åœæ­¢å½“å‰æ’­æ”¾çš„éŸ³ä¹
     /// </summary>
     public void StopMusic()
     {
@@ -130,7 +227,7 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ÔİÍ£µ±Ç°²¥·ÅµÄÒôÀÖ
+    /// æš‚åœå½“å‰æ’­æ”¾çš„éŸ³ä¹
     /// </summary>
     public void PauseMusic()
     {
@@ -138,7 +235,7 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// »Ö¸´ÔİÍ£µÄÒôÀÖ
+    /// æ¢å¤æš‚åœçš„éŸ³ä¹
     /// </summary>
     public void ResumeMusic()
     {
@@ -146,92 +243,92 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// µ­³öµ±Ç°ÒôÀÖ£¨ÒôÁ¿Öğ½¥½µµÍÖÁ0£©
+    /// æ·¡å‡ºå½“å‰éŸ³ä¹ï¼ˆéŸ³é‡é€æ¸é™ä½è‡³0ï¼‰
     /// </summary>
-    /// <param name="duration">µ­³ö³ÖĞøÊ±¼ä£¨Ãë£©</param>
+    /// <param name="duration">æ·¡å‡ºæŒç»­æ—¶é—´ï¼ˆç§’ï¼‰</param>
     public void FadeOutMusic(float duration)
     {
-        // Æô¶¯Ğ­³ÌÊµÏÖµ­³öĞ§¹û
+        // å¯åŠ¨åç¨‹å®ç°æ·¡å‡ºæ•ˆæœ
         StartCoroutine(FadeAudioSource(musicSource, duration, 0f));
     }
 
     /// <summary>
-    /// µ­ÈëÒôÀÖ£¨ÒôÁ¿´Ó0Öğ½¥Ôö¼Óµ½Ä¿±êÖµ£©
+    /// æ·¡å…¥éŸ³ä¹ï¼ˆéŸ³é‡ä»0é€æ¸å¢åŠ åˆ°ç›®æ ‡å€¼ï¼‰
     /// </summary>
-    /// <param name="duration">µ­Èë³ÖĞøÊ±¼ä£¨Ãë£©</param>
-    /// <param name="targetVolume">Ä¿±êÒôÁ¿Öµ£¨0.0-1.0£©</param>
+    /// <param name="duration">æ·¡å…¥æŒç»­æ—¶é—´ï¼ˆç§’ï¼‰</param>
+    /// <param name="targetVolume">ç›®æ ‡éŸ³é‡å€¼ï¼ˆ0.0-1.0ï¼‰</param>
     public void FadeInMusic(float duration, float targetVolume)
     {
-        // Æô¶¯Ğ­³ÌÊµÏÖµ­ÈëĞ§¹û
+        // å¯åŠ¨åç¨‹å®ç°æ·¡å…¥æ•ˆæœ
         StartCoroutine(FadeAudioSource(musicSource, duration, targetVolume));
     }
     #endregion
 
-    #region ÒôĞ§¿ØÖÆ¹¦ÄÜ
+    #region éŸ³æ•ˆæ§åˆ¶åŠŸèƒ½
     /// <summary>
-    /// ²¥·ÅUIÒôĞ§£¨Èç°´Å¥µã»÷£©
+    /// æ’­æ”¾UIéŸ³æ•ˆï¼ˆå¦‚æŒ‰é’®ç‚¹å‡»ï¼‰
     /// </summary>
-    /// <param name="clip">ÒôĞ§¼ô¼­</param>
+    /// <param name="clip">éŸ³æ•ˆå‰ªè¾‘</param>
     public void PlayUISound(AudioClip clip)
     {
-        // °²È«¼ì²é£ºÈ·±£ÒôĞ§¼ô¼­²»Îª¿Õ
+        // å®‰å…¨æ£€æŸ¥ï¼šç¡®ä¿éŸ³æ•ˆå‰ªè¾‘ä¸ä¸ºç©º
         if (clip == null)
         {
-            Debug.LogWarning("AudioManager: ³¢ÊÔ²¥·Å¿ÕUIÒôĞ§¼ô¼­");
+            Debug.LogWarning("AudioManager: å°è¯•æ’­æ”¾ç©ºUIéŸ³æ•ˆå‰ªè¾‘");
             return;
         }
-        // Ê¹ÓÃPlayOneShot²¥·ÅÒôĞ§£¨¿ÉÍ¬Ê±²¥·Å¶à¸ö£©
+        // ä½¿ç”¨PlayOneShotæ’­æ”¾éŸ³æ•ˆï¼ˆå¯åŒæ—¶æ’­æ”¾å¤šä¸ªï¼‰
         uiSource.PlayOneShot(clip);
     }
 
     /// <summary>
-    /// ²¥·Å»·¾³ÒôĞ§£¨Èç·çÉù¡¢ÓêÉù£©
+    /// æ’­æ”¾ç¯å¢ƒéŸ³æ•ˆï¼ˆå¦‚é£å£°ã€é›¨å£°ï¼‰
     /// </summary>
-    /// <param name="clip">ÒôĞ§¼ô¼­</param>
-    /// <param name="loop">ÊÇ·ñÑ­»·²¥·Å£¨Ä¬ÈÏtrue£©</param>
+    /// <param name="clip">éŸ³æ•ˆå‰ªè¾‘</param>
+    /// <param name="loop">æ˜¯å¦å¾ªç¯æ’­æ”¾ï¼ˆé»˜è®¤trueï¼‰</param>
 
     public void PlayAmbientSound(AudioClip clip, bool loop = true)
     {
-        // °²È«¼ì²é£ºÈ·±£ÒôĞ§¼ô¼­²»Îª¿Õ
+        // å®‰å…¨æ£€æŸ¥ï¼šç¡®ä¿éŸ³æ•ˆå‰ªè¾‘ä¸ä¸ºç©º
         if (clip == null)
         {
-            Debug.LogWarning("AudioManager: ³¢ÊÔ²¥·Å¿Õ»·¾³ÒôĞ§¼ô¼­");
+            Debug.LogWarning("AudioManager: å°è¯•æ’­æ”¾ç©ºç¯å¢ƒéŸ³æ•ˆå‰ªè¾‘");
             return;
         }
 
-        // ÉèÖÃ»·¾³ÒôÔ´ÊôĞÔ²¢²¥·Å
+        // è®¾ç½®ç¯å¢ƒéŸ³æºå±æ€§å¹¶æ’­æ”¾
         ambientSource.clip = clip;
         ambientSource.loop = loop;
         ambientSource.Play();
     }
     #endregion
 
-    #region Ğ­³Ì·½·¨£¨ÄÚ²¿Ê¹ÓÃ£©
+    #region åç¨‹æ–¹æ³•ï¼ˆå†…éƒ¨ä½¿ç”¨ï¼‰
     /// <summary>
-    /// ÒôÆµµ­Èëµ­³öĞ­³Ì
-    /// ÊµÏÖÒôÁ¿Æ½»¬¹ı¶ÉĞ§¹û
+    /// éŸ³é¢‘æ·¡å…¥æ·¡å‡ºåç¨‹
+    /// å®ç°éŸ³é‡å¹³æ»‘è¿‡æ¸¡æ•ˆæœ
     /// </summary>
-    /// <param name="source">Ä¿±êÒôÆµÔ´</param>
-    /// <param name="duration">¹ı¶É³ÖĞøÊ±¼ä£¨Ãë£©</param>
-    /// <param name="targetVolume">Ä¿±êÒôÁ¿Öµ</param>
+    /// <param name="source">ç›®æ ‡éŸ³é¢‘æº</param>
+    /// <param name="duration">è¿‡æ¸¡æŒç»­æ—¶é—´ï¼ˆç§’ï¼‰</param>
+    /// <param name="targetVolume">ç›®æ ‡éŸ³é‡å€¼</param>
     private IEnumerator FadeAudioSource(AudioSource source, float duration, float targetVolume)
     {
-        // ¼ÇÂ¼³õÊ¼ÒôÁ¿
+        // è®°å½•åˆå§‹éŸ³é‡
         float startVolume = source.volume;
-        // ¼ÆÊ±Æ÷
+        // è®¡æ—¶å™¨
         float timer = 0f;
-        // ÔÚ³ÖĞøÊ±¼äÄÚÖğ½¥¸Ä±äÒôÁ¿
+        // åœ¨æŒç»­æ—¶é—´å†…é€æ¸æ”¹å˜éŸ³é‡
         while (timer < duration)
         {
-            // ¸üĞÂ¼ÆÊ±Æ÷£¨»ùÓÚÖ¡Ê±¼ä£©
+            // æ›´æ–°è®¡æ—¶å™¨ï¼ˆåŸºäºå¸§æ—¶é—´ï¼‰
             timer += Time.deltaTime;
-            // ÏßĞÔ²åÖµ¼ÆËãµ±Ç°ÒôÁ¿
+            // çº¿æ€§æ’å€¼è®¡ç®—å½“å‰éŸ³é‡
             source.volume = Mathf.Lerp(startVolume, targetVolume, timer / duration);
 
-            // µÈ´ıÏÂÒ»Ö¡
+            // ç­‰å¾…ä¸‹ä¸€å¸§
             yield return null;
         }
-        // È·±£×îÖÕÒôÁ¿¾«È·ÉèÖÃÎªÄ¿±êÖµ
+        // ç¡®ä¿æœ€ç»ˆéŸ³é‡ç²¾ç¡®è®¾ç½®ä¸ºç›®æ ‡å€¼
         source.volume = targetVolume;
     }
     #endregion

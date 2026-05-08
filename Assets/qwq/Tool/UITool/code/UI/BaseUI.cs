@@ -1,18 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class BaseUI : MonoBehaviour
 {
     [Header("UI Settings")]
-    [Tooltip("UIµÄÎ¨Ò»±êÊ¶Ãû³Æ£¬ÓÃÓÚÔÚUIManagerÖĞ×¢²á")]
+    [Tooltip("UIçš„å”¯ä¸€æ ‡è¯†åç§°ï¼Œç”¨äºåœ¨UIManagerä¸­æ³¨å†Œ")]
     [SerializeField] private string uiName = "UnnamedUI";
 
-    [Tooltip("ÊÇ·ñÔÚAwakeÊ±×Ô¶¯×¢²áµ½UIManager")]
+    [Tooltip("æ˜¯å¦åœ¨Awakeæ—¶è‡ªåŠ¨æ³¨å†Œåˆ°UIManager")]
     [SerializeField] private bool autoRegister = true;
 
-    [Tooltip("ÊÇ·ñÔÚ×¢²áºó×Ô¶¯Òş²ØUI")]
+    [Tooltip("æ˜¯å¦åœ¨æ³¨å†Œåè‡ªåŠ¨éšè—UI")]
     [SerializeField] private bool hideOnRegister = true;
+
+    protected virtual bool ShouldHideOnRegister => hideOnRegister;
 
     protected virtual void Awake()
     {
@@ -23,7 +23,7 @@ public abstract class BaseUI : MonoBehaviour
     }
 
     /// <summary>
-    /// ×¢²áUIµ½UIManager
+    /// æ³¨å†ŒUIåˆ°UIManager
     /// </summary>
     public void RegisterUI()
     {
@@ -31,19 +31,19 @@ public abstract class BaseUI : MonoBehaviour
         {
             UIManager.Instance.RegisterUI(uiName, gameObject);
 
-            if (hideOnRegister)
+            if (ShouldHideOnRegister)
             {
                 gameObject.SetActive(false);
             }
         }
         else
         {
-            Debug.LogWarning("Î´ÕÒµ½ UIManager ÊµÀı¡£Ìø¹ı UI ×¢²á¡£");
+            Debug.LogWarning("æœªæ‰¾åˆ° UIManager å®ä¾‹ã€‚è·³è¿‡ UI æ³¨å†Œã€‚");
         }
     }
 
     /// <summary>
-    /// ÏÔÊ¾UI
+    /// æ˜¾ç¤ºUI
     /// </summary>
     public void Show()
     {
@@ -55,7 +55,7 @@ public abstract class BaseUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Òş²ØUI
+    /// éšè—UI
     /// </summary>
     public void Hide()
     {
@@ -67,9 +67,9 @@ public abstract class BaseUI : MonoBehaviour
     }
 
     /// <summary>
-    /// ÇĞ»»UI£¨Òş²Øµ±Ç°UI£¬ÏÔÊ¾ÁíÒ»¸öUI£©
+    /// åˆ‡æ¢UIï¼ˆéšè—å½“å‰UIï¼Œæ˜¾ç¤ºå¦ä¸€ä¸ªUIï¼‰
     /// </summary>
-    /// <param name="showUIName">ÒªÏÔÊ¾µÄUIÃû³Æ</param>
+    /// <param name="showUIName">è¦æ˜¾ç¤ºçš„UIåç§°</param>
     public void SwitchTo(string showUIName)
     {
         if (UIManager.Instance != null)
@@ -80,12 +80,12 @@ public abstract class BaseUI : MonoBehaviour
     }
 
     /// <summary>
-    /// UIÏÔÊ¾Ê±µÄ»Øµ÷£¨×ÓÀà¿ÉÖØĞ´£©
+    /// UIæ˜¾ç¤ºæ—¶çš„å›è°ƒï¼ˆå­ç±»å¯é‡å†™ï¼‰
     /// </summary>
     protected virtual void OnShow() { }
 
     /// <summary>
-    /// UIÒş²ØÊ±µÄ»Øµ÷£¨×ÓÀà¿ÉÖØĞ´£©
+    /// UIéšè—æ—¶çš„å›è°ƒï¼ˆå­ç±»å¯é‡å†™ï¼‰
     /// </summary>
     protected virtual void OnHide() { }
 }

@@ -1,91 +1,79 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+
 public class MainMenuUI : BaseUI
 {
+    protected override bool ShouldHideOnRegister => false;
+
     [Header("UI References")]
-    [Tooltip("¿ªÊ¼ÓÎÏ·°´Å¥ÒıÓÃ")]
+    [Tooltip("å¼€å§‹æ¸¸æˆæŒ‰é’®å¼•ç”¨")]
     [SerializeField] private Button playButton;
 
-    [Tooltip("ÉèÖÃ°´Å¥ÒıÓÃ")]
+    [Tooltip("è®¾ç½®æŒ‰é’®å¼•ç”¨")]
     [SerializeField] private Button settingsButton;
 
-    [Tooltip("ÍË³öÓÎÏ·°´Å¥ÒıÓÃ")]
+    [Tooltip("é€€å‡ºæ¸¸æˆæŒ‰é’®å¼•ç”¨")]
     [SerializeField] private Button quitButton;
 
-    /// <summary>
-    /// ³õÊ¼»¯·½·¨
-    /// </summary>
+    [Tooltip("æ‰‹åŠ¨é…ç½®çš„è®¾ç½®é¢æ¿å¼•ç”¨")]
+    [SerializeField] private SettingsPanelUI settingsPanel;
+
     private void Start()
     {
-        // ÉèÖÃ°´Å¥µã»÷ÊÂ¼ş
-        playButton.onClick.AddListener(OnPlayClicked);
-        settingsButton.onClick.AddListener(OnSettingsClicked);
-        quitButton.onClick.AddListener(OnQuitClicked);
+        if (playButton != null)
+            playButton.onClick.AddListener(OnPlayClicked);
+        if (settingsButton != null)
+            settingsButton.onClick.AddListener(OnSettingsClicked);
+        if (quitButton != null)
+            quitButton.onClick.AddListener(OnQuitClicked);
     }
 
-    /// <summary>
-    /// UIÏÔÊ¾Ê±µÄ»Øµ÷£¨ÖØĞ´»ùÀà·½·¨£©
-    /// </summary>
+    private void OnDestroy()
+    {
+        if (playButton != null)
+            playButton.onClick.RemoveListener(OnPlayClicked);
+        if (settingsButton != null)
+            settingsButton.onClick.RemoveListener(OnSettingsClicked);
+        if (quitButton != null)
+            quitButton.onClick.RemoveListener(OnQuitClicked);
+    }
+
     protected override void OnShow()
     {
-        base.OnShow(); // µ÷ÓÃ»ùÀàÊµÏÖ£¨Á¼ºÃÊµ¼ù£©
-
-        Debug.Log("Ö÷²Ëµ¥ÏÔÊ¾");
-        // ÔÚ´Ë´¦Ìí¼ÓÖ÷²Ëµ¥ÏÔÊ¾Ê±µÄÌØ¶¨Âß¼­
-        // ÀıÈç£º²¥·Å±³¾°ÒôÀÖ¡¢¸üĞÂÍæ¼ÒĞÅÏ¢µÈ
+        base.OnShow();
+        Debug.Log("ä¸»èœå•æ˜¾ç¤º");
     }
 
-    /// <summary>
-    /// UIÒş²ØÊ±µÄ»Øµ÷£¨ÖØĞ´»ùÀà·½·¨£©
-    /// </summary>
     protected override void OnHide()
     {
-        base.OnHide(); // µ÷ÓÃ»ùÀàÊµÏÖ£¨Á¼ºÃÊµ¼ù£©
-
-        Debug.Log("Ö÷²Ëµ¥Òş²Ø");
-        // ÔÚ´Ë´¦Ìí¼ÓÖ÷²Ëµ¥Òş²ØÊ±µÄÇåÀíÂß¼­
-        // ÀıÈç£ºÔİÍ£±³¾°ÒôÀÖ¡¢±£´æÉèÖÃµÈ
+        base.OnHide();
+        Debug.Log("ä¸»èœå•éšè—");
     }
 
-    /// <summary>
-    /// ¿ªÊ¼ÓÎÏ·°´Å¥µã»÷´¦Àí
-    /// </summary>
     private void OnPlayClicked()
     {
-        Debug.Log("¿ªÊ¼ÓÎÏ·");
-
-        // Òş²ØÖ÷²Ëµ¥
+        Debug.Log("å¼€å§‹æ¸¸æˆ");
         Hide();
-
-        // Êµ¼ÊÓÎÏ·¿ªÊ¼Âß¼­...
-        // GameManager.Instance.StartGame();
     }
 
-    /// <summary>
-    /// ÉèÖÃ°´Å¥µã»÷´¦Àí
-    /// </summary>
     private void OnSettingsClicked()
     {
-        Debug.Log("´ò¿ªÉèÖÃ");
+        Debug.Log("æ‰“å¼€è®¾ç½®");
 
-        // ÇĞ»»µ½ÉèÖÃUI
-        SwitchTo("Settings");
+        if (settingsPanel != null)
+            settingsPanel.ShowPanel();
+        else
+            Debug.LogWarning("MainMenuUI: æœªç»‘å®š SettingsPanelUIï¼Œè¯·åœ¨ Inspector ä¸­é…ç½®è®¾ç½®é¢æ¿ã€‚", this);
     }
 
-    /// <summary>
-    /// ÍË³öÓÎÏ·°´Å¥µã»÷´¦Àí
-    /// </summary>
     private void OnQuitClicked()
     {
-        Debug.Log("ÍË³öÓÎÏ·");
+        Debug.Log("é€€å‡ºæ¸¸æˆ");
 
-        // Êµ¼ÊÍË³öÂß¼­...
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
-            Application.Quit();
+        Application.Quit();
 #endif
     }
 }
