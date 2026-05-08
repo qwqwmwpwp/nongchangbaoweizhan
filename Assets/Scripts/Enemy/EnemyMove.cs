@@ -94,7 +94,7 @@ public class EnemyMove : MonoBehaviour
             // 路径终点 = 抵达基地：先扣基地血再销毁，DummyEnemy 仍会 OnDestroy 通知波次计数
             targetNode = null;
             ApplyDamageToBaseOnReach();
-            Destroy(gameObject);
+            DestroyAfterBaseReach();
             return;
         }
 
@@ -112,5 +112,17 @@ public class EnemyMove : MonoBehaviour
 
         if (GameFlowManager.Instance != null)
             GameFlowManager.Instance.TakeBaseDamage(dmg);
+    }
+
+    private void DestroyAfterBaseReach()
+    {
+        qwq.Enemy enemy = GetComponent<qwq.Enemy>();
+        if (enemy != null)
+        {
+            enemy.DestroyAfterReachingBase();
+            return;
+        }
+
+        Destroy(gameObject);
     }
 }

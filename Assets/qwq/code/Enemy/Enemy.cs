@@ -132,8 +132,9 @@ namespace qwq
             if (isDead)
                 return 0;
 
-            Death();
-            return finalAttack;
+            int damage = GetLeakDamage();
+            DestroyAfterReachingBase();
+            return damage;
         }
 
         public int GetLeakDamage()
@@ -284,6 +285,18 @@ namespace qwq
         public void Death()
         {
             BeginDeath(false);
+        }
+
+        public void DestroyAfterReachingBase()
+        {
+            if (isDead)
+                return;
+
+            isDead = true;
+            hp = 0;
+            RefreshHpUI();
+            DisableExternalInteractions();
+            Destroy(gameObject);
         }
 
         private void DieFromCombat()
