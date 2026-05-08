@@ -324,17 +324,11 @@ namespace HSM
 
         protected override State GetTransition()
         {
-            if (Ctx.partialBacktracking_t > 0f)
-                return null;
+            if (Ctx.partialBacktracking_t <= 0f)
+                return ((HawthornRoot)Parent).state6;
 
-            HawthornRoot root = (HawthornRoot)Parent;
-            if (root.state6 == root.state3)
-            {
-                root.state2.ResetGrowthForRewind();
-                return root.state2;
-            }
+            return null;
 
-            return root.state6;
         }
 
         protected override void OnEnter()

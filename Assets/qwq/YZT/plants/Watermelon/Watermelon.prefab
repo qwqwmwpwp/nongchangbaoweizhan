@@ -78,7 +78,7 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 1}
+  m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 4
 --- !u!1 &2126291521488479317
@@ -96,7 +96,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2144136928206022624
 Transform:
   m_ObjectHideFlags: 0
@@ -330,7 +330,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ctx:
-    UI: {fileID: 1893660055, guid: c4c87614fad7c5948b2929bc0b7e3582, type: 3}
+    UI: {fileID: 21300000, guid: 45bfa68178d8e0941879d74d8c31f7a3, type: 3}
     plant: {fileID: 0}
     transform: {fileID: 0}
     <fertilizer>k__BackingField: 0
@@ -340,16 +340,17 @@ MonoBehaviour:
     backward: 0
     catalysisNumber: 0
     catalysis_t: 15
-    catalysisGrowthSpeedMultiplier: 2
-    rewindGrowthSpeedMultiplier: 1
-    boundaryRewindDeathThreshold: 4
-    boundaryCatalysisDeathThreshold: 4
+    catalysisGrowthSpeedMultiplier: 0
+    rewindGrowthSpeedMultiplier: 0
+    boundaryRewindDeathThreshold: 0
+    boundaryCatalysisDeathThreshold: 0
     growthTimerEpsilon: 0.01
     currentGrowthStageIndex: 0
     finalGrowthStageIndex: 2
     bullet: {fileID: 7217745369761416708, guid: 0fc5803d2469003439a4f6b858efabbe, type: 3}
     bulletTransform: {fileID: 6032659453858177354}
     attack: 0
+    specialEffects: {fileID: 2126291521488479317}
     obj1: {fileID: 5303237735419903642}
     animator1: {fileID: 8672988836319031314}
     grow1: 1
@@ -367,12 +368,10 @@ MonoBehaviour:
     attack3: 10
     bulletRange3: 1
     AttackSpeed3: 1.5
-    specialEffects4: {fileID: 0}
     attackCooldown: 5
     attack4: 5
     AttackSpeed4: 1
     bulletRange4: 1
-    specialEffects5: {fileID: 2126291521488479317}
     attack5: 5
     attackSpeed5: 2
     bulletRange5: 1
@@ -542,7 +541,7 @@ Transform:
   m_GameObject: {fileID: 8125784077969452963}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.3, z: 0}
+  m_LocalPosition: {x: 0, y: -0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -735,7 +734,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8812578119011200920, guid: 670b63e6779f9374582bc1a079c1bb96, type: 3}
       propertyPath: m_SortingOrder
-      value: -1
+      value: 19
       objectReference: {fileID: 0}
     - target: {fileID: 8812578119011200920, guid: 670b63e6779f9374582bc1a079c1bb96, type: 3}
       propertyPath: m_MotionVectors
@@ -925,7 +924,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8812578119011200920, guid: 670b63e6779f9374582bc1a079c1bb96, type: 3}
       propertyPath: m_SortingOrder
-      value: 1
+      value: 21
       objectReference: {fileID: 0}
     - target: {fileID: 8812578119011200920, guid: 670b63e6779f9374582bc1a079c1bb96, type: 3}
       propertyPath: m_MotionVectors

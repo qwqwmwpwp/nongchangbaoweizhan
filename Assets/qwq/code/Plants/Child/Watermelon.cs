@@ -23,6 +23,7 @@ public class WatermelonCtx : PlantsCtx
     public GameObject bullet;
     public Transform bulletTransform;
     public int attack;
+    public GameObject specialEffects;
 
     [Header("Stage 1")]
     public GameObject obj1;
@@ -48,14 +49,12 @@ public class WatermelonCtx : PlantsCtx
     public float AttackSpeed3 = 4f;
 
     [Header("Rewind Bloom")]
-    public GameObject specialEffects4;
     public float attackCooldown = 5f;
     public int attack4 = 5;
     public float AttackSpeed4 = 1f;
     public float bulletRange4 = 1f;
 
     [Header("Catalysis Overload")]
-    public GameObject specialEffects5;
     public int attack5 = 5;
     public float attackSpeed5 = 2f;
     public float bulletRange5 = 1f;
@@ -336,39 +335,33 @@ namespace HSM
             Ctx = ctx;
         }
 
+
         protected override State GetTransition()
         {
-            if (Ctx.partialBacktracking_t > 0f || attackCooldown > 0f)
-                return null;
+            if (Ctx.partialBacktracking_t <= 0f)
+                return ((WatermelonRoot)Parent).state6;
 
-            WatermelonRoot root = (WatermelonRoot)Parent;
-            if (root.state6 == root.state3)
-            {
-                root.state2.ResetGrowthForRewind();
-                return root.state2;
-            }
-
-            return root.state6;
+            return null;
         }
+        
 
         protected override void OnEnter()
         {
             attackCooldown = Ctx.attackCooldown;
             attackTimer = Ctx.AttackSpeed4;
-            if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
-            if (Ctx.specialEffects5 != null) Ctx.specialEffects5.SetActive(true);
-            if (Ctx.animator1 != null)
-            {
-                Ctx.animator1.speed = Ctx.AttackSpeed4;
-                if (Ctx.EnemyDetection())
-                    Ctx.animator1.SetTrigger("attack");
-            }
+            Ctx.obj1.SetActive(true);
+            Ctx.specialEffects.SetActive(true);
+
+            Ctx.animator1.speed = Ctx.AttackSpeed4;
+            Ctx.animator1.SetTrigger("attack");
+
+            Debug.Log("qwq");
         }
 
         protected override void OnExit()
         {
             if (Ctx.obj1 != null) Ctx.obj1.SetActive(false);
-            if (Ctx.specialEffects5 != null) Ctx.specialEffects5.SetActive(false);
+            Ctx.specialEffects.SetActive(false);
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -416,9 +409,9 @@ namespace HSM
 
         protected override void OnEnter()
         {
-            if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
+            Ctx.obj1.SetActive(true);
             attackTimer = Ctx.attackSpeed5;
-            if (Ctx.specialEffects5 != null) Ctx.specialEffects5.SetActive(true);
+            Ctx.specialEffects.SetActive(true);
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -440,8 +433,8 @@ namespace HSM
 
         protected override void OnExit()
         {
-            if (Ctx.specialEffects5 != null) Ctx.specialEffects5.SetActive(false);
-            if (Ctx.obj1 != null) Ctx.obj1.SetActive(false);
+            Ctx.specialEffects.SetActive(false);
+            Ctx.obj1.SetActive(false);
         }
     }
 }
