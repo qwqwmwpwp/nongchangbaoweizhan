@@ -490,7 +490,6 @@ public class BambooState1 : State, IPlantGrowthTimerState
     {
         Ctx.SetGrowthStage(0, 2);
         grow = Ctx.grow1;
-
         if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
         Ctx.ResetSpawnTimer(0);
     }
@@ -547,7 +546,6 @@ public class BambooState2 : State, IPlantGrowthTimerState
         if (Ctx.obj2 != null) Ctx.obj2.SetActive(true);
         grow = Ctx.grow2;
         rewindReadyForPrevious = false;
-
         Ctx.ResetSpawnTimer(1);
     }
 

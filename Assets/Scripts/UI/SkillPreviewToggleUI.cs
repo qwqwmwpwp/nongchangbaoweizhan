@@ -9,6 +9,8 @@ using qwq;
 /// </summary>
 public class SkillPreviewToggleUI : MonoBehaviour
 {
+    private static SkillPreviewToggleUI activePreview;
+
     private enum SkillCastMode
     {
         RewindEnemiesInTowerRange,
@@ -25,6 +27,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
 
     [Header("按键")]
     [SerializeField] private KeyCode triggerKey = KeyCode.Q;
+    [SerializeField] private bool handleKeyboardInput = true;
     [SerializeField] private int placeMouseButton = 0;
 
     [Header("Effect")]
@@ -58,6 +61,8 @@ public class SkillPreviewToggleUI : MonoBehaviour
     private readonly HashSet<Enemy> _towerRangeEnemies = new HashSet<Enemy>();
     private readonly HashSet<EnemyRewindRecorder> _rewindAppliedRecorders = new HashSet<EnemyRewindRecorder>();
 
+    public bool IsPreviewing => _isPreviewing;
+
     private void Awake()
     {
         if (targetCanvas == null)
@@ -79,8 +84,14 @@ public class SkillPreviewToggleUI : MonoBehaviour
     {
         if (!_isPreviewing)
         {
-            if (Input.GetKeyDown(triggerKey))
+            if (handleKeyboardInput && triggerKey != KeyCode.None && Input.GetKeyDown(triggerKey))
                 EnterPreview();
+            return;
+        }
+
+        if (handleKeyboardInput && triggerKey != KeyCode.None && Input.GetKeyDown(triggerKey))
+        {
+            ExitPreview();
             return;
         }
 
@@ -88,6 +99,15 @@ public class SkillPreviewToggleUI : MonoBehaviour
 
         if (Input.GetMouseButtonDown(placeMouseButton))
             CastAndExit();
+    }
+
+    private void OnDisable()
+    {
+        if (activePreview == this)
+            activePreview = null;
+
+        _isPreviewing = false;
+        SetPreviewVisible(false);
     }
 
     public void EnterPreview()
@@ -114,16 +134,53 @@ public class SkillPreviewToggleUI : MonoBehaviour
         SetPreviewVisible(false);
     }
 
+    public void SetKeyboardInputEnabled(bool enabled)
+    {
+        handleKeyboardInput = enabled;
+    }
+
+    public void SetWorldRangePreview(Transform preview)
+    {
+        if (worldRangePreview != null && worldRangePreview != preview)
+            worldRangePreview.gameObject.SetActive(false);
+
+        worldRangePreview = preview;
+        if (worldRangePreview != null)
+        {
+            if (syncWorldPreviewScaleFromRadius)
+                ApplyWorldPreviewScaleToMatchRadius();
+            worldRangePreview.gameObject.SetActive(false);
+        }
+
+        if (previewRoot == null && autoCreatePlaceholder && !UsesWorldRangePreview())
+            previewRoot = CreatePlaceholder();
+
+        SetPreviewVisible(false);
+    }
+
     private void EnterPreview(SkillCastMode activeMode)
     {
+        if (_isPreviewing && _activeCastMode == activeMode)
+        {
+            ExitPreview();
+            return;
+        }
+
+        if (activePreview != null && activePreview != this)
+            activePreview.ExitPreview();
+
         _activeCastMode = activeMode;
         _isPreviewing = true;
+        activePreview = this;
         SetPreviewVisible(true);
         UpdatePreviewPosition();
     }
 
     public void ExitPreview()
     {
+        if (activePreview == this)
+            activePreview = null;
+
         _isPreviewing = false;
         _activeCastMode = castMode;
         SetPreviewVisible(false);
@@ -392,13 +449,20 @@ public class SkillPreviewToggleUI : MonoBehaviour
                 continue;
             }
 
-            if (target is Enemy enemy)
+            Enemy enemy = target as Enemy;
+            if (enemy == null)
             {
-                if (enemy.IsInteractable)
-                    results.Add(enemy);
-                else
-                    enemies.RemoveAt(i);
+                enemies.RemoveAt(i);
+                continue;
             }
+
+            if (!enemy.IsInteractable)
+            {
+                enemies.RemoveAt(i);
+                continue;
+            }
+
+            results.Add(enemy);
         }
     }
 
