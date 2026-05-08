@@ -31,9 +31,9 @@ public class Bullet : MonoBehaviour, IWeapon
     public void Attack()
     {
         transform.position += (Vector3)direction.normalized * moveSpeed * Time.deltaTime;
-        if (!IsTargetValid())
+        if (!DamageableTargetUtility.TryGetGameObject(enemy, out GameObject enemyObj))
             return;
-        direction = enemy.obj.transform.position - transform.position;
+        direction = enemyObj.transform.position - transform.position;
 
         if (direction.magnitude < 0.2)
         {
@@ -53,11 +53,5 @@ public class Bullet : MonoBehaviour, IWeapon
     {
         enemy = target;
     }
-    private bool IsTargetValid()
-    {
-        if (enemy == null || enemy.Equals(null) || enemy.obj == null)
-            return false;
-
-        return true;
-    }
 }
+

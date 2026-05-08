@@ -490,6 +490,7 @@ public class BambooState1 : State, IPlantGrowthTimerState
     {
         Ctx.SetGrowthStage(0, 2);
         grow = Ctx.grow1;
+        Ctx.ClearGrowthProgress();
         if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
         Ctx.ResetSpawnTimer(0);
     }
@@ -515,6 +516,7 @@ public class BambooState1 : State, IPlantGrowthTimerState
     public void TickStoredGrowth(float deltaTime)
     {
         grow = Ctx.TickGrowthTimer(grow, Ctx.grow1, deltaTime);
+        Ctx.SetGrowthProgress(grow, Ctx.grow1);
     }
 }
 
@@ -546,6 +548,7 @@ public class BambooState2 : State, IPlantGrowthTimerState
         if (Ctx.obj2 != null) Ctx.obj2.SetActive(true);
         grow = Ctx.grow2;
         rewindReadyForPrevious = false;
+        Ctx.ClearGrowthProgress();
         Ctx.ResetSpawnTimer(1);
     }
 
@@ -564,7 +567,14 @@ public class BambooState2 : State, IPlantGrowthTimerState
     {
         grow = Ctx.TickGrowthTimer(grow, Ctx.grow2, deltaTime);
         if (Ctx.IsRewindingGrowth && Ctx.IsGrowthRewoundToStart(grow, Ctx.grow2))
+        {
+            Ctx.ClearGrowthProgress();
             rewindReadyForPrevious = true;
+        }
+        else
+        {
+            Ctx.SetGrowthProgress(grow, Ctx.grow2);
+        }
     }
 }
 
@@ -588,6 +598,7 @@ public class BambooState3 : State
     protected override void OnEnter()
     {
         Ctx.SetGrowthStage(2, 2);
+        Ctx.SetGrowthComplete();
         if (Ctx.obj3 != null) Ctx.obj3.SetActive(true);
         Ctx.ResetSpawnTimer(2);
     }

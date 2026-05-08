@@ -4,7 +4,7 @@ namespace qwq
 {
     public class Enemy : MonoBehaviour, IDamageable
     {
-        public GameObject obj => gameObject;
+        public GameObject obj => this == null ? null : gameObject;
 
         [Header("Data")]
         [SerializeField] private EnemyDataSO enemyData;
@@ -132,8 +132,9 @@ namespace qwq
             if (isDead)
                 return 0;
 
-            Death();
-            return finalAttack;
+            int damage = GetLeakDamage();
+            DestroyAfterReachingBase();
+            return damage;
         }
 
         public int GetLeakDamage()
@@ -286,6 +287,18 @@ namespace qwq
             BeginDeath(false);
         }
 
+        public void DestroyAfterReachingBase()
+        {
+            if (isDead)
+                return;
+
+            isDead = true;
+            hp = 0;
+            RefreshHpUI();
+            DisableExternalInteractions();
+            Destroy(gameObject);
+        }
+
         private void DieFromCombat()
         {
             BeginDeath(true);
@@ -337,3 +350,4 @@ namespace qwq
         }
     }
 }
+

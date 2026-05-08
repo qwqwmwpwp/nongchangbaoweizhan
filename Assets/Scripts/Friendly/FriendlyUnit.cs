@@ -5,7 +5,7 @@ using qwq;
 public class FriendlyUnit : MonoBehaviour, IDamageable
 {
     [SerializeField] private FriendlyUnitDataSO data;
-    [Tooltip("在 Scene 中未选中本物体时也绘制索敌/攻击/追击范围（调数值时不必保持选中 Hierarchy）。")]
+    [Tooltip("Draw detect and chase ranges in Scene view when this unit is not selected.")]
     [SerializeField] private bool drawGizmosInSceneWhenNotSelected = true;
     [SerializeField] private float detectRadius = 6f;
     [SerializeField] private float chaseRadius = 8f;
@@ -21,14 +21,14 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
     private BambooCtx ownerBambooCtx;
     private Transform assignedReturnPoint;
 
-    /// <summary>近战追击占用本单位的敌军（每名友军同时最多一名敌军可锁定）。</summary>
+    /// <summary>近战追击占用本单位的敌军（每名友军同时最多一名敌军可锁定）�?/summary>
     private Enemy meleeEngagedBy;
 
     private int hp;
     private int hpMax;
     private bool isDead;
 
-    public GameObject obj => gameObject;
+    public GameObject obj => this == null ? null : gameObject;
 
     public int Attack => attack;
     public int MoveSpeed => moveSpeed;
@@ -46,7 +46,7 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
     [Header("UI")]
     [SerializeField] private FriendlyHealthUI friendlyHealthUI;
 
-    /// <summary>敌军尝试占用本友军用于近战追击；已被其他敌军占用则返回 false。</summary>
+    /// <summary>敌军尝试占用本友军用于近战追击；已被其他敌军占用则返�?false�?/summary>
     public bool TryClaimMeleeEngagement(Enemy attacker)
     {
         if (isDead)
@@ -64,7 +64,7 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
         return meleeEngagedBy == attacker;
     }
 
-    /// <summary>敌军离开追击/回路径/销毁时释放占用。</summary>
+    /// <summary>敌军离开追击/回路�?销毁时释放占用�?/summary>
     public void ReleaseMeleeEngagement(Enemy attacker)
     {
         if (attacker == null || attacker as Object == null)
@@ -235,3 +235,5 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
         mover?.DrawGizmos(detectRadius, attackRange, chaseRadius);
     }
 }
+
+
