@@ -44846,6 +44846,8 @@ MonoBehaviour:
   syncWorldPreviewScaleFromRadius: 1
   triggerKey: 113
   placeMouseButton: 0
+  castMode: 0
+  catalysisSeconds: 3
   energyCost: 0
   rewindRadius: 1
   rewindSeconds: 3
@@ -46260,8 +46262,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   localRewind: {fileID: 1684122017}
+  catalysisSkill: {fileID: 0}
   globalRewind: {fileID: 1333381457}
   globalTierPanel: {fileID: 699315938}
+  catalysisTriggerKey: 101
+  catalysisPreviewColor: {r: 1, g: 0.55, b: 0.05, a: 0.35}
 --- !u!224 &2107493017
 RectTransform:
   m_ObjectHideFlags: 0

@@ -143,17 +143,25 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(0, 2);
-            if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
+
+            Ctx.obj1.SetActive(true);
+
+            Ctx.growUI.gameObject.SetActive(true);
+
+            Ctx.GrowUiUpdate(Ctx.grow1 - grow, Ctx.grow1);
+
+
             attackTimer = Ctx.AttackSpeed1;
-            if (Ctx.animator1 != null)
-            {
-                Ctx.animator1.speed = Ctx.AttackSpeed1;
-                Ctx.animator1.SetTrigger("attack");
-            }
+
+            Ctx.animator1.speed = Ctx.AttackSpeed1;
+            Ctx.animator1.SetTrigger("attack");
+
         }
 
         protected override void OnUpdate(float deltaTime)
         {
+            Ctx.GrowUiUpdate(Ctx.grow1 - grow, Ctx.grow1);
+
             TickStoredGrowth(deltaTime);
             TickAttack(deltaTime, Ctx.AttackSpeed1, Ctx.attack1, Ctx.bulletRange1, false);
         }
@@ -161,6 +169,9 @@ namespace HSM
         protected override void OnExit()
         {
             if (Ctx.obj1 != null) Ctx.obj1.SetActive(false);
+
+            Ctx.growUI.gameObject.SetActive(false);
+
         }
 
         public void TickStoredGrowth(float deltaTime)
@@ -219,21 +230,30 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(1, 2);
-            if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
-            if (Ctx.animator1 != null)
-                Ctx.animator1.speed = Ctx.AttackSpeed2;
+         
+            Ctx.obj1.SetActive(true);
+
+            Ctx.growUI.gameObject.SetActive(true);
+
+            Ctx.animator1.speed = Ctx.AttackSpeed2;
             attackTimer = Ctx.AttackSpeed2;
         }
 
         protected override void OnUpdate(float deltaTime)
         {
+            Ctx.GrowUiUpdate(Ctx.grow2 - grow, Ctx.grow2);
+
+
+
             TickStoredGrowth(deltaTime);
             TickAttack(deltaTime, Ctx.AttackSpeed2, Ctx.attack2, Ctx.bulletRange2, false);
         }
 
         protected override void OnExit()
         {
-            if (Ctx.obj1 != null) Ctx.obj1.SetActive(false);
+            Ctx.growUI.enabled = false;
+
+            Ctx.growUI.gameObject.SetActive(false);
             attackTimer = 0f;
         }
 
@@ -355,7 +375,6 @@ namespace HSM
             Ctx.animator1.speed = Ctx.AttackSpeed4;
             Ctx.animator1.SetTrigger("attack");
 
-            Debug.Log("qwq");
         }
 
         protected override void OnExit()
@@ -401,6 +420,8 @@ namespace HSM
 
         protected override State GetTransition()
         {
+
+
             if (Ctx.catalysis_t <= 0f)
                 return ((WatermelonRoot)Parent).state6;
 

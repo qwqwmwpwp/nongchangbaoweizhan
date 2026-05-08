@@ -36,7 +36,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.092, y: 0.23}
+  m_AnchoredPosition: {x: 0, y: 0.23}
   m_SizeDelta: {x: 160, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &8141017020062649250
@@ -703,6 +703,7 @@ MonoBehaviour:
   moveBackStateName: "MoveBack_\u91CD\u536B"
   moveForwardStateName: "MoveForward_\u91CD\u536B"
   battleStateName: "Battle_\u91CD\u536B"
+  deathStateName: 
   layerIndex: 0
   flipFacingByNegativeScaleX: 1
   flipHorizontalDeadZone: 0.0008

@@ -139,6 +139,7 @@ namespace HSM
         {
             if (grow <= 0f)
                 return ((HawthornRoot)Parent).state2;
+
             return null;
         }
 
@@ -146,16 +147,24 @@ namespace HSM
         {
             Ctx.SetGrowthStage(0, 2);
             cooling = Ctx.attackCooling1;
-            if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
+
+            Ctx.growUI.gameObject.SetActive(true);
+            Ctx.GrowUiUpdate(Ctx.grow1 - grow, Ctx.grow1);
+
+            Ctx.obj1.SetActive(true);
         }
 
         protected override void OnExit()
         {
-            if (Ctx.obj1 != null) Ctx.obj1.SetActive(false);
+            Ctx.growUI.gameObject.SetActive(false);
+
+            Ctx.obj1.SetActive(false);
         }
 
         protected override void OnUpdate(float deltaTime)
         {
+            Ctx.GrowUiUpdate(Ctx.grow1 - grow, Ctx.grow1);
+
             TickStoredGrowth(deltaTime);
             TickAttack(deltaTime, Ctx.attackCooling1, Ctx.attack1);
         }
@@ -200,13 +209,6 @@ namespace HSM
 
         protected override State GetTransition()
         {
-            if (rewindReadyForPrevious)
-            {
-                ((HawthornRoot)Parent).state1.ResetGrowthForRewind();
-                rewindReadyForPrevious = false;
-                return ((HawthornRoot)Parent).state1;
-            }
-
             if (grow <= 0f)
                 return ((HawthornRoot)Parent).state3;
 
@@ -216,13 +218,17 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(1, 2);
-            if (Ctx.obj2 != null) Ctx.obj2.SetActive(true);
+            Ctx.growUI.gameObject.SetActive(true);
+
+            Ctx.obj2.SetActive(true);
+            
             cooling = Ctx.attackCooling2;
         }
 
         protected override void OnExit()
         {
-            if (Ctx.obj2 != null) Ctx.obj2.SetActive(false);
+            Ctx.growUI.gameObject.SetActive(false);
+            Ctx.obj2.SetActive(false);
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -272,10 +278,7 @@ namespace HSM
         protected override State GetTransition()
         {
             if (Ctx.IsRewindingGrowth)
-            {
-                ((HawthornRoot)Parent).state2.ResetGrowthForRewind();
                 return ((HawthornRoot)Parent).state2;
-            }
 
             return null;
         }
@@ -283,7 +286,7 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(2, 2);
-            if (Ctx.obj3 != null) Ctx.obj3.SetActive(true);
+            Ctx.obj3.SetActive(true);
             cooling = Ctx.attackCooling3;
         }
 

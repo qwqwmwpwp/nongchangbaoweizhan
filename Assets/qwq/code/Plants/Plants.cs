@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace qwq
 {
@@ -60,6 +61,7 @@ namespace qwq
             if (plantsCtx == null)
                 return;
 
+            Debug.Log("qwq");
             plantsCtx.catalysis_t = Mathf.Max(0.05f, t);
           //  plantsCtx.RegisterCatalysisSkillUse();
         }
@@ -68,7 +70,10 @@ namespace qwq
     [Serializable]
     public class PlantsCtx
     {
-        public Sprite UI;
+        [Header("UI")]
+        public Sprite UI;//种植ui
+        public Slider growUI;
+
         [HideInInspector] public GameObject plant;
 
         [HideInInspector] public Transform transform;
@@ -183,6 +188,12 @@ namespace qwq
             });
 
             return enemys.Count > 0;
+        }
+
+        public void GrowUiUpdate(float x, float max)
+        {
+            float n = x / max;
+            growUI.value = n;
         }
     }
 
