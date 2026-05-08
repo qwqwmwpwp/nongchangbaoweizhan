@@ -1,10 +1,7 @@
-using HSM;
+﻿using HSM;
 using qwq;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI.Table;
 
 namespace qwq
 {
@@ -19,65 +16,62 @@ namespace qwq
         {
             ctx.plant = gameObject;
             ctx.transform = transform;
-
             root = new HSM.HawthornRoot(null, ctx);
             base.Awake();
         }
-
-
-        protected override void Update()
-        {
-            base.Update();
-        }
-
     }
-
 
     [Serializable]
     public class HawthornCtx : PlantsCtx
     {
-        public GameObject bullet;//子弹
+        public GameObject bullet;
         public GameObject specialEffects;
         public Transform bulletTransform;
         public Animator animator;
 
-        [Header("状态1")]
+        [Header("Stage 1")]
         public GameObject obj1;
         public float grow1 = 10f;
-        
         public int attack1 = 1;
-        public float attackCooling1 = 1f;//冷却
+        public float attackCooling1 = 1f;
 
-        [Header("状态2")]
+        [Header("Stage 2")]
         public GameObject obj2;
         public float grow2 = 10f;
-
         public int attack2 = 1;
-        public float attackCooling2 = 1f;//冷却
-        [Header("状态3")]
+        public float attackCooling2 = 1f;
+
+        [Header("Stage 3")]
         public GameObject obj3;
         public int attack3 = 1;
-        public float attackCooling3 = 1.5f;//冷却
+        public float attackCooling3 = 1.5f;
 
-
-        [Header("逆龄盛放")]
+        [Header("Rewind Bloom")]
         public int attack4 = 5;
-        public float attackCooling4 = 0.3f;//冷却
+        public float attackCooling4 = 0.3f;
 
-        [Header("枯荣过载")]
+        [Header("Catalysis Overload")]
         public int attack5 = 5;
-        public float attackCooling5 = 0.8f;//冷却
+        public float attackCooling5 = 0.8f;
         public GameObject catalysisSpecialEffects;
 
-
-        public  void Attack(IDamageable target,int attack)
+        public void Attack(IDamageable target, int attack)
         {
+            if (target == null || bullet == null || bulletTransform == null)
+                return;
+
             GameObject newBullet = GameObject.Instantiate(bullet, bulletTransform.position, bulletTransform.localRotation);
-            newBullet!.GetComponent<Bullet>().Initialize(target,attack);
+            Bullet bulletComp = newBullet.GetComponent<Bullet>();
+            if (bulletComp != null)
+                bulletComp.Initialize(target, attack);
+        }
+
+        public void CleanupInvalidEnemyTargets()
+        {
+            enemys.RemoveAll(enemy => enemy == null || enemy.obj == null || (enemy is Enemy e && !e.IsInteractable));
         }
     }
 }
-
 
 namespace HSM
 {
@@ -99,17 +93,13 @@ namespace HSM
             state3 = new HawthornState3(m, this, ctx);
             state4 = new HawthornState4(m, this, ctx);
             state5 = new HawthornState5(m, this, ctx);
-
         }
 
-        protected override State GetInitialState()
-        {
-            return state1;
-        }
+        protected override State GetInitialState() => state1;
 
         protected override State GetTransition()
         {
-            if (Ctx.partialBacktracking_t > 0)
+            if (Ctx.partialBacktracking_t > 0f)
             {
                 if (ActiveChild != state4)
                 {
@@ -119,7 +109,7 @@ namespace HSM
                 return null;
             }
 
-            if (Ctx.catalysis_t> 0)
+            if (Ctx.catalysis_t > 0f)
             {
                 if (ActiveChild != state5)
                 {
@@ -133,12 +123,11 @@ namespace HSM
         }
     }
 
-
-    public class HawthornState1 : State
+    public class HawthornState1 : State, IPlantGrowthTimerState
     {
-        float t;
+        private readonly HawthornCtx Ctx;
+        private float cooling;
         public float grow;
-        HawthornCtx Ctx;
 
         public HawthornState1(StateMachine m, State parent, HawthornCtx ctx) : base(m, parent)
         {
@@ -148,49 +137,61 @@ namespace HSM
 
         protected override State GetTransition()
         {
-            if (grow <= 0)
+            if (grow <= 0f)
                 return ((HawthornRoot)Parent).state2;
-
             return null;
         }
 
         protected override void OnEnter()
         {
-            t = Ctx.attackCooling1;
-            Ctx.obj1.SetActive(true);
+            Ctx.SetGrowthStage(0, 2);
+            cooling = Ctx.attackCooling1;
+            if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
         }
 
         protected override void OnExit()
         {
-            Ctx.obj1.SetActive(false);
-
+            if (Ctx.obj1 != null) Ctx.obj1.SetActive(false);
         }
 
         protected override void OnUpdate(float deltaTime)
         {
-            grow -= deltaTime;
-
-            if (t > 0)
-                t -= deltaTime;
-            else
-            {
-                t = Ctx.attackCooling1;
-
-                if (!Ctx.EnemyDetection())
-                    return;
-
-                Ctx.Attack(Ctx.enemys[0], Ctx.attack1);
-                Ctx.animator.SetTrigger("attack");
-            }
+            TickStoredGrowth(deltaTime);
+            TickAttack(deltaTime, Ctx.attackCooling1, Ctx.attack1);
         }
 
+        public void TickStoredGrowth(float deltaTime)
+        {
+            grow = Ctx.TickGrowthTimer(grow, Ctx.grow1, deltaTime);
+        }
+
+        public void ResetGrowthForRewind()
+        {
+            grow = Ctx.grow1;
+        }
+
+        private void TickAttack(float deltaTime, float interval, int attack)
+        {
+            cooling -= deltaTime;
+            if (cooling > 0f)
+                return;
+
+            cooling = Mathf.Max(0.05f, interval);
+            if (!Ctx.EnemyDetection())
+                return;
+
+            Ctx.Attack(Ctx.enemys[0], attack);
+            Ctx.animator?.SetTrigger("attack");
+        }
     }
 
-    public class HawthornState2 : State
+    public class HawthornState2 : State, IPlantGrowthTimerState
     {
-        HawthornCtx Ctx;
-        float cooling;
+        private readonly HawthornCtx Ctx;
+        private float cooling;
+        private bool rewindReadyForPrevious;
         public float grow;
+
         public HawthornState2(StateMachine m, State parent, HawthornCtx ctx) : base(m, parent)
         {
             Ctx = ctx;
@@ -199,118 +200,188 @@ namespace HSM
 
         protected override State GetTransition()
         {
-            if (Ctx.globalBacktracking_t > 0)
-                return null;
+            if (rewindReadyForPrevious)
+            {
+                ((HawthornRoot)Parent).state1.ResetGrowthForRewind();
+                rewindReadyForPrevious = false;
+                return ((HawthornRoot)Parent).state1;
+            }
 
-            if (grow <= 0)
+            if (grow <= 0f)
                 return ((HawthornRoot)Parent).state3;
 
             return null;
         }
 
-
         protected override void OnEnter()
         {
-            Ctx.obj2.SetActive(true);
+            Ctx.SetGrowthStage(1, 2);
+            if (Ctx.obj2 != null) Ctx.obj2.SetActive(true);
             cooling = Ctx.attackCooling2;
         }
 
         protected override void OnExit()
         {
-            Ctx.obj2.SetActive(false);
+            if (Ctx.obj2 != null) Ctx.obj2.SetActive(false);
         }
 
         protected override void OnUpdate(float deltaTime)
         {
-            //成长计时
-            grow -= deltaTime;
+            TickStoredGrowth(deltaTime);
+            TickAttack(deltaTime, Ctx.attackCooling2, Ctx.attack2);
+        }
 
-            // 如果冷却时间未结束，继续冷却
-            if (cooling > 0)
-            {
-                cooling -= deltaTime;
-                return; // 冷却期间不执行攻击逻辑
-            }
-            // 重置攻击冷却时间为配置值
-            cooling = Ctx.attackCooling2;
+        public void TickStoredGrowth(float deltaTime)
+        {
+            grow = Ctx.TickGrowthTimer(grow, Ctx.grow2, deltaTime);
+            if (Ctx.IsRewindingGrowth && Ctx.IsGrowthRewoundToStart(grow, Ctx.grow2))
+                rewindReadyForPrevious = true;
+        }
 
-            // 检测是否有敌人，若无则退出
+        public void ResetGrowthForRewind()
+        {
+            grow = Ctx.grow2;
+            rewindReadyForPrevious = false;
+        }
+
+        private void TickAttack(float deltaTime, float interval, int attack)
+        {
+            cooling -= deltaTime;
+            if (cooling > 0f)
+                return;
+
+            cooling = Mathf.Max(0.05f, interval);
             if (!Ctx.EnemyDetection())
                 return;
 
-            // 对第一个检测到的敌人发动攻击
-            Ctx.Attack(Ctx.enemys[0], Ctx.attack2);
-
-            // 触发攻击动画
-            Ctx.animator.SetTrigger("attack");
+            Ctx.Attack(Ctx.enemys[0], attack);
+            Ctx.animator?.SetTrigger("attack");
         }
     }
 
     public class HawthornState3 : State
     {
-        HawthornCtx Ctx;
-        float cooling;
+        private readonly HawthornCtx Ctx;
+        private float cooling;
+
         public HawthornState3(StateMachine m, State parent, HawthornCtx ctx) : base(m, parent)
         {
             Ctx = ctx;
-
         }
 
         protected override State GetTransition()
         {
-            if (Ctx.globalBacktracking_t > 0)
+            if (Ctx.IsRewindingGrowth)
+            {
+                ((HawthornRoot)Parent).state2.ResetGrowthForRewind();
                 return ((HawthornRoot)Parent).state2;
+            }
 
             return null;
         }
 
         protected override void OnEnter()
         {
-            Ctx.obj3.SetActive(true);
+            Ctx.SetGrowthStage(2, 2);
+            if (Ctx.obj3 != null) Ctx.obj3.SetActive(true);
             cooling = Ctx.attackCooling3;
         }
 
         protected override void OnExit()
         {
-            Ctx.obj3.SetActive(false);
+            if (Ctx.obj3 != null) Ctx.obj3.SetActive(false);
         }
 
         protected override void OnUpdate(float deltaTime)
         {
-            // 如果冷却时间未结束，继续冷却
-            if (cooling > 0)
-            {
-                cooling -= deltaTime;
-                return; // 冷却期间不执行攻击逻辑
-            }
-
-            // 重置攻击冷却时间为配置值
-            cooling = Ctx.attackCooling3;
-
-            // 检测是否有敌人，若无则退出
-            if (!Ctx.EnemyDetection())
-                return;
-            // 对第一个检测到的敌人发动攻击
-            Ctx.Attack(Ctx.enemys[0], Ctx.attack3);
-            // 触发攻击动画
-            Ctx.animator.SetTrigger("attack");
+            TickAttack(deltaTime, Ctx.attackCooling3, Ctx.attack3);
         }
 
+        private void TickAttack(float deltaTime, float interval, int attack)
+        {
+            cooling -= deltaTime;
+            if (cooling > 0f)
+                return;
+
+            cooling = Mathf.Max(0.05f, interval);
+            if (!Ctx.EnemyDetection())
+                return;
+
+            Ctx.Attack(Ctx.enemys[0], attack);
+            Ctx.animator?.SetTrigger("attack");
+        }
     }
 
     public class HawthornState4 : State
     {
-        HawthornCtx Ctx;
-        float cooling;
+        private readonly HawthornCtx Ctx;
+        private float cooling;
+
         public HawthornState4(StateMachine m, State parent, HawthornCtx ctx) : base(m, parent)
         {
             Ctx = ctx;
-
         }
 
         protected override State GetTransition()
         {
-            if (Ctx.partialBacktracking_t <= 0)
+            if (Ctx.partialBacktracking_t > 0f)
+                return null;
+
+            HawthornRoot root = (HawthornRoot)Parent;
+            if (root.state6 == root.state3)
+            {
+                root.state2.ResetGrowthForRewind();
+                return root.state2;
+            }
+
+            return root.state6;
+        }
+
+        protected override void OnEnter()
+        {
+            if (Ctx.obj3 != null) Ctx.obj3.SetActive(true);
+            cooling = Ctx.attackCooling4;
+            if (Ctx.specialEffects != null) Ctx.specialEffects.SetActive(true);
+        }
+
+        protected override void OnExit()
+        {
+            if (Ctx.obj3 != null) Ctx.obj3.SetActive(false);
+            if (Ctx.specialEffects != null) Ctx.specialEffects.SetActive(false);
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            HawthornRoot root = (HawthornRoot)Parent;
+            if (Ctx.partialBacktracking_t > 0f && root.state6 is IPlantGrowthTimerState growthState)
+                growthState.TickStoredGrowth(deltaTime);
+
+            cooling -= deltaTime;
+            if (cooling > 0f)
+                return;
+
+            cooling = Mathf.Max(0.05f, Ctx.attackCooling4);
+            if (!Ctx.EnemyDetection())
+                return;
+
+            Ctx.Attack(Ctx.enemys[0], Ctx.attack4);
+            Ctx.animator?.SetTrigger("attack");
+        }
+    }
+
+    public class HawthornState5 : State
+    {
+        private readonly HawthornCtx Ctx;
+        private float cooling;
+
+        public HawthornState5(StateMachine m, State parent, HawthornCtx ctx) : base(m, parent)
+        {
+            Ctx = ctx;
+        }
+
+        protected override State GetTransition()
+        {
+            if (Ctx.catalysis_t <= 0f)
                 return ((HawthornRoot)Parent).state6;
 
             return null;
@@ -318,48 +389,33 @@ namespace HSM
 
         protected override void OnEnter()
         {
-            Ctx.obj3.SetActive(true);
-            cooling = Ctx.attackCooling4;
-            Ctx.specialEffects.SetActive(true);
+            if (Ctx.obj3 != null) Ctx.obj3.SetActive(true);
+            if (Ctx.catalysisSpecialEffects != null) Ctx.catalysisSpecialEffects.SetActive(true);
+            cooling = Ctx.attackCooling5;
         }
 
         protected override void OnExit()
         {
-            Ctx.obj3.SetActive(false);
-            Ctx.specialEffects.SetActive(true);
+            if (Ctx.obj3 != null) Ctx.obj3.SetActive(false);
+            if (Ctx.catalysisSpecialEffects != null) Ctx.catalysisSpecialEffects.SetActive(false);
         }
 
         protected override void OnUpdate(float deltaTime)
         {
-            // 如果冷却时间未结束，继续冷却
-            if (cooling > 0)
-            {
-                cooling -= deltaTime;
-                return; // 冷却期间不执行攻击逻辑
-            }
+            HawthornRoot root = (HawthornRoot)Parent;
+            if (Ctx.catalysis_t > 0f && root.state6 is IPlantGrowthTimerState growthState)
+                growthState.TickStoredGrowth(deltaTime);
 
-            // 重置攻击冷却时间为配置值
-            cooling = Ctx.attackCooling4;
+            cooling -= deltaTime;
+            if (cooling > 0f)
+                return;
 
-            // 检测是否有敌人，若无则退出
+            cooling = Mathf.Max(0.05f, Ctx.attackCooling5);
             if (!Ctx.EnemyDetection())
                 return;
-            // 对第一个检测到的敌人发动攻击
-            Ctx.Attack(Ctx.enemys[0], Ctx.attack4);
-            // 触发攻击动画
-            Ctx.animator.SetTrigger("attack");
-        }
-    }
 
-    public class HawthornState5 : State
-    {
-        HawthornCtx Ctx;
-        float cooling;
-        public HawthornState5(StateMachine m, State parent, HawthornCtx ctx) : base(m, parent)
-        {
-            Ctx = ctx;
-
+            Ctx.Attack(Ctx.enemys[0], Ctx.attack5);
+            Ctx.animator?.SetTrigger("attack");
         }
     }
 }
-

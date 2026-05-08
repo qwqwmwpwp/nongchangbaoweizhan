@@ -57,10 +57,18 @@ MonoBehaviour:
     transform: {fileID: 0}
     <fertilizer>k__BackingField: 100
     <diamond>k__BackingField: 0
-    globalBacktracking_t: 0
-    partialBacktracking_t: 0
+    globalBacktracking_t: 2
+    partialBacktracking_t: 2
     backward: 0
     catalysisNumber: 0
+    catalysis_t: 2
+    catalysisGrowthSpeedMultiplier: 50
+    rewindGrowthSpeedMultiplier: 50
+    boundaryRewindDeathThreshold: 4
+    boundaryCatalysisDeathThreshold: 4
+    growthTimerEpsilon: 0.01
+    currentGrowthStageIndex: 0
+    finalGrowthStageIndex: 2
     obj1: {fileID: 7176011339920291802}
     grow1: 10
     obj2: {fileID: 1822506622252545325}
@@ -201,7 +209,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 858450979
   m_SortingLayer: 3
-  m_SortingOrder: 10
+  m_SortingOrder: 20
   m_Sprite: {fileID: 21300000, guid: c32ac133aeb598f429b571234d5bb6c8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -316,7 +324,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 858450979
   m_SortingLayer: 3
-  m_SortingOrder: 10
+  m_SortingOrder: 20
   m_Sprite: {fileID: 21300000, guid: a1707b1ed6ac94f409e619434aa1b523, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -462,7 +470,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 858450979
   m_SortingLayer: 3
-  m_SortingOrder: 10
+  m_SortingOrder: 20
   m_Sprite: {fileID: 21300000, guid: c4734a991e9a5274a9e39644e4eab5ef, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

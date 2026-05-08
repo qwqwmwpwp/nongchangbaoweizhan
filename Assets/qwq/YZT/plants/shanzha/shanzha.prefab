@@ -481,10 +481,18 @@ MonoBehaviour:
     transform: {fileID: 0}
     <fertilizer>k__BackingField: 0
     <diamond>k__BackingField: 0
-    globalBacktracking_t: 0
-    partialBacktracking_t: 0
+    globalBacktracking_t: 15
+    partialBacktracking_t: 15
     backward: 0
     catalysisNumber: 0
+    catalysis_t: 15
+    catalysisGrowthSpeedMultiplier: 2
+    rewindGrowthSpeedMultiplier: 1
+    boundaryRewindDeathThreshold: 4
+    boundaryCatalysisDeathThreshold: 4
+    growthTimerEpsilon: 0.01
+    currentGrowthStageIndex: 0
+    finalGrowthStageIndex: 2
     bullet: {fileID: 3019595320723696993, guid: b9925f9f08d85e847ab99a1be62eef0f, type: 3}
     specialEffects: {fileID: 2633804689046272360}
     bulletTransform: {fileID: 4386401883067147821}
@@ -504,6 +512,7 @@ MonoBehaviour:
     attackCooling4: 0.3
     attack5: 5
     attackCooling5: 0.8
+    catalysisSpecialEffects: {fileID: 0}
   batteryData: {fileID: 11400000, guid: dd6bc0647c61bcd4684d2b7d905ac6b6, type: 2}
 --- !u!1 &8009738223133209178
 GameObject:

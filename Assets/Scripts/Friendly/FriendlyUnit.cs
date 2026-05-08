@@ -93,6 +93,11 @@ public class FriendlyUnit : MonoBehaviour, IDamageable
         Destroy(gameObject);
     }
 
+    public void ForceDeath()
+    {
+        BeginDeath();
+    }
+
     private void BeginDeath()
     {
         if (isDead)
