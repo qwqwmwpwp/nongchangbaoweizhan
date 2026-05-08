@@ -145,6 +145,7 @@ public class WatermelonBullet : MonoBehaviour
 
     private void Attack(float deltaTime)
     {
+        AttackMusic();
         enemys.RemoveAll(e => !DamageableTargetUtility.IsValid(e));
 
         List<IDamageable> enemiesToAttack = new List<IDamageable>(enemys);
@@ -161,4 +162,14 @@ public class WatermelonBullet : MonoBehaviour
         currentMethod++;
     }
 
+
+    [Header("音效")]
+    [SerializeField] AudioClip attackClip;
+    public void AttackMusic()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayUISound(attackClip);
+        }
+    }
 }

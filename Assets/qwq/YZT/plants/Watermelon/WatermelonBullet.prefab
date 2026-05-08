@@ -283,3 +283,4 @@ MonoBehaviour:
   attack: 2
   speed: 8
   detection_max: 0.2
+  attackClip: {fileID: 8300000, guid: 35dbdbad413d08345a81267278e2e163, type: 3}

@@ -55,8 +55,11 @@ public class AudioManager : MonoBehaviour
     }
     private void Start()
     {
-
+        SetMasterVolume(toolUIData.masterVolumeDate);
+        SetMusicVolume(toolUIData.musicVolumeDate);
+        SetSFXVolume(toolUIData.SFXVolumeDate);
     }
+
     #region 音量控制功能
     /// <summary>
     /// 设置主音量（影响所有音频）

@@ -15,9 +15,9 @@ public class MusicUI : BaseUI
         if (toolUIData != null)
         {
             masterVolumeSlider.value = toolUIData.masterVolumeDate;
-        musicVolumeSlider.value = toolUIData.musicVolumeDate;
+            musicVolumeSlider.value = toolUIData.musicVolumeDate;
             SFXVolumeSlider.value = toolUIData.SFXVolumeDate;
-}
+        }
         masterVolumeSlider.onValueChanged.AddListener(SetMasterVolume);
         musicVolumeSlider.onValueChanged.AddListener(SetMusicVolume);
         SFXVolumeSlider.onValueChanged.AddListener(SetSFXVolume);
@@ -25,12 +25,7 @@ public class MusicUI : BaseUI
     }
     void Start()
     {
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.SetMasterVolume(toolUIData.masterVolumeDate);
-            AudioManager.Instance.SetMusicVolume(toolUIData.musicVolumeDate);
-            AudioManager.Instance.SetSFXVolume(toolUIData.SFXVolumeDate);
-        }
+
     }
     private void SetMasterVolume(float volume)
     {
