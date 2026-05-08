@@ -455,6 +455,8 @@ MonoBehaviour:
   battleEnterDistance: 0.2
   drawBehaviorGizmos: 1
   enemyHealthUI: {fileID: 3189594755568167378}
+  attackClip: {fileID: 0}
+  deathClip: {fileID: 8300000, guid: fb09b246ea723ee4ba627c9d69f52477, type: 3}
 --- !u!58 &8937495428411100558
 CircleCollider2D:
   m_ObjectHideFlags: 0
