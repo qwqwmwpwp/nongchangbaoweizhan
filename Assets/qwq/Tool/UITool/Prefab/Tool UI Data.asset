@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1cd46d5b01a03934089be5eda173c6ab, type: 3}
   m_Name: Tool UI Data
   m_EditorClassIdentifier: 
-  masterVolumeDate: 0
-  musicVolumeDate: 0
-  SFXVolumeDate: 0
+  masterVolumeDate: 1
+  musicVolumeDate: 0.5
+  SFXVolumeDate: 1
+  masterMuted: 0
+  sfxMuted: 0

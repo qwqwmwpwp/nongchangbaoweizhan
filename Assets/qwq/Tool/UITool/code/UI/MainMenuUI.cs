@@ -3,7 +3,6 @@ using UnityEngine.UI;
 
 public class MainMenuUI : BaseUI
 {
-    protected override bool ShouldHideOnRegister => false;
 
     [Header("UI References")]
     [Tooltip("开始游戏按钮引用")]
@@ -15,8 +14,6 @@ public class MainMenuUI : BaseUI
     [Tooltip("退出游戏按钮引用")]
     [SerializeField] private Button quitButton;
 
-    [Tooltip("手动配置的设置面板引用")]
-    [SerializeField] private SettingsPanelUI settingsPanel;
 
     private void Start()
     {
@@ -60,10 +57,7 @@ public class MainMenuUI : BaseUI
     {
         Debug.Log("打开设置");
 
-        if (settingsPanel != null)
-            settingsPanel.ShowPanel();
-        else
-            Debug.LogWarning("MainMenuUI: 未绑定 SettingsPanelUI，请在 Inspector 中配置设置面板。", this);
+
     }
 
     private void OnQuitClicked()

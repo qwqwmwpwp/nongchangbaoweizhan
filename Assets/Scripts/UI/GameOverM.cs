@@ -1,4 +1,7 @@
+using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /// <summary>
 /// 结果面板的“视图层”脚本，只做显示控制：
@@ -12,10 +15,37 @@ public class GameOverM : MonoBehaviour
     [SerializeField] private GameObject defeatUI;
     [SerializeField] private GameObject victoryUI;
 
+    [Header("通关")]
+    [SerializeField] Button button1;
+    [SerializeField] Button button2;
+    [SerializeField] Button button3;
+
+    [Header("失败")]
+    [SerializeField] Button button4;
+    [SerializeField] Button button5;
+
+
+    [Tooltip("须与 Build Settings 中的场景名一致。")]
+    [SerializeField] private string mainMenuSceneName = "Main Menu";
+    private string reSceneName =>SceneManager.GetActiveScene().name;
+    [SerializeField] private string nextSceneName;
+
     private void Awake()
     {
         // 场景启动时先清空显示状态，后续由 GameFlowManager 决定显示哪一个结果面板
         HideAll();
+
+        button1.onClick.AddListener(() => SceneSwitch(mainMenuSceneName));
+        button2.onClick.AddListener(() => SceneSwitch(reSceneName));
+        button3.onClick.AddListener(() => SceneSwitch(nextSceneName));
+
+        button4.onClick.AddListener(() => SceneSwitch(mainMenuSceneName));
+        button5.onClick.AddListener(() => SceneSwitch(reSceneName));
+    }
+
+    private void SceneSwitch(string name)
+    {
+        GameOverC.instance.SceneSwitch(name);
     }
 
     /// <summary>

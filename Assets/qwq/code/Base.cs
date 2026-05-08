@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 /// <summary>
 /// 基地接口实现
 /// </summary>
@@ -20,6 +21,7 @@ public class Base : MonoBehaviour, IDamageable
             return;
         }
 
+
         hp = baseData.MaxHealth;
         hp = 20;
     }
@@ -29,7 +31,6 @@ public class Base : MonoBehaviour, IDamageable
         if (isGameOver)
             return;
 
-        // �?GameFlowManager 共用同一套基地血量与失败判定（避免两�?HP 不一致）
         if (GameFlowManager.Instance != null)
         {
             GameFlowManager.Instance.TakeBaseDamage(amount);
