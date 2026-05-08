@@ -26,10 +26,14 @@ public class BambooSoldier : MonoBehaviour
     }
     private void Update()
     {
+        ctx.enemys.RemoveAll(e => !DamageableTargetUtility.IsValid(e));
         if (ctx.enemys.Count < 1) ctx.enemy = null;
         else ctx.enemy = ctx.enemys
-              .Where(e => e != null)
-              .OrderBy(e => Vector2.Distance(transform.position, e.obj.transform.position))
+              .OrderBy(e =>
+              {
+                  DamageableTargetUtility.TryGetGameObject(e, out GameObject enemyObj);
+                  return Vector2.Distance(transform.position, enemyObj.transform.position);
+              })
               .FirstOrDefault();
 
         machine.Tick(Time.deltaTime);
@@ -121,11 +125,12 @@ namespace HSM
         }
         protected override State GetTransition()
         {
-            if (Ctx.enemy == null)
+            if (!DamageableTargetUtility.TryGetGameObject(Ctx.enemy, out GameObject enemyObj))
             {
+                Ctx.enemy = null;
                 return null;
             }
-            Vector2 toEnemy = Ctx.enemy.obj.transform.position -Ctx.transform.position;
+            Vector2 toEnemy = enemyObj.transform.position - Ctx.transform.position;
             float distance = toEnemy.magnitude;
 
             if (distance > Ctx.attack_r)
@@ -147,4 +152,5 @@ namespace HSM
         }
     }
 }
+
 

@@ -114,12 +114,12 @@ public class WatermelonBullet : MonoBehaviour
 
     private void Attack(float deltaTime)
     {
-        enemys.RemoveAll(e => e == null || e.obj == null);
+        enemys.RemoveAll(e => !DamageableTargetUtility.IsValid(e));
 
         List<IDamageable> enemiesToAttack = new List<IDamageable>(enemys);
         foreach (var e in enemiesToAttack)
         {
-            if (e != null && e.obj != null)  
+            if (DamageableTargetUtility.IsValid(e))
             {
                 Debug.Log(e);
                 e.TakeDamage(attack);

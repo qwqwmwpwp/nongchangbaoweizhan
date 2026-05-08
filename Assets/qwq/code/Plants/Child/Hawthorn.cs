@@ -57,7 +57,7 @@ namespace qwq
 
         public void Attack(IDamageable target, int attack)
         {
-            if (target == null || bullet == null || bulletTransform == null)
+            if (!DamageableTargetUtility.IsValid(target) || bullet == null || bulletTransform == null)
                 return;
 
             GameObject newBullet = GameObject.Instantiate(bullet, bulletTransform.position, bulletTransform.localRotation);
@@ -68,7 +68,7 @@ namespace qwq
 
         public void CleanupInvalidEnemyTargets()
         {
-            enemys.RemoveAll(enemy => enemy == null || enemy.obj == null || (enemy is Enemy e && !e.IsInteractable));
+            enemys.RemoveAll(enemy => !DamageableTargetUtility.IsValid(enemy) || (enemy is Enemy e && !e.IsInteractable));
         }
     }
 }
@@ -146,6 +146,7 @@ namespace HSM
         {
             Ctx.SetGrowthStage(0, 2);
             cooling = Ctx.attackCooling1;
+            Ctx.ClearGrowthProgress();
             if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
         }
 
@@ -163,6 +164,7 @@ namespace HSM
         public void TickStoredGrowth(float deltaTime)
         {
             grow = Ctx.TickGrowthTimer(grow, Ctx.grow1, deltaTime);
+            Ctx.SetGrowthProgress(grow, Ctx.grow1);
         }
 
         public void ResetGrowthForRewind()
@@ -218,6 +220,7 @@ namespace HSM
             Ctx.SetGrowthStage(1, 2);
             if (Ctx.obj2 != null) Ctx.obj2.SetActive(true);
             cooling = Ctx.attackCooling2;
+            Ctx.ClearGrowthProgress();
         }
 
         protected override void OnExit()
@@ -235,7 +238,14 @@ namespace HSM
         {
             grow = Ctx.TickGrowthTimer(grow, Ctx.grow2, deltaTime);
             if (Ctx.IsRewindingGrowth && Ctx.IsGrowthRewoundToStart(grow, Ctx.grow2))
+            {
+                Ctx.ClearGrowthProgress();
                 rewindReadyForPrevious = true;
+            }
+            else
+            {
+                Ctx.SetGrowthProgress(grow, Ctx.grow2);
+            }
         }
 
         public void ResetGrowthForRewind()
@@ -283,6 +293,7 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(2, 2);
+            Ctx.SetGrowthComplete();
             if (Ctx.obj3 != null) Ctx.obj3.SetActive(true);
             cooling = Ctx.attackCooling3;
         }

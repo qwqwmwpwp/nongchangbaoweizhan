@@ -386,7 +386,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
         for (int i = enemies.Count - 1; i >= 0; i--)
         {
             IDamageable target = enemies[i];
-            if (target == null || target.obj == null)
+            if (!DamageableTargetUtility.IsValid(target))
             {
                 enemies.RemoveAt(i);
                 continue;

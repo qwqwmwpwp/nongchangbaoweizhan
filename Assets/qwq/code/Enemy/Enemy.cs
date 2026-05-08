@@ -4,7 +4,7 @@ namespace qwq
 {
     public class Enemy : MonoBehaviour, IDamageable
     {
-        public GameObject obj => gameObject;
+        public GameObject obj => this == null ? null : gameObject;
 
         [Header("Data")]
         [SerializeField] private EnemyDataSO enemyData;
@@ -337,3 +337,4 @@ namespace qwq
         }
     }
 }
+

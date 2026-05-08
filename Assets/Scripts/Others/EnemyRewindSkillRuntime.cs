@@ -34,8 +34,24 @@ public class EnemyRewindSkillRuntime : MonoBehaviour
         new RewindTier { name = "High", triggerKey = KeyCode.Alpha3, energyCost = 35, rewindSeconds = 5f, playbackDuration = 0.6f, spawnLaneOpenDuration = 8f }
     };
 
+    [Header("隐藏兵口淡入淡出")]
+    [SerializeField] private Transform[] spawnLaneFadeRoots;
+    [SerializeField] private float spawnLaneFadeDuration = 0.35f;
+
     private readonly HashSet<int> tempOpenedLaneIndexes = new HashSet<int>();
+    private readonly Dictionary<int, Coroutine> fadeCoroutines = new Dictionary<int, Coroutine>();
     private Coroutine autoCloseCoroutine;
+
+    private struct SpriteRendererAlpha
+    {
+        public SpriteRenderer renderer;
+        public float alpha;
+    }
+
+    private void Start()
+    {
+        ApplyInitialSpawnLaneVisualAlpha();
+    }
 
     private void Update()
     {
@@ -111,6 +127,7 @@ public class EnemyRewindSkillRuntime : MonoBehaviour
 
             waveManager.SetSpawnLaneEnabled(i, true);
             tempOpenedLaneIndexes.Add(i);
+            FadeSpawnLaneVisual(i, true);
         }
 
         if (tempOpenedLaneIndexes.Count == 0)
@@ -137,10 +154,122 @@ public class EnemyRewindSkillRuntime : MonoBehaviour
             foreach (int laneIndex in tempOpenedLaneIndexes)
             {
                 waveManager.SetSpawnLaneEnabled(laneIndex, false);
+                FadeSpawnLaneVisual(laneIndex, false);
             }
         }
 
         tempOpenedLaneIndexes.Clear();
         autoCloseCoroutine = null;
+    }
+
+    private void FadeSpawnLaneVisual(int laneIndex, bool visible)
+    {
+        Transform fadeRoot = GetSpawnLaneFadeRoot(laneIndex);
+        if (fadeRoot == null)
+            return;
+
+        if (fadeCoroutines.TryGetValue(laneIndex, out Coroutine running) && running != null)
+            StopCoroutine(running);
+
+        fadeCoroutines[laneIndex] = StartCoroutine(FadeSpawnLaneVisualRoutine(laneIndex, fadeRoot, visible));
+    }
+
+    private void ApplyInitialSpawnLaneVisualAlpha()
+    {
+        WaveManager waveManager = WaveManager.Instance;
+        if (waveManager == null || waveManager.spawnLanes == null)
+            return;
+
+        for (int i = 0; i < waveManager.spawnLanes.Count; i++)
+        {
+            Transform fadeRoot = GetSpawnLaneFadeRoot(i);
+            if (fadeRoot == null)
+                continue;
+
+            SetSpawnLaneVisualAlpha(fadeRoot, waveManager.IsSpawnLaneEnabled(i) ? 1f : 0f);
+        }
+    }
+
+    private Transform GetSpawnLaneFadeRoot(int laneIndex)
+    {
+        if (spawnLaneFadeRoots != null && laneIndex >= 0 && laneIndex < spawnLaneFadeRoots.Length && spawnLaneFadeRoots[laneIndex] != null)
+            return spawnLaneFadeRoots[laneIndex];
+
+        WaveManager waveManager = WaveManager.Instance;
+        if (waveManager == null || waveManager.spawnLanes == null || laneIndex < 0 || laneIndex >= waveManager.spawnLanes.Count)
+            return null;
+
+        SpawnLaneConfig lane = waveManager.spawnLanes[laneIndex];
+        return lane != null ? lane.spawnPoint : null;
+    }
+
+    private IEnumerator FadeSpawnLaneVisualRoutine(int laneIndex, Transform fadeRoot, bool visible)
+    {
+        SpriteRenderer[] renderers = fadeRoot.GetComponentsInChildren<SpriteRenderer>(true);
+        if (renderers == null || renderers.Length == 0)
+        {
+            fadeCoroutines.Remove(laneIndex);
+            yield break;
+        }
+
+        SpriteRendererAlpha[] startAlphas = new SpriteRendererAlpha[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            startAlphas[i] = new SpriteRendererAlpha
+            {
+                renderer = renderers[i],
+                alpha = renderers[i] != null ? renderers[i].color.a : 0f
+            };
+        }
+
+        float targetAlpha = visible ? 1f : 0f;
+        float duration = Mathf.Max(0.01f, spawnLaneFadeDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            for (int i = 0; i < startAlphas.Length; i++)
+            {
+                SpriteRenderer renderer = startAlphas[i].renderer;
+                if (renderer == null)
+                    continue;
+
+                Color color = renderer.color;
+                color.a = Mathf.Lerp(startAlphas[i].alpha, targetAlpha, t);
+                renderer.color = color;
+            }
+
+            yield return null;
+        }
+
+        for (int i = 0; i < startAlphas.Length; i++)
+        {
+            SpriteRenderer renderer = startAlphas[i].renderer;
+            if (renderer == null)
+                continue;
+
+            Color color = renderer.color;
+            color.a = targetAlpha;
+            renderer.color = color;
+        }
+
+        fadeCoroutines.Remove(laneIndex);
+    }
+
+    private static void SetSpawnLaneVisualAlpha(Transform fadeRoot, float alpha)
+    {
+        SpriteRenderer[] renderers = fadeRoot.GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            SpriteRenderer renderer = renderers[i];
+            if (renderer == null)
+                continue;
+
+            Color color = renderer.color;
+            color.a = alpha;
+            renderer.color = color;
+        }
     }
 }

@@ -13,11 +13,17 @@ public class FriendlyUnitAnimatorDriver : MonoBehaviour
     [SerializeField] private string deathStateName = "";
     [SerializeField] private int layerIndex = 0;
 
+    [Header("Facing")]
+    [SerializeField] private bool flipFacingByNegativeScaleX = false;
+    [SerializeField] private float flipHorizontalDeadZone = 0.0008f;
+
     private int idleStateHash;
     private int moveStateHash;
     private int attackStateHash;
     private int deathStateHash;
     private int currentStateHash;
+    private float cachedAbsScaleX = 1f;
+    private float lastWorldPosX;
     private FriendlyUnitStateController stateController;
 
     private void Awake()
@@ -26,11 +32,27 @@ public class FriendlyUnitAnimatorDriver : MonoBehaviour
             animator = GetComponent<Animator>();
 
         stateController = GetComponentInParent<FriendlyUnitStateController>();
+        cachedAbsScaleX = Mathf.Abs(transform.localScale.x);
+        if (cachedAbsScaleX < 1e-4f)
+            cachedAbsScaleX = 1f;
+
         CacheHashes();
+    }
+
+    private void OnEnable()
+    {
+        lastWorldPosX = transform.position.x;
     }
 
     private void OnValidate()
     {
+        if (flipFacingByNegativeScaleX)
+        {
+            float absScaleX = Mathf.Abs(transform.localScale.x);
+            if (absScaleX > 1e-4f)
+                cachedAbsScaleX = absScaleX;
+        }
+
         CacheHashes();
     }
 
@@ -93,6 +115,22 @@ public class FriendlyUnitAnimatorDriver : MonoBehaviour
     public void OnDeathAnimationFinished()
     {
         stateController?.OnDeathAnimationFinished();
+    }
+
+    private void LateUpdate()
+    {
+        if (!flipFacingByNegativeScaleX)
+            return;
+
+        float x = transform.position.x;
+        float dx = x - lastWorldPosX;
+        lastWorldPosX = x;
+        if (Mathf.Abs(dx) < flipHorizontalDeadZone)
+            return;
+
+        Vector3 localScale = transform.localScale;
+        localScale.x = cachedAbsScaleX * Mathf.Sign(dx);
+        transform.localScale = localScale;
     }
 
     private void PlayState(int stateHash, bool restart)

@@ -144,6 +144,7 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(0, 2);
+            Ctx.ClearGrowthProgress();
             if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
             attackTimer = Ctx.AttackSpeed1;
             if (Ctx.animator1 != null)
@@ -167,6 +168,7 @@ namespace HSM
         public void TickStoredGrowth(float deltaTime)
         {
             grow = Ctx.TickGrowthTimer(grow, Ctx.grow1, deltaTime);
+            Ctx.SetGrowthProgress(grow, Ctx.grow1);
         }
 
         public void ResetGrowthForRewind()
@@ -181,10 +183,10 @@ namespace HSM
                 return;
 
             attackTimer = Mathf.Max(0.05f, interval);
-            if (!Ctx.EnemyDetection())
+            if (!Ctx.TryGetNearestEnemyPosition(out Vector3 targetPosition))
                 return;
 
-            Ctx.Attack(attack, range, Ctx.enemys[0].obj.transform.position, strengthened);
+            Ctx.Attack(attack, range, targetPosition, strengthened);
             Ctx.animator1?.SetTrigger("attack");
         }
     }
@@ -220,6 +222,7 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(1, 2);
+            Ctx.ClearGrowthProgress();
             if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
             if (Ctx.animator1 != null)
                 Ctx.animator1.speed = Ctx.AttackSpeed2;
@@ -242,7 +245,14 @@ namespace HSM
         {
             grow = Ctx.TickGrowthTimer(grow, Ctx.grow2, deltaTime);
             if (Ctx.IsRewindingGrowth && Ctx.IsGrowthRewoundToStart(grow, Ctx.grow2))
+            {
+                Ctx.ClearGrowthProgress();
                 rewindReadyForPrevious = true;
+            }
+            else
+            {
+                Ctx.SetGrowthProgress(grow, Ctx.grow2);
+            }
         }
 
         public void ResetGrowthForRewind()
@@ -258,10 +268,10 @@ namespace HSM
                 return;
 
             attackTimer = Mathf.Max(0.05f, interval);
-            if (!Ctx.EnemyDetection())
+            if (!Ctx.TryGetNearestEnemyPosition(out Vector3 targetPosition))
                 return;
 
-            Ctx.Attack(attack, range, Ctx.enemys[0].obj.transform.position, strengthened);
+            Ctx.Attack(attack, range, targetPosition, strengthened);
             Ctx.animator1?.SetTrigger("attack");
         }
     }
@@ -290,6 +300,7 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(2, 2);
+            Ctx.SetGrowthComplete();
             if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
             attackTimer = Ctx.AttackSpeed3;
             if (Ctx.animator1 != null)
@@ -317,10 +328,10 @@ namespace HSM
                 return;
 
             attackTimer = Mathf.Max(0.05f, interval);
-            if (!Ctx.EnemyDetection())
+            if (!Ctx.TryGetNearestEnemyPosition(out Vector3 targetPosition))
                 return;
 
-            Ctx.Attack(attack, range, Ctx.enemys[0].obj.transform.position, strengthened);
+            Ctx.Attack(attack, range, targetPosition, strengthened);
             Ctx.animator1?.SetTrigger("attack");
         }
     }
@@ -388,10 +399,10 @@ namespace HSM
                 return;
 
             attackTimer = Mathf.Max(0.05f, Ctx.AttackSpeed4);
-            if (!Ctx.EnemyDetection())
+            if (!Ctx.TryGetNearestEnemyPosition(out Vector3 targetPosition))
                 return;
 
-            Ctx.Attack(Ctx.attack4, Ctx.bulletRange4, Ctx.enemys[0].obj.transform.position);
+            Ctx.Attack(Ctx.attack4, Ctx.bulletRange4, targetPosition);
             Ctx.animator1?.SetTrigger("attack");
         }
     }
@@ -432,10 +443,10 @@ namespace HSM
                 return;
 
             attackTimer = Mathf.Max(0.05f, Ctx.attackSpeed5);
-            if (!Ctx.EnemyDetection())
+            if (!Ctx.TryGetNearestEnemyPosition(out Vector3 targetPosition))
                 return;
 
-            Ctx.Attack(Ctx.attack5, Ctx.bulletRange5, Ctx.enemys[0].obj.transform.position, true);
+            Ctx.Attack(Ctx.attack5, Ctx.bulletRange5, targetPosition, true);
         }
 
         protected override void OnExit()

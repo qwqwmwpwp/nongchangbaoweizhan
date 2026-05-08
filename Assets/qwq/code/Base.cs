@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public class Base : MonoBehaviour, IDamageable
 {
-    public GameObject obj => gameObject;
+    public GameObject obj => this == null ? null : gameObject;
 
     [SerializeField] private BaseDataSO baseData;
     private int hp;
@@ -16,7 +16,7 @@ public class Base : MonoBehaviour, IDamageable
     {
         if (baseData == null)
         {
-            Debug.LogError($"Base: 未指定 BaseDataSO（{gameObject.name}）", this);
+            Debug.LogError($"Base: Missing BaseDataSO ({gameObject.name})", this);
             return;
         }
 
@@ -29,7 +29,7 @@ public class Base : MonoBehaviour, IDamageable
         if (isGameOver)
             return;
 
-        // 与 GameFlowManager 共用同一套基地血量与失败判定（避免两套 HP 不一致）
+        // �?GameFlowManager 共用同一套基地血量与失败判定（避免两�?HP 不一致）
         if (GameFlowManager.Instance != null)
         {
             GameFlowManager.Instance.TakeBaseDamage(amount);
@@ -48,3 +48,5 @@ public class Base : MonoBehaviour, IDamageable
         }
     }
 }
+
+

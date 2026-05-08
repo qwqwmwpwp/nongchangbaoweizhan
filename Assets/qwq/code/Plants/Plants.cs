@@ -76,6 +76,9 @@ namespace qwq
         [field: SerializeField] public int fertilizer { get; private set; }
         [field: SerializeField] public int diamond { get; private set; }
 
+        [Header("Growth UI")]
+        public PlantGrowthSliderUI growthSliderUI;
+
         [Header("Global Rewind")]
         public float globalBacktracking_t = 0f;
         [Header("Local Rewind")]
@@ -137,6 +140,26 @@ namespace qwq
             return remaining >= Mathf.Max(0f, maxRemaining) - Mathf.Max(0f, growthTimerEpsilon);
         }
 
+        public void SetGrowthProgress(float remaining, float maxRemaining)
+        {
+            if (growthSliderUI == null)
+                return;
+
+            float max = Mathf.Max(0.0001f, maxRemaining);
+            float progress = 1f - Mathf.Clamp01(remaining / max);
+            growthSliderUI.SetProgress01(progress);
+        }
+
+        public void ClearGrowthProgress()
+        {
+            growthSliderUI?.Clear();
+        }
+
+        public void SetGrowthComplete()
+        {
+            growthSliderUI?.SetFull();
+        }
+
         public void RegisterRewindSkillUse()
         {
             if (!IsAtFirstGrowthStage)
@@ -171,18 +194,33 @@ namespace qwq
         {
             for (int i = enemys.Count - 1; i >= 0; i--)
             {
-                if (enemys[i] == null || enemys[i].obj == null)
+                if (!DamageableTargetUtility.IsValid(enemys[i]))
                     enemys.RemoveAt(i);
             }
 
             enemys.Sort((a, b) =>
             {
-                float aDist = (a.obj.transform.position - transform.position).magnitude;
-                float bDist = (b.obj.transform.position - transform.position).magnitude;
+                DamageableTargetUtility.TryGetGameObject(a, out GameObject aObj);
+                DamageableTargetUtility.TryGetGameObject(b, out GameObject bObj);
+                float aDist = (aObj.transform.position - transform.position).magnitude;
+                float bDist = (bObj.transform.position - transform.position).magnitude;
                 return aDist.CompareTo(bDist);
             });
 
             return enemys.Count > 0;
+        }
+
+        public bool TryGetNearestEnemyPosition(out Vector3 position)
+        {
+            position = default;
+            if (!EnemyDetection())
+                return false;
+
+            if (!DamageableTargetUtility.TryGetGameObject(enemys[0], out GameObject enemyObj))
+                return false;
+
+            position = enemyObj.transform.position;
+            return true;
         }
     }
 
