@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace qwq
 {
@@ -60,6 +61,7 @@ namespace qwq
             if (plantsCtx == null)
                 return;
 
+            Debug.Log("qwq");
             plantsCtx.catalysis_t = Mathf.Max(0.05f, t);
           //  plantsCtx.RegisterCatalysisSkillUse();
         }
@@ -68,16 +70,16 @@ namespace qwq
     [Serializable]
     public class PlantsCtx
     {
-        public Sprite UI;
+        [Header("UI")]
+        public Sprite UI;//种植ui
+        public Slider growUI;
+
         [HideInInspector] public GameObject plant;
 
         [HideInInspector] public Transform transform;
         public List<IDamageable> enemys = new();
         [field: SerializeField] public int fertilizer { get; private set; }
         [field: SerializeField] public int diamond { get; private set; }
-
-        [Header("Growth UI")]
-        public PlantGrowthSliderUI growthSliderUI;
 
         [Header("Global Rewind")]
         public float globalBacktracking_t = 0f;
@@ -140,26 +142,6 @@ namespace qwq
             return remaining >= Mathf.Max(0f, maxRemaining) - Mathf.Max(0f, growthTimerEpsilon);
         }
 
-        public void SetGrowthProgress(float remaining, float maxRemaining)
-        {
-            if (growthSliderUI == null)
-                return;
-
-            float max = Mathf.Max(0.0001f, maxRemaining);
-            float progress = 1f - Mathf.Clamp01(remaining / max);
-            growthSliderUI.SetProgress01(progress);
-        }
-
-        public void ClearGrowthProgress()
-        {
-            growthSliderUI?.Clear();
-        }
-
-        public void SetGrowthComplete()
-        {
-            growthSliderUI?.SetFull();
-        }
-
         public void RegisterRewindSkillUse()
         {
             if (!IsAtFirstGrowthStage)
@@ -194,33 +176,24 @@ namespace qwq
         {
             for (int i = enemys.Count - 1; i >= 0; i--)
             {
-                if (!DamageableTargetUtility.IsValid(enemys[i]))
+                if (enemys[i] == null || enemys[i].obj == null)
                     enemys.RemoveAt(i);
             }
 
             enemys.Sort((a, b) =>
             {
-                DamageableTargetUtility.TryGetGameObject(a, out GameObject aObj);
-                DamageableTargetUtility.TryGetGameObject(b, out GameObject bObj);
-                float aDist = (aObj.transform.position - transform.position).magnitude;
-                float bDist = (bObj.transform.position - transform.position).magnitude;
+                float aDist = (a.obj.transform.position - transform.position).magnitude;
+                float bDist = (b.obj.transform.position - transform.position).magnitude;
                 return aDist.CompareTo(bDist);
             });
 
             return enemys.Count > 0;
         }
 
-        public bool TryGetNearestEnemyPosition(out Vector3 position)
+        public void GrowUiUpdate(float x, float max)
         {
-            position = default;
-            if (!EnemyDetection())
-                return false;
-
-            if (!DamageableTargetUtility.TryGetGameObject(enemys[0], out GameObject enemyObj))
-                return false;
-
-            position = enemyObj.transform.position;
-            return true;
+            float n = x / max;
+            growUI.value = n;
         }
     }
 

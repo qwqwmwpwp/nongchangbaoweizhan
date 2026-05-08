@@ -143,18 +143,25 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(0, 2);
-            Ctx.ClearGrowthProgress();
-            if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
+
+            Ctx.obj1.SetActive(true);
+
+            Ctx.growUI.gameObject.SetActive(true);
+
+            Ctx.GrowUiUpdate(Ctx.grow1 - grow, Ctx.grow1);
+
+
             attackTimer = Ctx.AttackSpeed1;
-            if (Ctx.animator1 != null)
-            {
-                Ctx.animator1.speed = Ctx.AttackSpeed1;
-                Ctx.animator1.SetTrigger("attack");
-            }
+
+            Ctx.animator1.speed = Ctx.AttackSpeed1;
+            Ctx.animator1.SetTrigger("attack");
+
         }
 
         protected override void OnUpdate(float deltaTime)
         {
+            Ctx.GrowUiUpdate(Ctx.grow1 - grow, Ctx.grow1);
+
             TickStoredGrowth(deltaTime);
             TickAttack(deltaTime, Ctx.AttackSpeed1, Ctx.attack1, Ctx.bulletRange1, false);
         }
@@ -162,12 +169,14 @@ namespace HSM
         protected override void OnExit()
         {
             if (Ctx.obj1 != null) Ctx.obj1.SetActive(false);
+
+            Ctx.growUI.gameObject.SetActive(false);
+
         }
 
         public void TickStoredGrowth(float deltaTime)
         {
             grow = Ctx.TickGrowthTimer(grow, Ctx.grow1, deltaTime);
-            Ctx.SetGrowthProgress(grow, Ctx.grow1);
         }
 
         public void ResetGrowthForRewind()
@@ -182,10 +191,10 @@ namespace HSM
                 return;
 
             attackTimer = Mathf.Max(0.05f, interval);
-            if (!Ctx.TryGetNearestEnemyPosition(out Vector3 targetPosition))
+            if (!Ctx.EnemyDetection())
                 return;
 
-            Ctx.Attack(attack, range, targetPosition, strengthened);
+            Ctx.Attack(attack, range, Ctx.enemys[0].obj.transform.position, strengthened);
             Ctx.animator1?.SetTrigger("attack");
         }
     }
@@ -221,22 +230,30 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(1, 2);
-            Ctx.ClearGrowthProgress();
-            if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
-            if (Ctx.animator1 != null)
-                Ctx.animator1.speed = Ctx.AttackSpeed2;
+         
+            Ctx.obj1.SetActive(true);
+
+            Ctx.growUI.gameObject.SetActive(true);
+
+            Ctx.animator1.speed = Ctx.AttackSpeed2;
             attackTimer = Ctx.AttackSpeed2;
         }
 
         protected override void OnUpdate(float deltaTime)
         {
+            Ctx.GrowUiUpdate(Ctx.grow2 - grow, Ctx.grow2);
+
+
+
             TickStoredGrowth(deltaTime);
             TickAttack(deltaTime, Ctx.AttackSpeed2, Ctx.attack2, Ctx.bulletRange2, false);
         }
 
         protected override void OnExit()
         {
-            if (Ctx.obj1 != null) Ctx.obj1.SetActive(false);
+            Ctx.growUI.enabled = false;
+
+            Ctx.growUI.gameObject.SetActive(false);
             attackTimer = 0f;
         }
 
@@ -244,14 +261,7 @@ namespace HSM
         {
             grow = Ctx.TickGrowthTimer(grow, Ctx.grow2, deltaTime);
             if (Ctx.IsRewindingGrowth && Ctx.IsGrowthRewoundToStart(grow, Ctx.grow2))
-            {
-                Ctx.ClearGrowthProgress();
                 rewindReadyForPrevious = true;
-            }
-            else
-            {
-                Ctx.SetGrowthProgress(grow, Ctx.grow2);
-            }
         }
 
         public void ResetGrowthForRewind()
@@ -267,10 +277,10 @@ namespace HSM
                 return;
 
             attackTimer = Mathf.Max(0.05f, interval);
-            if (!Ctx.TryGetNearestEnemyPosition(out Vector3 targetPosition))
+            if (!Ctx.EnemyDetection())
                 return;
 
-            Ctx.Attack(attack, range, targetPosition, strengthened);
+            Ctx.Attack(attack, range, Ctx.enemys[0].obj.transform.position, strengthened);
             Ctx.animator1?.SetTrigger("attack");
         }
     }
@@ -299,7 +309,6 @@ namespace HSM
         protected override void OnEnter()
         {
             Ctx.SetGrowthStage(2, 2);
-            Ctx.SetGrowthComplete();
             if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
             attackTimer = Ctx.AttackSpeed3;
             if (Ctx.animator1 != null)
@@ -327,10 +336,10 @@ namespace HSM
                 return;
 
             attackTimer = Mathf.Max(0.05f, interval);
-            if (!Ctx.TryGetNearestEnemyPosition(out Vector3 targetPosition))
+            if (!Ctx.EnemyDetection())
                 return;
 
-            Ctx.Attack(attack, range, targetPosition, strengthened);
+            Ctx.Attack(attack, range, Ctx.enemys[0].obj.transform.position, strengthened);
             Ctx.animator1?.SetTrigger("attack");
         }
     }
@@ -366,7 +375,6 @@ namespace HSM
             Ctx.animator1.speed = Ctx.AttackSpeed4;
             Ctx.animator1.SetTrigger("attack");
 
-            Debug.Log("qwq");
         }
 
         protected override void OnExit()
@@ -392,10 +400,10 @@ namespace HSM
                 return;
 
             attackTimer = Mathf.Max(0.05f, Ctx.AttackSpeed4);
-            if (!Ctx.TryGetNearestEnemyPosition(out Vector3 targetPosition))
+            if (!Ctx.EnemyDetection())
                 return;
 
-            Ctx.Attack(Ctx.attack4, Ctx.bulletRange4, targetPosition);
+            Ctx.Attack(Ctx.attack4, Ctx.bulletRange4, Ctx.enemys[0].obj.transform.position);
             Ctx.animator1?.SetTrigger("attack");
         }
     }
@@ -412,6 +420,8 @@ namespace HSM
 
         protected override State GetTransition()
         {
+
+
             if (Ctx.catalysis_t <= 0f)
                 return ((WatermelonRoot)Parent).state6;
 
@@ -436,10 +446,10 @@ namespace HSM
                 return;
 
             attackTimer = Mathf.Max(0.05f, Ctx.attackSpeed5);
-            if (!Ctx.TryGetNearestEnemyPosition(out Vector3 targetPosition))
+            if (!Ctx.EnemyDetection())
                 return;
 
-            Ctx.Attack(Ctx.attack5, Ctx.bulletRange5, targetPosition, true);
+            Ctx.Attack(Ctx.attack5, Ctx.bulletRange5, Ctx.enemys[0].obj.transform.position, true);
         }
 
         protected override void OnExit()
