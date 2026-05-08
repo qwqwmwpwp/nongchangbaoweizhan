@@ -52,7 +52,7 @@ namespace qwq
                 return;
 
             plantsCtx.partialBacktracking_t = Mathf.Max(0.05f, t);
-            plantsCtx.RegisterRewindSkillUse();
+           // plantsCtx.RegisterRewindSkillUse();
         }
 
         public void Catalysis(float t = 3f)
@@ -61,7 +61,7 @@ namespace qwq
                 return;
 
             plantsCtx.catalysis_t = Mathf.Max(0.05f, t);
-            plantsCtx.RegisterCatalysisSkillUse();
+          //  plantsCtx.RegisterCatalysisSkillUse();
         }
     }
 
