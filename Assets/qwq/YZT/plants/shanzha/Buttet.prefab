@@ -97,5 +97,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13bea2c1a0597ea41b61e2dc9c9c29e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  attackClip: {fileID: 8300000, guid: ecab0df8031091a4db518d0487d6f96f, type: 3}
   moveSpeed: 8
   damage: 2

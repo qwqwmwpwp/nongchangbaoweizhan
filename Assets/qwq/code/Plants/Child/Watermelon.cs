@@ -148,9 +148,6 @@ namespace HSM
 
             Ctx.growUI.gameObject.SetActive(true);
 
-            Ctx.GrowUiUpdate(Ctx.grow1 - grow, Ctx.grow1);
-
-
             attackTimer = Ctx.AttackSpeed1;
 
             Ctx.animator1.speed = Ctx.AttackSpeed1;
@@ -251,8 +248,6 @@ namespace HSM
 
         protected override void OnExit()
         {
-            Ctx.growUI.enabled = false;
-
             Ctx.growUI.gameObject.SetActive(false);
             attackTimer = 0f;
         }

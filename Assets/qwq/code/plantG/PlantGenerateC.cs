@@ -66,7 +66,7 @@ public class PlantGenerateC : MonoBehaviour
             ctx = newCtx;
         else return;
 
-        bool isfertilizer = AttributeManager.Instance.SpendMoney(ctx.fertilizer, ctx.diamond);
+        bool isfertilizer = AttributeManager.Instance.SpendMoney(-ctx.fertilizer,- ctx.diamond);
 
         if (isfertilizer)
             Bass.battery = Instantiate(plants[n], Bass.parentObject.transform);

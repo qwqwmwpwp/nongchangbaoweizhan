@@ -37,8 +37,19 @@ public class Bullet : MonoBehaviour, IWeapon
 
         if (direction.magnitude < 0.2)
         {
+            AttackMusic();
             enemy.TakeDamage(damage);
             Destroy(this.gameObject);
+        }
+    }
+
+    [Header("ÒôÐ§")]
+    [SerializeField] AudioClip attackClip;
+    public void AttackMusic()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayUISound(attackClip);
         }
     }
 

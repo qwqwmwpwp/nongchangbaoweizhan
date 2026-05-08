@@ -83,24 +83,55 @@ public class WatermelonBullet : MonoBehaviour
 
     private void Move(float deltaTime)
     {
-        Vector2 new_v = v.normalized + (target - (Vector2)transform.position).normalized *13 *deltaTime;
-        v = new_v.normalized * speed;
-        rb.velocity = v;
+        // 使用局部变量减少属性访问
+        Vector2 currentPosition = transform.position;
+        Vector2 toTarget = target - currentPosition;
 
+        // 使用平方距离避免开方运算
+        float sqrDistance = toTarget.sqrMagnitude;
 
-        float magnitude = (target - (Vector2)transform.position).magnitude;
-        if (magnitude < 0.1)
+        if (sqrDistance < 0.1f) // 0.1² = 0.01
         {
-            rb.velocity = Vector2.zero;
-            circleCollider2D.enabled = true;
-            bulletSprite.SetActive(false);
-            rangeSprite.SetActive(true);
-
-            currentMethod++;
+            StopAndComplete();
             return;
         }
+
+        // 计算一次距离，避免重复计算
+        float distance = Mathf.Sqrt(sqrDistance);
+        Vector2 targetDirection = toTarget / distance;
+
+        // 使用更高效的转向逻辑
+        Vector2 desiredVelocity = targetDirection * speed;
+
+        // 动态加速度：距离越远加速越快
+        float accelerationFactor = 4f;
+        if (distance < 1f)
+        {
+            accelerationFactor = Mathf.Lerp(2f, 4f, distance);
+        }
+
+        Vector2 steering = (desiredVelocity - v) * accelerationFactor * deltaTime;
+        v += steering;
+
+        // 更高效的速度限制
+        float sqrSpeed = v.sqrMagnitude;
+        float maxSqrSpeed = speed * speed;
+        if (sqrSpeed > maxSqrSpeed)
+        {
+            v *= speed / Mathf.Sqrt(sqrSpeed);
+        }
+
+        rb.velocity = v;
     }
 
+    private void StopAndComplete()
+    {
+        rb.velocity = Vector2.zero;
+        circleCollider2D.enabled = true;
+        bulletSprite.SetActive(false);
+        rangeSprite.SetActive(true);
+        currentMethod++;
+    }
     private void Detection(float deltaTime)
     {
 
@@ -114,6 +145,7 @@ public class WatermelonBullet : MonoBehaviour
 
     private void Attack(float deltaTime)
     {
+        AttackMusic();
         enemys.RemoveAll(e => !DamageableTargetUtility.IsValid(e));
 
         List<IDamageable> enemiesToAttack = new List<IDamageable>(enemys);
@@ -130,4 +162,14 @@ public class WatermelonBullet : MonoBehaviour
         currentMethod++;
     }
 
+
+    [Header("音效")]
+    [SerializeField] AudioClip attackClip;
+    public void AttackMusic()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayUISound(attackClip);
+        }
+    }
 }
