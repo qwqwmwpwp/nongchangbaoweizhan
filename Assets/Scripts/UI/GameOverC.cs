@@ -1,11 +1,13 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /// <summary>
 /// 结果流程“控制层”脚本：
 /// - 给 GameFlowManager 提供失败/胜利 UI 的统一入口
 /// - 给 UGUI 按钮提供“重新开始”方法
-/// - 在失败/胜利面板上绑定 <see cref="LoadMainMenu"/> 返回主菜单（走 SceneLoadManager）
+/// - 在失败/胜利面板上绑定 <see cref="SceneSwitch"/> 返回主菜单（走 SceneLoadManager）
 /// </summary>
 public class GameOverC : MonoBehaviour
 {
@@ -13,10 +15,6 @@ public class GameOverC : MonoBehaviour
 
     [Header("结果视图")]
     [SerializeField] private GameOverM gameOverM;
-
-    [Header("返回主菜单")]
-    [Tooltip("须与 Build Settings 中的场景名一致。")]
-    [SerializeField] private string mainMenuSceneName = "Main Menu";
 
     private void Awake()
     {
@@ -26,6 +24,9 @@ public class GameOverC : MonoBehaviour
             return;
         }
         instance = this;
+
+
+
     }
 
     /// <summary>
@@ -67,14 +68,14 @@ public class GameOverC : MonoBehaviour
     /// <summary>
     /// 返回主菜单：经 SceneLoadManager 淡入淡出加载（timeScale 在加载协程内恢复为 1）。
     /// </summary>
-    public void LoadMainMenu()
+    public void SceneSwitch(string name)
     {
         if (SceneLoadManager.Instance != null)
-            SceneLoadManager.Instance.LoadScene(mainMenuSceneName);
+            SceneLoadManager.Instance.LoadScene(name);
         else
         {
             Time.timeScale = 1f;
-            SceneManager.LoadScene(mainMenuSceneName);
+            SceneManager.LoadScene(name);
         }
     }
 }
