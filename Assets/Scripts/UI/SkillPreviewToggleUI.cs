@@ -62,6 +62,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
     private readonly HashSet<EnemyRewindRecorder> _rewindAppliedRecorders = new HashSet<EnemyRewindRecorder>();
 
     public bool IsPreviewing => _isPreviewing;
+    public static bool AnyPreviewing => activePreview != null && activePreview._isPreviewing;
 
     private void Awake()
     {
@@ -323,15 +324,12 @@ public class SkillPreviewToggleUI : MonoBehaviour
 
         _towerRangeEnemies.Clear();
         _rewindAppliedRecorders.Clear();
-        CollectTowersInRadius(center, radius);
-
-        if (_affectedTowers.Count <= 0)
+        if (!TryGetTargetTowerAtPoint(center, radius, out Plants targetTower))
             return false;
 
-        foreach (Plants tower in _affectedTowers)
-        {
-            CollectTowerRangeEnemies(tower, _towerRangeEnemies);
-        }
+        _affectedTowers.Clear();
+        _affectedTowers.Add(targetTower);
+        CollectTowerRangeEnemies(targetTower, _towerRangeEnemies);
 
         int finalCost = Mathf.Max(0, energyCost);
         bool energyOk = EnergyPoolRuntime.Instance == null || EnergyPoolRuntime.Instance.TryConsume(finalCost);
@@ -348,6 +346,9 @@ public class SkillPreviewToggleUI : MonoBehaviour
         {
             if (enemy == null || !enemy.IsInteractable)
                 continue;
+
+            if (buffSetOnCast != null)
+                enemy.ApplyBuffSet(buffSetOnCast);
 
             EnemyRewindRecorder recorder = enemy.GetComponent<EnemyRewindRecorder>();
             if (recorder != null && !_rewindAppliedRecorders.Contains(recorder))
@@ -366,10 +367,11 @@ public class SkillPreviewToggleUI : MonoBehaviour
             return false;
 
         float radius = Mathf.Max(0.1f, rewindRadius);
-        CollectTowersInRadius(center, radius);
-
-        if (_affectedTowers.Count <= 0)
+        if (!TryGetTargetTowerAtPoint(center, radius, out Plants targetTower))
             return false;
+
+        _affectedTowers.Clear();
+        _affectedTowers.Add(targetTower);
 
         int finalCost = Mathf.Max(0, energyCost);
         bool energyOk = EnergyPoolRuntime.Instance == null || EnergyPoolRuntime.Instance.TryConsume(finalCost);
@@ -397,13 +399,20 @@ public class SkillPreviewToggleUI : MonoBehaviour
         return TryGetMouseWorldPoint(out center);
     }
 
-    private void CollectTowersInRadius(Vector3 center, float radius)
+    private bool TryGetTargetTowerAtPoint(Vector3 center, float fallbackRadius, out Plants targetTower)
     {
         EnsureOverlapBuffer();
-        _affectedTowers.Clear();
+        targetTower = null;
+        float bestSqrDistance = float.PositiveInfinity;
 
-        int towerHitCount = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapResults, BatteryLayer);
-        for (int i = 0; i < towerHitCount; i++)
+        int hitCount = Physics2D.OverlapPointNonAlloc(center, _overlapResults, BatteryLayer);
+        if (hitCount <= 0)
+        {
+            float pickRadius = Mathf.Min(Mathf.Max(0.05f, fallbackRadius), 0.25f);
+            hitCount = Physics2D.OverlapCircleNonAlloc(center, pickRadius, _overlapResults, BatteryLayer);
+        }
+
+        for (int i = 0; i < hitCount; i++)
         {
             Collider2D collider2D = _overlapResults[i];
             if (collider2D == null)
@@ -411,10 +420,19 @@ public class SkillPreviewToggleUI : MonoBehaviour
 
             Plants tower = collider2D.GetComponentInParent<Plants>();
             if (tower != null)
-                _affectedTowers.Add(tower);
+            {
+                float sqrDistance = (tower.transform.position - center).sqrMagnitude;
+                if (sqrDistance < bestSqrDistance)
+                {
+                    bestSqrDistance = sqrDistance;
+                    targetTower = tower;
+                }
+            }
 
             _overlapResults[i] = null;
         }
+
+        return targetTower != null;
     }
 
     private void EnsureOverlapBuffer()

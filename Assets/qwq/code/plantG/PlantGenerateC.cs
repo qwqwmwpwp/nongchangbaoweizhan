@@ -2,6 +2,7 @@ using qwq;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlantGenerateC : MonoBehaviour
 {
@@ -22,8 +23,16 @@ public class PlantGenerateC : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
-            BaseDetection();
+        if (!Input.GetMouseButtonDown(0))
+            return;
+
+        if (SkillPreviewToggleUI.AnyPreviewing)
+            return;
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        BaseDetection();
     }
 
     private void BaseDetection()

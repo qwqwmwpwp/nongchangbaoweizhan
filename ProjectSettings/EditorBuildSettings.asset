@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/qwq/Scence/Level1.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   - enabled: 1
+    path: Assets/qwq/Scence/Level2.unity
+    guid: 2b90914c5bb0f5b4ca48cd9adc40fd29
+  - enabled: 1
     path: Assets/qwq/Scence/Main Menu.unity
     guid: f85754903f09a614b9eb299ee85a2dbe
   m_configObjects: {}
