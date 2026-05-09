@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "\u8150\u70C2\u8005"
   m_EditorClassIdentifier: 
   <MaxHealth>k__BackingField: 10
-  <Attack>k__BackingField: 5
+  <Attack>k__BackingField: 10
   <MoveSpeed>k__BackingField: 1
   <FriendlyAttack>k__BackingField: 2
   <AttackType>k__BackingField: 0

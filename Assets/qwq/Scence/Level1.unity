@@ -13855,21 +13855,21 @@ MonoBehaviour:
   rewindTiers:
   - name: Low
     triggerKey: 276
-    energyCost: 0
+    energyCost: 30
     rewindSeconds: 1.5
     playbackDuration: 0.25
     spawnLaneOpenDuration: 1
     cooldownSeconds: 5
   - name: Mid
     triggerKey: 273
-    energyCost: 0
+    energyCost: 50
     rewindSeconds: 3
     playbackDuration: 0.4
     spawnLaneOpenDuration: 3
     cooldownSeconds: 8
   - name: High
     triggerKey: 275
-    energyCost: 0
+    energyCost: 100
     rewindSeconds: 10
     playbackDuration: 0.6
     spawnLaneOpenDuration: 5
@@ -16709,8 +16709,7 @@ MonoBehaviour:
   handleKeyboardInput: 1
   placeMouseButton: 0
   castMode: 0
-  catalysisSeconds: 3
-  energyCost: 0
+  energyCost: 20
   rewindRadius: 1
   rewindSeconds: 3
   playbackDuration: 0.4
@@ -16725,6 +16724,13 @@ MonoBehaviour:
   use2DWorldPoint: 1
   worldZ: 0
   buffSetOnCast: {fileID: 11400000, guid: 42edd93900796944f94e63b884623f5b, type: 2}
+  catalysisEnergyCost: -1
+  catalysisRadius: -1
+  catalysisSeconds: 3
+  catalysisGrowthSpeedMultiplier: 2
+  catalysisDeathThreshold: 4
+  catalysisOverlayMode: 1
+  catalysisUseRewindCastSound: 1
   autoCreatePlaceholder: 0
   placeholderSize: {x: 240, y: 240}
   placeholderColor: {r: 0.3, g: 0.8, b: 1, a: 0.4}
@@ -16887,6 +16893,8 @@ GameObject:
   - component: {fileID: 1714824649}
   - component: {fileID: 1714824648}
   - component: {fileID: 1714824652}
+  - component: {fileID: 1714824654}
+  - component: {fileID: 1714824653}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -17004,6 +17012,35 @@ MonoBehaviour:
   catalysisPreviewColor: {r: 1, g: 0.55, b: 0.05, a: 0.35}
   catalysisRangeWorldPreview: {fileID: 0}
   catalysisRangeWorldPreviewPrefab: {fileID: 773812345670002, guid: b0b4e56a9a5042eb8cd1aa6f9280b6c2, type: 3}
+--- !u!114 &1714824653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714824647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 516f5cac53e5d594dbaebb49264d3b29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timerRuntime: {fileID: 1714824654}
+  timerText: {fileID: 1163498816}
+  prefix: "\u65F6\u95F4: "
+--- !u!114 &1714824654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714824647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c3b3e2cd508d3142b7363342686e5f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stopWhenSessionOver: 1
+  useUnscaledTime: 0
 --- !u!1 &1730329927
 GameObject:
   m_ObjectHideFlags: 0

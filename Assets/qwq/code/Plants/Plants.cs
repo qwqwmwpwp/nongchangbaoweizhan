@@ -68,7 +68,25 @@ namespace qwq
             if (plantsCtx == null)
                 return;
 
-            Debug.Log("qwq");
+            Catalysis(
+                t,
+                plantsCtx.catalysisGrowthSpeedMultiplier,
+                plantsCtx.boundaryCatalysisDeathThreshold,
+                plantsCtx.catalysisOverlayMode);
+        }
+
+        public void Catalysis(
+            float t,
+            float growthSpeedMultiplier,
+            int deathThreshold,
+            PlantSkillOverlayMode overlayMode)
+        {
+            if (plantsCtx == null)
+                return;
+
+            plantsCtx.catalysisGrowthSpeedMultiplier = Mathf.Max(1f, growthSpeedMultiplier);
+            plantsCtx.boundaryCatalysisDeathThreshold = Mathf.Max(0, deathThreshold);
+            plantsCtx.catalysisOverlayMode = overlayMode;
             plantsCtx.catalysis_t = Mathf.Max(0.05f, t);
             plantsCtx.RegisterCatalysisSkillUse();
         }
@@ -96,6 +114,8 @@ namespace qwq
         [Header("Growth Catalysis")]
         public int catalysisNumber = 0;
         public float catalysis_t = 0f;
+        [Tooltip("Skill resource set used while catalysis is active. LocalRewind reuses the rewind bloom resources.")]
+        public PlantSkillOverlayMode catalysisOverlayMode = PlantSkillOverlayMode.LocalRewind;
 
         [Header("Growth Skill Tuning")]
         [Tooltip("Total growth speed multiplier while catalysis_t is active.")]
@@ -120,7 +140,7 @@ namespace qwq
                 if (partialBacktracking_t > 0f)
                     return PlantSkillOverlayMode.LocalRewind;
                 if (catalysis_t > 0f)
-                    return PlantSkillOverlayMode.Catalysis;
+                    return catalysisOverlayMode;
                 return PlantSkillOverlayMode.None;
             }
         }

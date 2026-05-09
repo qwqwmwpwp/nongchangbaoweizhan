@@ -32,7 +32,6 @@ public class SkillPreviewToggleUI : MonoBehaviour
 
     [Header("Effect")]
     [SerializeField] private SkillCastMode castMode = SkillCastMode.RewindEnemiesInTowerRange;
-    [SerializeField] private float catalysisSeconds = 3f;
 
     [Header("倒放技能")]
     [SerializeField] private int energyCost = 20;  // 能量消耗
@@ -47,6 +46,21 @@ public class SkillPreviewToggleUI : MonoBehaviour
     [SerializeField] private bool use2DWorldPoint = true;
     [SerializeField] private float worldZ = 0f;
     [SerializeField] private BuffSetSO buffSetOnCast;
+
+    [Header("加速技能")]
+    [Tooltip("加速技能能量消耗。小于 0 时沿用倒放技能 energyCost。")]
+    [SerializeField] private int catalysisEnergyCost = -1;
+    [Tooltip("加速技能作用半径。小于 0 时沿用倒放技能 rewindRadius。")]
+    [SerializeField] private float catalysisRadius = -1f;
+    [SerializeField] private float catalysisSeconds = 3f;
+    [Tooltip("加速生效期间的成长速度倍率。")]
+    [SerializeField] private float catalysisGrowthSpeedMultiplier = 2f;
+    [Tooltip("终阶段累计加速次数达到该值后摧毁植物；小于等于 0 时关闭该规则。")]
+    [SerializeField] private int catalysisDeathThreshold = 4;
+    [Tooltip("加速生效期间使用的植物技能资源。默认 LocalRewind，表示复用回溯资源。")]
+    [SerializeField] private PlantSkillOverlayMode catalysisOverlayMode = PlantSkillOverlayMode.LocalRewind;
+    [Tooltip("为 true 时加速成功施放播放回溯音效资源；关闭后播放加速音效资源。")]
+    [SerializeField] private bool catalysisUseRewindCastSound = true;
 
     [Header("自动占位")]
     [SerializeField] private bool autoCreatePlaceholder = true;
@@ -231,7 +245,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
         if (worldRangePreview == null)
             return;
 
-        float radius = Mathf.Max(0.1f, rewindRadius);
+        float radius = GetSkillRadius(_activeCastMode);
         float diameterWorld = 2f * radius;
 
         var sr = worldRangePreview.GetComponent<SpriteRenderer>();
@@ -329,7 +343,10 @@ public class SkillPreviewToggleUI : MonoBehaviour
         switch (castMode)
         {
             case SkillCastMode.CatalyzeTowersInRange:
-                AudioManager.Instance.PlaySpeedUpSound();
+                if (catalysisUseRewindCastSound)
+                    AudioManager.Instance.PlayRewindSound();
+                else
+                    AudioManager.Instance.PlaySpeedUpSound();
                 break;
             case SkillCastMode.RewindEnemiesInTowerRange:
                 AudioManager.Instance.PlayRewindSound();
@@ -342,7 +359,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
         if (!TryGetCastCenter(out Vector3 center))
             return false;
 
-        float radius = Mathf.Max(0.1f, rewindRadius);
+        float radius = GetSkillRadius(SkillCastMode.RewindEnemiesInTowerRange);
         float finalRewindSeconds = Mathf.Max(0.1f, rewindSeconds);
         float finalPlaybackDuration = Mathf.Max(0.05f, playbackDuration);
 
@@ -355,7 +372,7 @@ public class SkillPreviewToggleUI : MonoBehaviour
         _affectedTowers.Add(targetTower);
         CollectTowerRangeEnemies(targetTower, _towerRangeEnemies);
 
-        int finalCost = Mathf.Max(0, energyCost);
+        int finalCost = GetEnergyCost(SkillCastMode.RewindEnemiesInTowerRange);
         bool energyOk = EnergyPoolRuntime.Instance == null || EnergyPoolRuntime.Instance.TryConsume(finalCost);
         if (!energyOk)
             return false;
@@ -390,26 +407,44 @@ public class SkillPreviewToggleUI : MonoBehaviour
         if (!TryGetCastCenter(out Vector3 center))
             return false;
 
-        float radius = Mathf.Max(0.1f, rewindRadius);
+        float radius = GetSkillRadius(SkillCastMode.CatalyzeTowersInRange);
         if (!TryGetTargetTowerAtPoint(center, radius, out Plants targetTower))
             return false;
 
         _affectedTowers.Clear();
         _affectedTowers.Add(targetTower);
 
-        int finalCost = Mathf.Max(0, energyCost);
+        int finalCost = GetEnergyCost(SkillCastMode.CatalyzeTowersInRange);
         bool energyOk = EnergyPoolRuntime.Instance == null || EnergyPoolRuntime.Instance.TryConsume(finalCost);
         if (!energyOk)
             return false;
 
         float duration = Mathf.Max(0.05f, catalysisSeconds);
+        float growthMultiplier = Mathf.Max(1f, catalysisGrowthSpeedMultiplier);
+        int deathThreshold = Mathf.Max(0, catalysisDeathThreshold);
         foreach (Plants tower in _affectedTowers)
         {
             if (tower != null)
-                tower.Catalysis(duration);
+                tower.Catalysis(duration, growthMultiplier, deathThreshold, catalysisOverlayMode);
         }
 
         return true;
+    }
+
+    private float GetSkillRadius(SkillCastMode mode)
+    {
+        if (mode == SkillCastMode.CatalyzeTowersInRange && catalysisRadius >= 0f)
+            return Mathf.Max(0.1f, catalysisRadius);
+
+        return Mathf.Max(0.1f, rewindRadius);
+    }
+
+    private int GetEnergyCost(SkillCastMode mode)
+    {
+        if (mode == SkillCastMode.CatalyzeTowersInRange && catalysisEnergyCost >= 0)
+            return Mathf.Max(0, catalysisEnergyCost);
+
+        return Mathf.Max(0, energyCost);
     }
 
     private bool TryGetCastCenter(out Vector3 center)
