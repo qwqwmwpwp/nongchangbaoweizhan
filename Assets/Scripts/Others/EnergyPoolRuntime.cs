@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// 场景中的能量池：监听击杀事件累加资源，并广播能量变化。
+/// 场景中的能量池：监听击杀事件累加能量，并广播能量变化。
 /// 挂到任意常驻物体（如 GameFlow 同级空物体）即可。
 /// </summary>
 public class EnergyPoolRuntime : MonoBehaviour
@@ -50,10 +50,10 @@ public class EnergyPoolRuntime : MonoBehaviour
         RaiseChanged();
     }
 
-    private void OnEnemyDefeatedReward(int resourcePoints)
+    private void OnEnemyDefeatedReward(int fertilizerReward, int energyReward)
     {
-        if (resourcePoints <= 0) return;
-        AddEnergy(resourcePoints);
+        if (energyReward <= 0) return;
+        AddEnergy(energyReward);
     }
 
     public void AddEnergy(int amount)

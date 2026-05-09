@@ -71,6 +71,11 @@ public class BambooCtx : PlantsCtx
 
     [Header("Stage 3")]
     public GameObject obj3;
+    public float grow3 = 10f;
+
+    [Header("Skill Overlay")]
+    public GameObject specialEffects;
+    public float skillSpawnIntervalMultiplier = 0.5f;
 
     [Header("Friendly Spawn")]
     public GameObject friendlyUnitPrefab;
@@ -139,7 +144,7 @@ public class BambooCtx : PlantsCtx
         if (stageLimit <= 0 || spawnedUnits.Count >= stageLimit)
             return;
 
-        float interval = Mathf.Max(0.05f, GetStageSpawnInterval(stageIndex));
+        float interval = ResolveSpawnInterval(stageIndex);
         spawnTimers[stageIndex] -= deltaTime;
         if (spawnTimers[stageIndex] > 0f)
             return;
@@ -153,6 +158,17 @@ public class BambooCtx : PlantsCtx
         if (stageIndex < 0 || stageIndex >= spawnTimers.Length)
             return;
         spawnTimers[stageIndex] = 0f;
+    }
+
+    public void RefreshSkillOverlayEffects()
+    {
+        ApplySkillOverlayEffects(ActiveSkillOverlayMode);
+    }
+
+    public void ApplySkillOverlayEffects(PlantSkillOverlayMode overlayMode)
+    {
+        if (specialEffects != null)
+            specialEffects.SetActive(overlayMode != PlantSkillOverlayMode.None);
     }
 
     public void CleanupDestroyedUnits()
@@ -270,6 +286,15 @@ public class BambooCtx : PlantsCtx
             2 => stage3SpawnInterval,
             _ => 1f
         };
+    }
+
+    private float ResolveSpawnInterval(int stageIndex)
+    {
+        float interval = GetStageSpawnInterval(stageIndex);
+        if (ActiveSkillOverlayMode != PlantSkillOverlayMode.None)
+            interval *= Mathf.Max(0f, skillSpawnIntervalMultiplier);
+
+        return Mathf.Max(0.05f, interval);
     }
 
     private GameObject GetStageFriendlyUnitPrefab(int stageIndex)
@@ -480,6 +505,7 @@ public class BambooState1 : State, IPlantGrowthTimerState
 {
     private readonly BambooCtx Ctx;
     public float grow;
+    private bool enterFromRewindComplete;
 
     public BambooState1(StateMachine machine, State parent, BambooCtx ctx) : base(machine, parent)
     {
@@ -489,32 +515,47 @@ public class BambooState1 : State, IPlantGrowthTimerState
     protected override void OnEnter()
     {
         Ctx.SetGrowthStage(0, 2);
-        grow = Ctx.grow1;
+        if (enterFromRewindComplete)
+            enterFromRewindComplete = false;
+        else
+            grow = Ctx.grow1;
+        Ctx.GrowUiUpdateFromRemaining(grow, Ctx.grow1);
+        Ctx.RefreshSkillOverlayEffects();
         if (Ctx.obj1 != null) Ctx.obj1.SetActive(true);
         Ctx.ResetSpawnTimer(0);
     }
 
     protected override State GetTransition()
     {
-        if (grow <= 0f)
+        if (!Ctx.IsRewindingGrowth && grow <= 0f)
             return ((BambooRoot)Parent).state2;
         return null;
     }
 
     protected override void OnUpdate(float deltaTime)
     {
+        Ctx.RefreshSkillOverlayEffects();
         TickStoredGrowth(deltaTime);
         Ctx.TickSpawn(0, deltaTime);
     }
 
     protected override void OnExit()
     {
+        Ctx.ApplySkillOverlayEffects(PlantSkillOverlayMode.None);
         if (Ctx.obj1 != null) Ctx.obj1.SetActive(false);
     }
 
     public void TickStoredGrowth(float deltaTime)
     {
         grow = Ctx.TickGrowthTimer(grow, Ctx.grow1, deltaTime);
+        Ctx.GrowUiUpdateFromRemaining(grow, Ctx.grow1);
+    }
+
+    public void ResetGrowthForRewind()
+    {
+        grow = 0f;
+        enterFromRewindComplete = true;
+        Ctx.GrowUiUpdateFromRemaining(grow, Ctx.grow1);
     }
 }
 
@@ -523,6 +564,7 @@ public class BambooState2 : State, IPlantGrowthTimerState
     private readonly BambooCtx Ctx;
     public float grow;
     private bool rewindReadyForPrevious;
+    private bool enterFromRewindComplete;
 
     public BambooState2(StateMachine machine, State parent, BambooCtx ctx) : base(machine, parent)
     {
@@ -532,9 +574,13 @@ public class BambooState2 : State, IPlantGrowthTimerState
     protected override State GetTransition()
     {
         if (rewindReadyForPrevious)
+        {
+            ((BambooRoot)Parent).state1.ResetGrowthForRewind();
+            rewindReadyForPrevious = false;
             return ((BambooRoot)Parent).state1;
+        }
 
-        if (grow <= 0f)
+        if (!Ctx.IsRewindingGrowth && grow <= 0f)
             return ((BambooRoot)Parent).state3;
 
         return null;
@@ -544,35 +590,53 @@ public class BambooState2 : State, IPlantGrowthTimerState
     {
         Ctx.SetGrowthStage(1, 2);
         if (Ctx.obj2 != null) Ctx.obj2.SetActive(true);
-        grow = Ctx.grow2;
+        if (enterFromRewindComplete)
+            enterFromRewindComplete = false;
+        else
+            grow = Ctx.grow2;
+        Ctx.GrowUiUpdateFromRemaining(grow, Ctx.grow2);
+        Ctx.RefreshSkillOverlayEffects();
         rewindReadyForPrevious = false;
         Ctx.ResetSpawnTimer(1);
     }
 
     protected override void OnUpdate(float deltaTime)
     {
+        Ctx.RefreshSkillOverlayEffects();
         TickStoredGrowth(deltaTime);
         Ctx.TickSpawn(1, deltaTime);
     }
 
     protected override void OnExit()
     {
+        Ctx.ApplySkillOverlayEffects(PlantSkillOverlayMode.None);
         if (Ctx.obj2 != null) Ctx.obj2.SetActive(false);
     }
 
     public void TickStoredGrowth(float deltaTime)
     {
         grow = Ctx.TickGrowthTimer(grow, Ctx.grow2, deltaTime);
+        Ctx.GrowUiUpdateFromRemaining(grow, Ctx.grow2);
         if (Ctx.IsRewindingGrowth && Ctx.IsGrowthRewoundToStart(grow, Ctx.grow2))
         {
             rewindReadyForPrevious = true;
         }
     }
+
+    public void ResetGrowthForRewind()
+    {
+        grow = 0f;
+        rewindReadyForPrevious = false;
+        enterFromRewindComplete = true;
+        Ctx.GrowUiUpdateFromRemaining(grow, Ctx.grow2);
+    }
 }
 
-public class BambooState3 : State
+public class BambooState3 : State, IPlantGrowthTimerState
 {
     private readonly BambooCtx Ctx;
+    private float grow;
+    private bool rewindReadyForPrevious;
 
     public BambooState3(StateMachine machine, State parent, BambooCtx ctx) : base(machine, parent)
     {
@@ -581,8 +645,12 @@ public class BambooState3 : State
 
     protected override State GetTransition()
     {
-        if (Ctx.IsRewindingGrowth)
+        if (rewindReadyForPrevious)
+        {
+            ((BambooRoot)Parent).state2.ResetGrowthForRewind();
+            rewindReadyForPrevious = false;
             return ((BambooRoot)Parent).state2;
+        }
 
         return null;
     }
@@ -590,17 +658,32 @@ public class BambooState3 : State
     protected override void OnEnter()
     {
         Ctx.SetGrowthStage(2, 2);
+        grow = Ctx.grow3;
+        rewindReadyForPrevious = false;
+        Ctx.GrowUiUpdateFromRemaining(grow, Ctx.grow3);
+        Ctx.RefreshSkillOverlayEffects();
         if (Ctx.obj3 != null) Ctx.obj3.SetActive(true);
         Ctx.ResetSpawnTimer(2);
     }
 
     protected override void OnUpdate(float deltaTime)
     {
+        Ctx.RefreshSkillOverlayEffects();
+        TickStoredGrowth(deltaTime);
         Ctx.TickSpawn(2, deltaTime);
     }
 
     protected override void OnExit()
     {
+        Ctx.ApplySkillOverlayEffects(PlantSkillOverlayMode.None);
         if (Ctx.obj3 != null) Ctx.obj3.SetActive(false);
+    }
+
+    public void TickStoredGrowth(float deltaTime)
+    {
+        grow = Mathf.Max(0f, Ctx.TickGrowthTimer(grow, Ctx.grow3, deltaTime));
+        Ctx.GrowUiUpdateFromRemaining(grow, Ctx.grow3);
+        if (Ctx.IsRewindingGrowth && Ctx.IsGrowthRewoundToStart(grow, Ctx.grow3))
+            rewindReadyForPrevious = true;
     }
 }

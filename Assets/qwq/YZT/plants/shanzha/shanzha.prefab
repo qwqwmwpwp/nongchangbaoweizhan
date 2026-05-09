@@ -865,10 +865,10 @@ MonoBehaviour:
     backward: 0
     catalysisNumber: 0
     catalysis_t: 0
-    catalysisGrowthSpeedMultiplier: 0
-    rewindGrowthSpeedMultiplier: 0
-    boundaryRewindDeathThreshold: 0
-    boundaryCatalysisDeathThreshold: 0
+    catalysisGrowthSpeedMultiplier: 3
+    rewindGrowthSpeedMultiplier: 3
+    boundaryRewindDeathThreshold: 1
+    boundaryCatalysisDeathThreshold: 1
     growthTimerEpsilon: 0.01
     currentGrowthStageIndex: 0
     finalGrowthStageIndex: 2
@@ -876,15 +876,17 @@ MonoBehaviour:
     specialEffects: {fileID: 2633804689046272360}
     bulletTransform: {fileID: 4386401883067147821}
     animator: {fileID: 8946874436037669733}
+    attackSoundClip: {fileID: 8300000, guid: 2e7cf299b14b07a42a60affd5501c458, type: 3}
     obj1: {fileID: 1090416456357501851}
-    grow1: 5
+    grow1: 10
     attack1: 1
     attackCooling1: 1
     obj2: {fileID: 8009738223133209178}
-    grow2: 5
+    grow2: 10
     attack2: 1
     attackCooling2: 1
     obj3: {fileID: 2096587624666217945}
+    grow3: 10
     attack3: 1
     attackCooling3: 1.5
     attack4: 5

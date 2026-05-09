@@ -706,7 +706,7 @@ MonoBehaviour:
   moveBackStateName: "MoveBack_\u91CD\u536B"
   moveForwardStateName: "MoveForward_\u91CD\u536B"
   battleStateName: "Battle_\u91CD\u536B"
-  deathStateName: 
+  deathStateName: "Death_\u91CD\u536B"
   layerIndex: 0
   flipFacingByNegativeScaleX: 1
   flipHorizontalDeadZone: 0.0008

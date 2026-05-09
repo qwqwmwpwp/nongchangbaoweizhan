@@ -303,13 +303,37 @@ public class SkillPreviewToggleUI : MonoBehaviour
     //在范围内挂载EnemyRewindRecorder的敌人开始倒放
     private bool TryCastCurrentEffectInRange()
     {
+        bool castSucceeded;
         switch (_activeCastMode)
         {
             case SkillCastMode.CatalyzeTowersInRange:
-                return TryCastCatalysisInRange();
+                castSucceeded = TryCastCatalysisInRange();
+                break;
             case SkillCastMode.RewindEnemiesInTowerRange:
             default:
-                return TryCastRewindInRange();
+                castSucceeded = TryCastRewindInRange();
+                break;
+        }
+
+        if (castSucceeded)
+            PlayCastSound(_activeCastMode);
+
+        return castSucceeded;
+    }
+
+    private void PlayCastSound(SkillCastMode castMode)
+    {
+        if (AudioManager.Instance == null)
+            return;
+
+        switch (castMode)
+        {
+            case SkillCastMode.CatalyzeTowersInRange:
+                AudioManager.Instance.PlaySpeedUpSound();
+                break;
+            case SkillCastMode.RewindEnemiesInTowerRange:
+                AudioManager.Instance.PlayRewindSound();
+                break;
         }
     }
 

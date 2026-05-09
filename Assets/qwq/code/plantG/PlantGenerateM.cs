@@ -58,6 +58,10 @@ public class PlantGenerateM : MonoBehaviour
         {
             int index = i;
             plantButton[i].button.onClick.AddListener(()=>ButtonUI(index));
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.BindButtonClickSound(plantButton[i].button);
+            }
             plantButton[i].text.text = "∑ ¡œ" + values[i].monmy;
             plantButton[i].image.sprite = values[i].sprite;
         }

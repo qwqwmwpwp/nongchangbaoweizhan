@@ -133,7 +133,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: "Death_\u91CD\u536Banim"
+  m_Name: "Death_\u91CD\u536B"
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []

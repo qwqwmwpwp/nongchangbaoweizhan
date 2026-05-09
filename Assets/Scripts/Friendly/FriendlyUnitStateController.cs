@@ -247,24 +247,26 @@ public class FriendlyUnitStateController : MonoBehaviour
         animatorDriver?.PlayAttack(true);
     }
 
-    public void OnAttackHit()
+    public bool OnAttackHit()
     {
         if (isDead || currentState != attackState)
-            return;
+            return false;
         if (!HasValidTarget())
-            return;
+            return false;
 
         Vector3 targetPos = TargetPosition;
         if (!IsTargetInsideChaseArea(targetPos) || !IsTargetInAttackRange(targetPos))
-            return;
+            return false;
 
         try
         {
             currentTarget.TakeDamage(owner.Attack);
+            return true;
         }
         catch (MissingReferenceException)
         {
             currentTarget = null;
+            return false;
         }
     }
 

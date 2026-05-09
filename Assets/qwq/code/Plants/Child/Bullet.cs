@@ -47,7 +47,7 @@ public class Bullet : MonoBehaviour, IWeapon
     [SerializeField] AudioClip attackClip;
     public void AttackMusic()
     {
-        if (AudioManager.Instance != null)
+        if (AudioManager.Instance != null && attackClip != null)
         {
             AudioManager.Instance.PlayUISound(attackClip);
         }

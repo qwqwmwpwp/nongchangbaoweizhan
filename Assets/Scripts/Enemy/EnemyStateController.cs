@@ -219,6 +219,8 @@ public class EnemyStateController : MonoBehaviour
             return;
 
         currentTarget.TakeDamage(owner.AttackDamage);
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayMeleeAttackSound();
     }
 
     public void OnBattleAnimationFinished()

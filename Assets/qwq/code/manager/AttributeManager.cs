@@ -33,9 +33,9 @@ public class AttributeManager : MonoBehaviour
         GameEvent.EnemyDefeatedReward -= qwq;
 
     }
-    public void qwq(int a)
+    public void qwq(int fertilizerReward, int energyReward)
     {
-        SpendMoney(a);
+        SpendMoney(fertilizerReward);
     }
 
 

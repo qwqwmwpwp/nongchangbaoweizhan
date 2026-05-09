@@ -582,7 +582,7 @@ MonoBehaviour:
   idleStateName: "Idle_\u5B88\u536B"
   moveBackStateName: "MoveBack_\u5B88\u536B"
   moveForwardStateName: "MoveForward_\u5B88\u536B"
-  battleStateName: "Battle_\u5B88\u536B"
+  battleStateName: "Attack_\u5B88\u536B"
   deathStateName: "Death_\u5B88\u536B"
   layerIndex: 0
   flipFacingByNegativeScaleX: 1

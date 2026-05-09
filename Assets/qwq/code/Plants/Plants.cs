@@ -6,6 +6,13 @@ using UnityEngine.UI;
 
 namespace qwq
 {
+    public enum PlantSkillOverlayMode
+    {
+        None,
+        LocalRewind,
+        Catalysis
+    }
+
     public abstract class Plants : MonoBehaviour, IBatteryBackward
     {
         protected StateMachine machine;
@@ -53,7 +60,7 @@ namespace qwq
                 return;
 
             plantsCtx.partialBacktracking_t = Mathf.Max(0.05f, t);
-           // plantsCtx.RegisterRewindSkillUse();
+            plantsCtx.RegisterRewindSkillUse();
         }
 
         public void Catalysis(float t = 3f)
@@ -63,7 +70,7 @@ namespace qwq
 
             Debug.Log("qwq");
             plantsCtx.catalysis_t = Mathf.Max(0.05f, t);
-          //  plantsCtx.RegisterCatalysisSkillUse();
+            plantsCtx.RegisterCatalysisSkillUse();
         }
     }
 
@@ -106,6 +113,17 @@ namespace qwq
 
         public bool IsRewindingGrowth => partialBacktracking_t > 0f || globalBacktracking_t > 0f;
         public bool IsCatalyzingGrowth => catalysis_t > 0f;
+        public PlantSkillOverlayMode ActiveSkillOverlayMode
+        {
+            get
+            {
+                if (partialBacktracking_t > 0f)
+                    return PlantSkillOverlayMode.LocalRewind;
+                if (catalysis_t > 0f)
+                    return PlantSkillOverlayMode.Catalysis;
+                return PlantSkillOverlayMode.None;
+            }
+        }
         public bool IsAtFirstGrowthStage => currentGrowthStageIndex <= 0;
         public bool IsAtFinalGrowthStage => currentGrowthStageIndex >= finalGrowthStageIndex;
 
@@ -192,8 +210,21 @@ namespace qwq
 
         public void GrowUiUpdate(float x, float max)
         {
-            float n = x / max;
+            if (growUI == null)
+                return;
+
+            growUI.gameObject.SetActive(true);
+            growUI.minValue = 0f;
+            growUI.maxValue = 1f;
+
+            float n = max > 0f ? Mathf.Clamp01(x / max) : 1f;
             growUI.value = n;
+        }
+
+        public void GrowUiUpdateFromRemaining(float remaining, float maxRemaining)
+        {
+            float max = Mathf.Max(0f, maxRemaining);
+            GrowUiUpdate(max - remaining, max);
         }
     }
 

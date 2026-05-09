@@ -109,7 +109,8 @@ public class FriendlyUnitAnimatorDriver : MonoBehaviour
 
     public void OnAttackHit()
     {
-        stateController?.OnAttackHit();
+        if (stateController != null && stateController.OnAttackHit() && AudioManager.Instance != null)
+            AudioManager.Instance.PlayMeleeAttackSound();
     }
 
     public void OnDeathAnimationFinished()

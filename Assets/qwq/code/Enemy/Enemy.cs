@@ -11,10 +11,11 @@ namespace qwq
 
         private int hp;
         private int baseHpMax;
-        private int baseAttack;
+        private int baseLeakDamage;
+        private int baseFriendlyAttack;
         private int baseMoveSpeed;
         private int finalHpMax;
-        private int finalAttack;
+        private int finalFriendlyAttack;
         private int finalMoveSpeed;
         private EnemyAttackType attackType;
         private float attackRange;
@@ -22,7 +23,6 @@ namespace qwq
         private float attackAnimationCooldown;
         private int killResource1;
         private int killResource2;
-        private int killResource3;
         private bool isDead;
         private bool rewardGranted;
         private EnemyBuffController buffController;
@@ -43,11 +43,10 @@ namespace qwq
             ? attackAnimationCooldown
             : 1f / Mathf.Max(0.1f, attackSpeed);
         public int MoveSpeed => Mathf.Max(1, finalMoveSpeed > 0 ? finalMoveSpeed : baseMoveSpeed);
-        public int AttackDamage => Mathf.Max(1, finalAttack);
+        public int AttackDamage => Mathf.Max(1, finalFriendlyAttack);
         public float BattleEnterDistance => Mathf.Max(0f, battleEnterDistance);
         public int KillResource1 => killResource1;
         public int KillResource2 => killResource2;
-        public int KillResource3 => killResource3;
         public bool HasRewindResistance => isDead || (enemyData != null && enemyData.RewindResistance);
         public bool IsDead => isDead;
         public bool IsInteractable => !isDead && gameObject.activeInHierarchy;
@@ -64,7 +63,8 @@ namespace qwq
             }
 
             baseHpMax = enemyData.MaxHealth;
-            baseAttack = enemyData.Attack;
+            baseLeakDamage = enemyData.Attack;
+            baseFriendlyAttack = enemyData.FriendlyAttack;
             baseMoveSpeed = enemyData.MoveSpeed;
             attackType = enemyData.AttackType;
             attackRange = enemyData.AttackRange;
@@ -72,7 +72,6 @@ namespace qwq
             attackAnimationCooldown = enemyData.AttackAnimationCooldown;
             killResource1 = enemyData.KillResource1;
             killResource2 = enemyData.KillResource2;
-            killResource3 = enemyData.KillResource3;
             hp = Mathf.Max(1, baseHpMax);
 
             cachedMove = GetComponent<EnemyMove>();
@@ -143,7 +142,7 @@ namespace qwq
                 return 0;
             if (enemyData == null)
                 return 1;
-            return Mathf.Max(1, finalAttack);
+            return Mathf.Max(1, baseLeakDamage);
         }
 
         public void ApplyBuff(BuffDataSO buff)
@@ -185,7 +184,7 @@ namespace qwq
             int oldMaxHp = finalHpMax;
 
             finalHpMax = CalculateFinalIntStat(baseHpMax, BuffTargetStat.MaxHealth, 1);
-            finalAttack = CalculateFinalIntStat(baseAttack, BuffTargetStat.Attack, 1);
+            finalFriendlyAttack = CalculateFinalIntStat(baseFriendlyAttack, BuffTargetStat.Attack, 1);
             finalMoveSpeed = CalculateFinalIntStat(baseMoveSpeed, BuffTargetStat.MoveSpeed, 0);
 
             if (oldMaxHp <= 0)
@@ -316,9 +315,10 @@ namespace qwq
 
             if (grantReward && !rewardGranted && enemyData != null)
             {
-                int reward = killResource1 > 0 ? killResource1 : enemyData.KillResourceReward;
-                if (reward > 0)
-                    GameEvent.TriggerEnemyDefeatedReward(reward);
+                int fertilizerReward = killResource1 > 0 ? killResource1 : enemyData.KillResourceReward;
+                int energyReward = killResource2;
+                if (fertilizerReward > 0 || energyReward > 0)
+                    GameEvent.TriggerEnemyDefeatedReward(fertilizerReward, energyReward);
                 rewardGranted = true;
             }
 

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3fbb1349454de24fbc74419ad77a69d, type: 3}
+  m_Name: L1_W4_S
+  m_EditorClassIdentifier: 
+  enemyOptions:
+  - enemyPrefab: {fileID: 4636694202861294061, guid: 8ba66e389346b714489a974ae412d2fd, type: 3}
+    weight: 35
+  - enemyPrefab: {fileID: 4636694202861294061, guid: b38307bdf6de47f42ab627a0f6864fef, type: 3}
+    weight: 35
+  - enemyPrefab: {fileID: 4636694202861294061, guid: df36404b9152a4244a9b8256ec239867, type: 3}
+    weight: 35
+  spawnCount: 20
+  spawnInterval: 2
+  delayAfterWave: 5

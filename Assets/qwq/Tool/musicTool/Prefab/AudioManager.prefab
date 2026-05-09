@@ -179,6 +179,14 @@ MonoBehaviour:
   musicSource: {fileID: 7961491634272228717}
   ambientSource: {fileID: 316747089789843351}
   uiSource: {fileID: 6962197798652818740}
+  buttonClickClip: {fileID: 8300000, guid: 10ca5a9801b06e0449b661985b5fd02c, type: 3}
+  autoBindButtonClickSounds: 1
+  includeInactiveButtons: 1
+  rewindSoundClip: {fileID: 8300000, guid: bfb97158e36e0d34c91033422eb033a2, type: 3}
+  speedUpSoundClip: {fileID: 8300000, guid: 77a660c4fac6ebe4d802fe0cafe60d8c, type: 3}
+  meleeAttackSoundClip: {fileID: 8300000, guid: 6f0468e969aea2946955114cf855b55e, type: 3}
+  victorySoundClip: {fileID: 8300000, guid: 4f4f354250b0ea540a7be966e63a300e, type: 3}
+  defeatSoundClip: {fileID: 8300000, guid: 6cf8c5d095ddf314eb646827fa42de72, type: 3}
   toolUIData: {fileID: 11400000, guid: 2ba2e12f750450440a5e00ad7cc14b74, type: 2}
 --- !u!1 &3991781711723737558
 GameObject:

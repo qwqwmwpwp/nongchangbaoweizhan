@@ -506,10 +506,10 @@ MonoBehaviour:
     backward: 0
     catalysisNumber: 0
     catalysis_t: 0
-    catalysisGrowthSpeedMultiplier: 0
-    rewindGrowthSpeedMultiplier: 0
-    boundaryRewindDeathThreshold: 0
-    boundaryCatalysisDeathThreshold: 0
+    catalysisGrowthSpeedMultiplier: 3
+    rewindGrowthSpeedMultiplier: 3
+    boundaryRewindDeathThreshold: 1
+    boundaryCatalysisDeathThreshold: 1
     growthTimerEpsilon: 0.01
     currentGrowthStageIndex: 0
     finalGrowthStageIndex: 2
@@ -519,24 +519,25 @@ MonoBehaviour:
     specialEffects: {fileID: 2126291521488479317}
     obj1: {fileID: 5303237735419903642}
     animator1: {fileID: 8672988836319031314}
-    grow1: 1
+    grow1: 10
     catalysis_1: 0.2
     attack1: 5
     bulletRange1: 1
     AttackSpeed1: 2
     obj2: {fileID: 8711901158852300366}
-    grow2: 5
+    grow2: 10
     attack2: 10
     bulletRange2: 1
     AttackSpeed2: 1
     catalysis_2: 0.2
     obj3: {fileID: 4361545469928516465}
-    attack3: 20
+    grow3: 10
+    attack3: 15
     bulletRange3: 1
     AttackSpeed3: 1.5
     attackCooldown: 5
     attack4: 5
-    AttackSpeed4: 1
+    AttackSpeed4: 0.5
     bulletRange4: 1
     attack5: 5
     attackSpeed5: 2

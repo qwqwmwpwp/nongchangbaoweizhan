@@ -16,6 +16,8 @@ public class GameOverC : MonoBehaviour
     [Header("结果视图")]
     [SerializeField] private GameOverM gameOverM;
 
+    private bool resultSoundPlayed;
+
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -36,6 +38,8 @@ public class GameOverC : MonoBehaviour
     {
         if (gameOverM != null)
             gameOverM.ShowDefeat();
+
+        PlayResultSound(false);
     }
 
     /// <summary>
@@ -45,6 +49,20 @@ public class GameOverC : MonoBehaviour
     {
         if (gameOverM != null)
             gameOverM.ShowVictory();
+
+        PlayResultSound(true);
+    }
+
+    private void PlayResultSound(bool victory)
+    {
+        if (resultSoundPlayed || AudioManager.Instance == null)
+            return;
+
+        resultSoundPlayed = true;
+        if (victory)
+            AudioManager.Instance.PlayVictorySound();
+        else
+            AudioManager.Instance.PlayDefeatSound();
     }
 
     /// <summary>

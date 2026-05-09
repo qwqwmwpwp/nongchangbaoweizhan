@@ -127,6 +127,8 @@ public class EnemyRewindSkillRuntime : MonoBehaviour
         GameEvent.TriggerEnemyRewindRequested(rewindSeconds, playbackDuration);
         OpenAllSpawnLanesTemporarily(tier);
         StartTierCooldown(tierIndex);
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayRewindSound();
         return true;
     }
 
